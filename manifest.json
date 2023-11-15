@@ -2,13 +2,13 @@
   "name": "PhenoUI",
   "id": "1306399256170889670",
   "api": "1.0.0",
-  "main": "code.js",
+  "main": "build/mod.js",
   "capabilities": [],
   "enableProposedApi": false,
   "editorType": [
     "figma"
   ],
-  "ui": "ui.html",
+  "ui": "build/ui.html",
   "networkAccess": {
     "allowedDomains": [
       "none"

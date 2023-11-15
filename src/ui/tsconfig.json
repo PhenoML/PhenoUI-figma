@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "module": "es2020",
+    "target": "es6",
+    "lib": [
+      "es2020",
+      "dom",
+      "webworker"
+    ],
+    "declaration": false,
+    "declarationMap": false,
+    "baseUrl": "../../src_ui",
+    "paths": {},
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules/@figma"
+    ]
+  }
+}

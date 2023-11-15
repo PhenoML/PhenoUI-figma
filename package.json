@@ -4,13 +4,21 @@
   "description": "Your Figma Plugin",
   "main": "code.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "watch": "npm run build -- --watch"
+    "build": "node esbuild.mjs --production",
+    "watch": "node esbuild.mjs --watch"
   },
   "author": "",
   "license": "",
   "devDependencies": {
     "@figma/plugin-typings": "*",
-    "typescript": "*"
+    "@types/uuid": "^9.0.7",
+    "esbuild": "^0.19.5",
+    "typescript": "*",
+    "yargs": "^17.7.2"
+  },
+  "dependencies": {
+    "lit-html": "^3.0.2",
+    "polyfill-crypto.getrandomvalues": "^1.0.0",
+    "uuid": "^9.0.1"
   }
 }
