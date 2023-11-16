@@ -1,6 +1,6 @@
 import {MessageBus} from "../shared/MessageBus";
 import {LayerScreen} from "./screens/LayerScreen";
-import {render} from "lit-html";
+import {html, render, TemplateResult} from "lit-html";
 import {AvailableScreens} from "../shared/AvailableScreens";
 import {getStyles} from "./styles";
 
@@ -21,6 +21,14 @@ export class UIManager {
         this.bus.executors.push(this);
     }
 
+    render(template: TemplateResult[], root: HTMLElement) {
+        render(html`
+            <main>
+                ${template}
+            </main>
+        `, root);
+    }
+
     updateScreen(data: ScreenData) {
         switch (data.screen) {
             case AvailableScreens.layer:
@@ -28,7 +36,7 @@ export class UIManager {
                     ...getStyles(),
                     ...this.layer.updateTemplate(data as any, this.bus),
                 ];
-                render(template, this.root);
+                this.render(template, this.root);
                 break;
         }
     }
