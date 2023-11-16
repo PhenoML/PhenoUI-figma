@@ -73,13 +73,8 @@ export class MessageBus {
         }
     }
 
-    printID(prefix: string) {
-        console.log(`${prefix}: ${this.id}`);
-    }
-
     async _messageHandler(event: MessageEvent, props?: OnMessageProperties): Promise<void> {
         const pluginMessage = 'data' in event ? event.data.pluginMessage : event;
-        console.log(`received:${this.id} type:${pluginMessage.type} id:${pluginMessage.id}`);
         if (pluginMessage.type === 'execute') {
             await this._executeMessage(pluginMessage);
         } else if (pluginMessage.type === 'result') {
@@ -93,7 +88,6 @@ export class MessageBus {
         for (const executor of this.executors) {
             if (message.fn in executor && typeof executor[message.fn] === 'function') {
                 const result = await executor[message.fn](...message.args);
-                console.log(`post:${this.id} type:result id:${message.id}`);
                 this._postMessage({
                     id: message.id,
                     type: 'result',
@@ -127,7 +121,6 @@ export class MessageBus {
         return new Promise((resolve, reject) => {
             const id = uuidv4({rng});
             this.queue.set(id, { id, resolve, reject });
-            console.log(`post:${this.id} type:execute id:${id}`);
             this._postMessage({ id, fn, args, type: 'execute' });
         });
     }

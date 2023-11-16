@@ -1,33 +1,11 @@
-import {html, render, TemplateResult} from "lit-html";
 import {MessageBus} from "../shared/MessageBus";
+import {UIManager} from "./UIManager";
 
-function getStyles(): TemplateResult {
-    return html`
-        <style>
-            body {
-                background-color: var(--figma-color-bg);
-                color: var(--figma-color-text);
-                font-family: Inter, sans-serif;
-                font-size: 11px;
-            }
-            
-            .button {
-                
-            }
-        </style>
-    `;
-}
 
 async function main() {
-    const messageBus = new MessageBus(window, [{sayHello: () => console.log('HELLO')}]);
-    messageBus.printID('UI');
-    messageBus.execute('sayHello', 'yolito');
-    const template = html`
-        ${getStyles()}
-        <button>Export</button>
-    `;
-
-    render(template, document.body);
+    const messageBus = new MessageBus(window, []);
+    const manager = new UIManager(document.body, messageBus);
+    console.log(manager); // huh?, there's another onel ike this on the other side... sorry future Dario...
 }
 
 document.addEventListener('DOMContentLoaded', main);
