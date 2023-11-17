@@ -50,6 +50,12 @@ export function getStyles(): TemplateResult[] {
                 justify-content: center;
             }
             
+            .container {
+                display: flex;
+                flex-grow: 1;
+                padding: 0 8px;
+            }
+            
             .logo {
                 width: 160px;
                 height: auto;
@@ -136,6 +142,38 @@ export function getStyles(): TemplateResult[] {
             
             .text-input::placeholder {
                 color: var(--figma-color-text-disabled);
+            }
+            
+            .button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-grow: 1;
+                background-color: transparent;
+                border: none;
+                outline: 1px solid var(--figma-color-border-strong);
+                outline-offset: -1px;
+                border-radius: 6px;
+                padding: 0 12px;
+            }
+            
+            .button:focus {
+                outline-offset: -2px;
+                outline: 2px solid var(--figma-color-border-selected);
+            }
+            
+            .button:active {
+                background-color: var(--figma-color-bg-pressed);
+            }
+            
+            .button-label {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 32px;
+                color: var(--figma-color-text);
+                font-family: Inter, sans-serif;
+                font-size: 11px;
             }
         </style>
     `];

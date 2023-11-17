@@ -6,6 +6,7 @@ import {live} from "lit-html/directives/live.js";
 import {title} from "../widgets/title";
 import {textInput} from "../widgets/input";
 import {flutter} from "../widgets/icons";
+import {button} from "../widgets/button";
 
 type LayerData = {
     layer: {
@@ -21,7 +22,17 @@ export class LayerScreen extends Screen {
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
         const template = html`
             <section>
-                ${title(data.layer.name)}
+                <div class="row">
+                    ${title(data.layer.name)}
+                </div>
+                <div class="row">
+                    <div class="container">
+                        ${button({
+                            id: data.layer.id,
+                            label: 'Export to Flutter UI',
+                        })}
+                    </div>
+                </div>
             </section>
             <section>
                 <div class="row">
