@@ -42,6 +42,13 @@ export class PhenoUI {
         this.printTypes(selection);
         if (selection.length > 1) {
             // multiple objects selected
+            this.bus.execute('updateScreen', {
+                screen: AvailableScreens.error,
+                error: {
+                    title: 'ERROR',
+                    description: 'This plugin cannot work while multiple objects are selected. Please select a single object to continue.',
+                }
+            });
         } else if (selection.length === 1) {
             // single object selected
             this._callLayerScreenUpdate(selection[0]);

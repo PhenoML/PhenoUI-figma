@@ -5,6 +5,7 @@ import {AvailableScreens} from "../shared/AvailableScreens";
 import {getStyles} from "./styles";
 import {EmptyScreen} from "./screens/EmptyScreen";
 import {Screen} from "./screens/Screen";
+import {ErrorScreen} from "./screens/ErrorScreen";
 
 type ScreenData = {
     screen: AvailableScreens,
@@ -25,7 +26,7 @@ export class UIManager {
     }
 
     _initScreens() {
-        this.screens.set(AvailableScreens.error, {} as Screen);
+        this.screens.set(AvailableScreens.error, new ErrorScreen());
         this.screens.set(AvailableScreens.empty, new EmptyScreen());
         this.screens.set(AvailableScreens.layer, new LayerScreen());
     }

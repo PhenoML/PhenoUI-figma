@@ -53,6 +53,20 @@ export function getStyles(): TemplateResult[] {
                 width: 160px;
             }
             
+            .error-title {
+                display: flex;
+                justify-content: center;
+                flex-grow: 1;
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--figma-color-text-danger);
+            }
+            
+            .error-description {
+                font-weight: 400;
+                color: var(--figma-color-text-danger-secondary);
+            }
+            
             .row {
                 height: 32px;
                 display: flex;
