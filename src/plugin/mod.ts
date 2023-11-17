@@ -14,7 +14,7 @@ figma.root.setRelaunchData({ open: ''});
 // TODO: Choose a sensible size once the UI is fully designed.
 figma.showUI(__html__, {
     width: 240,
-    height: 600,
+    height: 400,
     themeColors: true
 });
 

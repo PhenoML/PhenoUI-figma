@@ -11,7 +11,10 @@
   "ui": "build/ui.html",
   "networkAccess": {
     "allowedDomains": [
-      "none"
+      "https://strapi.mindora.app"
+    ],
+    "devAllowedDomains": [
+      "*"
     ]
   },
   "relaunchButtons": [

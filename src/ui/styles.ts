@@ -80,7 +80,7 @@ export function getStyles(): TemplateResult[] {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                padding: 0 8px;
+                padding: 2px 8px;
             }
             
             .title {
@@ -111,7 +111,8 @@ export function getStyles(): TemplateResult[] {
             }
             
             .input-container:hover {
-                border: 1px solid var(--figma-color-border);
+                outline-offset: -1px;
+                outline: 1px solid var(--figma-color-border);
             }
             
             .input-container:focus-within {

@@ -18,6 +18,7 @@ type LayerData = {
 }
 
 export class LayerScreen extends Screen {
+    exporting: boolean = false;
     template?: TemplateResult[];
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
         const template = html`
@@ -30,6 +31,7 @@ export class LayerScreen extends Screen {
                         ${button({
                             id: data.layer.id,
                             label: 'Export to Flutter UI',
+                            onClick: async (id: string) => await this.exportToFlutter(id, bus),
                         })}
                     </div>
                 </div>
@@ -38,19 +40,33 @@ export class LayerScreen extends Screen {
                 <div class="row">
                     <div class="text-container bold">Flutter Properties</div>
                 </div>
-                ${textInput({
-                    id: data.layer.id,
-                    label: 'Flutter Widget Class Name',
-                    icon: flutter,
-                    placeholder: data.layer.widgetDefault,
-                    value: data.layer.widgetOverride,
-                    onUpdate: (id, value) => bus.execute('updateMetadata', id, LayerMetadata.widgetOverride, value),
-                })}
+                <div class="row">
+                    ${textInput({
+                        id: data.layer.id,
+                        label: 'Flutter Widget Class Name',
+                        icon: flutter,
+                        placeholder: data.layer.widgetDefault,
+                        value: data.layer.widgetOverride,
+                        onUpdate: (id, value) => bus.execute('updateMetadata', id, LayerMetadata.widgetOverride, value),
+                    })}
+                </div>
             </section>
         `;
 
         this.template = [template];
 
         return this.template;
+    }
+
+    async exportToFlutter(id: string, bus: MessageBus) {
+        if (!this.exporting) {
+            this.exporting = true;
+            const payload = await bus.execute('exportToFlutter', id);
+            if (payload) {
+                // initiate download
+                console.log(payload);
+            }
+            this.exporting = false;
+        }
     }
 }
