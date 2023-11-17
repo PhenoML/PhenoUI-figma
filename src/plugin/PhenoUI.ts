@@ -47,6 +47,7 @@ export class PhenoUI {
             this._callLayerScreenUpdate(selection[0]);
         } else {
             // no object selected
+            this.bus.execute('updateScreen', { screen: AvailableScreens.empty });
         }
     }
 

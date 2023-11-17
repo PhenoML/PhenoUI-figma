@@ -41,6 +41,18 @@ export function getStyles(): TemplateResult[] {
                 width: 12px;
             }
             
+            .centered {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .logo {
+                width: 160px;
+            }
+            
             .row {
                 height: 32px;
                 display: flex;
