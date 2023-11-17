@@ -15,10 +15,6 @@ function label(text: string): TemplateResult {
 }
 
 export function textInput(data: InputData): TemplateResult {
-    if (data.icon) {
-
-    }
-
     return html`
         <div class="row">
             <div class="input-container" title="${data.label}" aria-label="${data.label}">
