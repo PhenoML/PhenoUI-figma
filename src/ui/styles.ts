@@ -38,7 +38,8 @@ export function getStyles(): TemplateResult[] {
             }
             
             svg {
-                width: 12px;
+                max-width: 14px;
+                max-height: 14px;
             }
             
             .centered {
@@ -51,6 +52,7 @@ export function getStyles(): TemplateResult[] {
             
             .logo {
                 width: 160px;
+                height: auto;
             }
             
             .error-title {
