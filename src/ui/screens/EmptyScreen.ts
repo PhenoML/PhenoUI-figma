@@ -12,6 +12,7 @@ export class EmptyScreen implements Screen {
                 <div class="row">
                     <div class="title">select an object to get started</div>
                 </div>
+                <div class="row"></div>
             </section>
         `;
 
