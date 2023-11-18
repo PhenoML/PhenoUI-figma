@@ -104,6 +104,7 @@ export function getStyles(): TemplateResult[] {
             }
             
             .input-container {
+                position: relative;
                 border: 1px solid transparent;
                 display: flex;
                 flex-grow: 1;
@@ -143,6 +144,35 @@ export function getStyles(): TemplateResult[] {
             
             .text-input::placeholder {
                 color: var(--figma-color-text-disabled);
+            }
+            
+            .autocomplete-container {
+                position: absolute;
+                width: 100%;
+                top: 100%;
+                left: 0;
+                outline-offset: -1px;
+                outline: 1px solid var(--figma-color-border);
+                margin-top: 4px;
+                z-index: 1;
+            }
+
+            .autocomplete-item + .autocomplete-item {
+                border-top: 1px solid var(--figma-color-border);
+            }
+            
+            .autocomplete-item {
+                display: flex;
+                height: 32px;
+                align-items: center;
+                padding-left: 33px;
+                color: var(--figma-color-text-secondary);
+                user-select: none;
+            }
+
+            .autocomplete-item:hover {
+                color: var(--figma-color-text-hover);
+                background-color: var(--figma-color-bg-hover);
             }
             
             .button {

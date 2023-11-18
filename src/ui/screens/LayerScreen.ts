@@ -52,6 +52,16 @@ export class LayerScreen extends Screen {
                             key: LayerMetadata.widgetOverride,
                             value
                         }),
+                        provider: async (value) => {
+                            const options = [
+                                'option_1',
+                                'option_2',
+                                'option_3',
+                                'option_4'
+                            ];
+                            options.length = Math.round(Math.random() * options.length);
+                            return options;
+                        } 
                     })}
                 </div>
             </section>
