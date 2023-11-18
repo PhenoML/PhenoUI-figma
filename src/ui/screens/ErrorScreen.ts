@@ -3,7 +3,7 @@ import {MessageBus} from "../../shared/MessageBus";
 import {TemplateResult} from "lit-html/development/lit-html";
 import {html} from "lit-html";
 
-type ErrorData = {
+export type ErrorData = {
     error: {
         title: string,
         description: string,

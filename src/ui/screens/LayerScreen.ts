@@ -8,7 +8,7 @@ import {textInput} from "../widgets/input";
 import {flutter} from "../widgets/icons";
 import {button} from "../widgets/button";
 
-type LayerData = {
+export type LayerData = {
     layer: {
         id: string,
         name: string,
@@ -47,7 +47,11 @@ export class LayerScreen extends Screen {
                         icon: flutter,
                         placeholder: data.layer.widgetDefault,
                         value: data.layer.widgetOverride,
-                        onUpdate: (id, value) => bus.execute('updateMetadata', id, LayerMetadata.widgetOverride, value),
+                        onUpdate: (id, value) => bus.execute('updateMetadata', {
+                            id,
+                            key: LayerMetadata.widgetOverride,
+                            value
+                        }),
                     })}
                 </div>
             </section>
@@ -61,7 +65,7 @@ export class LayerScreen extends Screen {
     async exportToFlutter(id: string, bus: MessageBus) {
         if (!this.exporting) {
             this.exporting = true;
-            const payload = await bus.execute('exportToFlutter', id);
+            const payload = await bus.execute('exportToFlutter', { id });
             if (payload) {
                 // initiate download
                 console.log(payload);

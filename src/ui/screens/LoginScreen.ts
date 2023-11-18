@@ -7,7 +7,7 @@ import {passwordInput, textInput} from "../widgets/input";
 import {LayerMetadata, MetadataDefaults} from "../../shared/Metadata";
 import {button} from "../widgets/button";
 
-type LoginData = {
+export type LoginData = {
     credentials: {
         id: string,
         server?: string,
@@ -39,7 +39,11 @@ export class LoginScreen implements Screen {
                         icon: 'S',
                         placeholder: MetadataDefaults[LayerMetadata.strapiServer],
                         value: data.credentials.server,
-                        onUpdate: (_id, value) => bus.execute('updateMetadata', data.credentials.id, LayerMetadata.strapiServer, value),
+                        onUpdate: (_id, value) => bus.execute('updateMetadata', {
+                            id: data.credentials.id, 
+                            key: LayerMetadata.strapiServer,
+                            value
+                        }),
                     })}
                 </div>
                 <div class="row">
@@ -49,7 +53,11 @@ export class LoginScreen implements Screen {
                         icon: 'U',
                         placeholder: 'user name',
                         value: data.credentials.user,
-                        onUpdate: (id, value) => bus.execute('updateMetadata', data.credentials.id, LayerMetadata.strapiUser, value),
+                        onUpdate: (id, value) => bus.execute('updateMetadata', {
+                            id: data.credentials.id, 
+                            key: LayerMetadata.strapiUser,
+                            value
+                        }),
                     })}
                 </div>
                 <div class="row">
@@ -90,7 +98,7 @@ export class LoginScreen implements Screen {
                 const server = (serverElement as HTMLInputElement).value;
                 const user = (userElement as HTMLInputElement).value;
                 const password = (passwordElement as HTMLInputElement).value;
-                await bus.execute('performLogin', server, user, password);
+                await bus.execute('performLogin', { server, user, password });
             }
 
             this.working = false;

@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 // @ts-ignore
 import getRandomValues from 'polyfill-crypto.getrandomvalues';
+import {FunctionName, FunctionParams} from "./MessageBusTypes";
 
 const rnds8 = new Uint8Array(16);
 function rng() {
@@ -17,7 +18,7 @@ type ExecuteBusMessage = {
     id: string;
     type: 'execute';
     fn: string;
-    args: any[];
+    args: any;
 }
 
 type ResultBusMessage = {
@@ -87,7 +88,7 @@ export class MessageBus {
     async _executeMessage(message: ExecuteBusMessage): Promise<void> {
         for (const executor of this.executors) {
             if (message.fn in executor && typeof executor[message.fn] === 'function') {
-                const result = await executor[message.fn](...message.args);
+                const result = await executor[message.fn](message.args);
                 this._postMessage({
                     id: message.id,
                     type: 'result',
@@ -117,7 +118,7 @@ export class MessageBus {
         }
     }
 
-    async execute(fn: string, ...args: any[]): Promise<any> {
+    async execute<T extends FunctionName>(fn: T, args: FunctionParams[T]): Promise<any> {
         return new Promise((resolve, reject) => {
             const id = uuidv4({rng});
             this.queue.set(id, { id, resolve, reject });
