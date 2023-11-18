@@ -2,11 +2,17 @@ import {MessageBus} from "../shared/MessageBus";
 import {AvailableScreens} from "../shared/AvailableScreens";
 import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
 
+enum StrapiEndpoints {
+    login = '/api/auth/local',
+    widgetSpec = '/api/figma-widget-specs',
+}
+
 type UINode = DocumentNode | SceneNode;
 
 export class PhenoUI {
     api: PluginAPI;
     bus: MessageBus;
+    strapiServer?: string;
     strapiJWT?: string;
 
     constructor(api: PluginAPI, bus: MessageBus) {
@@ -15,6 +21,11 @@ export class PhenoUI {
         this.bus.executors.push(this);
 
         this.strapiJWT = this.api.root.getPluginData(LayerMetadata.strapiJWT);
+
+        const server = this.api.root.getPluginData(LayerMetadata.strapiServer)?.trim();
+        if (server) {
+            this.strapiServer = server.endsWith('/') ? server.substring(0, server.length - 1) : server;
+        }
 
         this.setupLocalEvents();
     }
@@ -56,13 +67,10 @@ export class PhenoUI {
         this.printTypes(selection);
         if (selection.length > 1) {
             // multiple objects selected
-            this.bus.execute('updateScreen', {
-                screen: AvailableScreens.error,
-                error: {
-                    title: 'ERROR',
-                    description: 'This plugin cannot work while multiple objects are selected. Please select a single object to continue.',
-                }
-            });
+            this.showErrorScreen(
+                'ERROR',
+                'This plugin cannot work while multiple objects are selected. Please select a single object to continue.'
+            );
         } else if (selection.length === 1) {
             // single object selected
             this._callLayerScreenUpdate(selection[0]);
@@ -93,10 +101,21 @@ export class PhenoUI {
         });
     }
 
+    showErrorScreen(title: string, description: string) {
+        this.bus.execute('updateScreen', {
+            screen: AvailableScreens.error,
+            error: {
+                title,
+                description,
+            }
+        });
+    }
+
     async performLogin(server: string, user: string, password: string) {
         if (user && password) {
-            server = server.trim() || MetadataDefaults[LayerMetadata.strapiServer];
-            const url = `${server.endsWith('/') ? server.substring(0, server.length - 1) : server}/api/auth/local`;
+            server = server ? server.trim() : MetadataDefaults[LayerMetadata.strapiServer];
+            server = server.endsWith('/') ? server.substring(0, server.length - 1) : server;
+            const url = `${server}${StrapiEndpoints.login}`;
             console.log(url);
             try {
                 const response = await fetch(url, {
@@ -110,6 +129,7 @@ export class PhenoUI {
                 const result = await response.json();
                 if (result.jwt) {
                     this.strapiJWT = result.jwt;
+                    this.strapiServer = server;
                     this._updateMetadata(this.api.root, LayerMetadata.strapiJWT, this.strapiJWT);
                     this.handleSelectionChange(figma.currentPage.selection);
                 }else if (result.error) {
@@ -143,22 +163,53 @@ export class PhenoUI {
 
         const node = this._findNode(id);
         if (!node) {
-            this.bus.execute('updateScreen', {
-                screen: AvailableScreens.error,
-                error: {
-                    title: 'ERROR',
-                    description: `Could not find node with ID [${id}] for export.`,
-                }
-            });
+            this.showErrorScreen(
+                'ERROR',
+                `Could not find node with ID [${id}] for export.`
+            );
             return null;
         }
 
         return await this._exportNode(node);
     }
 
+    async getTypeMapping(type: string): Promise<string | null> {
+        try {
+            const url = `${this.strapiServer}${StrapiEndpoints.widgetSpec}?filters[type][$eq]=${type}`;
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${this.strapiJWT}`,
+                },
+            });
+
+            const result = await response.json();
+            console.log(result);
+            if (result.error) {
+                if (result.error.status === 403) {
+                    this.showLoginScreen(`Forbidden, please login again`);
+                } else {
+                    this.showErrorScreen(
+                        `ERROR ${result.error.status}`,
+                        result.error.message,
+                    );
+                }
+            }
+
+        } catch (e: any) {
+            this.showErrorScreen(
+                'ERROR',
+                `Could not load type [${type}] from strapi: ${e.message}`
+            );
+        }
+
+        return null;
+    }
+
     async _exportNode(node: UINode): Promise<any> {
         const type = node.getPluginData(LayerMetadata.widgetOverride) || this._figmaTypeToWidget(node);
-        
+        const mapping = this.getTypeMapping(type);
+        return JSON.stringify({ dario: 'is super cool!' });
     }
 
     _findNode(id: string): UINode | null {
