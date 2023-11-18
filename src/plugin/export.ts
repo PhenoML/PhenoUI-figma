@@ -7,14 +7,17 @@ enum MappingAction {
     literal = '!',
     valuePath = '#',
     nodePath = '$',
+    inherit = '@',
 }
 
-type MappingDescriptor = {
-    action: MappingAction,
-    components: string[],
-} | {
-    error: string,
+type MappingString = `${MappingAction}${string}`;
+
+type MappingSpecObj = {
+    [key: string]: MappingString | MappingSpec | MappingString[] | MappingSpec[];
 }
+type MappingEntry = MappingSpecObj[keyof MappingSpecObj];
+type MappingSpecArr = MappingEntry[];
+type MappingSpec = MappingSpecObj | MappingSpecArr;
 
 export type UINode = DocumentNode | SceneNode;
 
@@ -31,10 +34,10 @@ export function figmaTypeToWidget(node: UINode): string {
             return node.name;
 
         case 'FRAME':
-            if (node.layoutMode === 'NONE') {
-                return 'Container';
-            }
-            return 'AutoLayout'
+            return 'FigmaFrame'
+
+        case 'INSTANCE':
+            return (node.mainComponent as UINode).name;
 
         default:
             return `${node.type.charAt(0).toUpperCase()}${node.type.slice(1).toLowerCase()}`;
@@ -63,62 +66,80 @@ function _resolvePath(obj: any, path: string[]): any {
     return value;
 }
 
-export async function exportNode(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode) {
-    console.log(node);
-    const type = node.getPluginData(LayerMetadata.widgetOverride) || figmaTypeToWidget(node);
-    const spec = await strapi.getTypeSpec(cache, bus, type);
-    console.log(spec);
-    if (!spec) {
-        return null;
-    }
-    const result: any = {}
-    for (const key of Object.keys(spec.mappings)) {
-        const mapping = spec.mappings[key];
-        const operator = mapping.substring(0, 1);
-        const path = mapping.substring(1);
-        const components = path.split('.');
-        switch (operator) {
-            case MappingAction.literal:
-                result[key] = path;
-                break;
+async function _fetchValue(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode, mapping: MappingString) {
+    const operator = mapping.substring(0, 1);
+    const path = mapping.substring(1);
+    const components = path.split('.');
+    switch (operator) {
+        case MappingAction.literal:
+            return path;
 
-            case MappingAction.valuePath:
-                result[key] = _resolvePath(node, components);
-                break;
+        case MappingAction.valuePath:
+            return _resolvePath(node, components);
 
-            case MappingAction.nodePath:
-                const fetched = _resolvePath(node, components);
-                if (Array.isArray(fetched)) {
-                    const value= [];
-                    for (const n of fetched) {
-                        const exported = await exportNode(cache, bus, strapi, n);
-                        // bubble the error TODO: uncomment below
-                        // if (!exported) {
-                        //     return null;
-                        // }
-                        value.push(exported);
-                    }
-                    result[key] = value;
-                } else {
-                    const exported = await exportNode(cache, bus, strapi, fetched);
-                    // bubble the error TODO: uncomment below
-                    // if (!exported) {
-                    //     return null;
-                    // }
-                    result[key] = exported;
+        case MappingAction.nodePath:
+            const fetched = _resolvePath(node, components);
+            if (Array.isArray(fetched)) {
+                const value = [];
+                for (const n of fetched) {
+                    const exported = await exportNode(cache, bus, strapi, n);
+                    value.push(exported);
                 }
-                break;
+                return value;
+            }
+            return await exportNode(cache, bus, strapi, fetched);
 
-            default:
-                showErrorScreen(
-                    bus,
-                    `ERROR parsing ${key}`,
-                    `Unrecognized mapping operator [${operator}] for mapping ${mapping}`
-                );
+        case MappingAction.inherit:
+            const spec = await strapi.getTypeSpec(cache, bus, path);
+            if (!spec) {
                 return null;
+            }
+            return await _processSpec(cache, bus, strapi, node, spec.mappings);
+
+        default:
+            throw `ERROR parsing - Unrecognized mapping operator [${operator}] for mapping ${mapping}`;
+    }
+}
+
+async function _processSpec(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode, spec: MappingSpec): Promise<any> {
+    if (Array.isArray(spec)) {
+        const result = [];
+        for (const entry of spec) {
+            if (typeof entry as any === 'string') {
+                result.push(await _fetchValue(cache, bus, strapi, node, entry as MappingString));
+            } else {
+                result.push(await _processSpec(cache, bus, strapi, node, entry as MappingSpec));
+            }
+        }
+        return result;
+    }
+
+    const result: any = {};
+    for (const key of Object.keys(spec)) {
+        const entry: MappingEntry = spec[key];
+        if (typeof entry as any === 'string') {
+            result[key] = await _fetchValue(cache, bus, strapi, node, entry as MappingString);
+        } else {
+            result[key] = await _processSpec(cache, bus, strapi, node, entry as MappingSpec);
         }
     }
     return result;
+}
+
+export async function exportNode(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode) {
+    try {
+        console.log(node);
+        const type = node.getPluginData(LayerMetadata.widgetOverride) || figmaTypeToWidget(node);
+        const spec = await strapi.getTypeSpec(cache, bus, type);
+        if (!spec) {
+            return null;
+        }
+
+        return _processSpec(cache, bus, strapi, node, spec.mappings);
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
 }
 
 export async function exportToFlutter(api: PluginAPI, bus: MessageBus, strapi: Strapi, id: string): Promise<any> {
