@@ -34,7 +34,7 @@ export function figmaTypeToWidget(node: UINode): string {
             return node.name;
 
         case 'FRAME':
-            return 'FigmaFrame'
+            return 'Frame'
 
         case 'INSTANCE':
             return (node.mainComponent as UINode).name;
