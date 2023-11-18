@@ -62,7 +62,7 @@ export class Strapi {
         }
 
         try {
-            const url = `${this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec)}?filters[type][$eq]=${type}&populate=fields`;
+            const url = `${this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec)}?filters[type][$eq]=${type}`;
             const response = await fetch(url, {
                 method: "GET",
                 headers: {
