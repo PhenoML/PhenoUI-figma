@@ -3,6 +3,18 @@ import {Strapi} from "./Strapi";
 import {MessageBus} from "../shared/MessageBus";
 import {showErrorScreen} from "./screens";
 
+enum MappingAction {
+    literal = '!',
+    valuePath = '#',
+    nodePath = '$',
+}
+
+type MappingDescriptor = {
+    action: MappingAction,
+    components: string[],
+} | {
+    error: string,
+}
 
 export type UINode = DocumentNode | SceneNode;
 
@@ -20,19 +32,93 @@ export function figmaTypeToWidget(node: UINode): string {
 
         case 'FRAME':
             if (node.layoutMode === 'NONE') {
-                return 'container';
+                return 'Container';
             }
-            return 'autoLayout'
+            return 'AutoLayout'
 
         default:
-            return node.type.toLowerCase();
+            return `${node.type.charAt(0).toUpperCase()}${node.type.slice(1).toLowerCase()}`;
     }
 }
 
-export async function exportNode(bus: MessageBus, strapi: Strapi, node: UINode) {
+function _resolvePath(obj: any, path: string[]): any {
+    let value = obj;
+    for (const comp of path) {
+        const openBracket = comp.indexOf('[');
+        const closeBracket = comp.indexOf(']');
+        if (openBracket !== -1 && closeBracket !== -1) {
+            const base = comp.substring(0, openBracket);
+            const index = comp.substring(openBracket + 1, closeBracket);
+            if (!(base in value) || !(index in value[base])) {
+                return null;
+            }
+            value = value[base][index];
+        } else {
+            if (!(comp in value)) {
+                return null;
+            }
+            value = value[comp];
+        }
+    }
+    return value;
+}
+
+export async function exportNode(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode) {
+    console.log(node);
     const type = node.getPluginData(LayerMetadata.widgetOverride) || figmaTypeToWidget(node);
-    const mapping = strapi.getTypeMapping(bus, type);
-    return JSON.stringify({ dario: 'is super cool!' });
+    const spec = await strapi.getTypeSpec(cache, bus, type);
+    console.log(spec);
+    if (!spec) {
+        return null;
+    }
+    const result: any = {}
+    for (const key of Object.keys(spec.mappings)) {
+        const mapping = spec.mappings[key];
+        const operator = mapping.substring(0, 1);
+        const path = mapping.substring(1);
+        const components = path.split('.');
+        switch (operator) {
+            case MappingAction.literal:
+                result[key] = path;
+                break;
+
+            case MappingAction.valuePath:
+                result[key] = _resolvePath(node, components);
+                break;
+
+            case MappingAction.nodePath:
+                const fetched = _resolvePath(node, components);
+                if (Array.isArray(fetched)) {
+                    const value= [];
+                    for (const n of fetched) {
+                        const exported = await exportNode(cache, bus, strapi, n);
+                        // bubble the error TODO: uncomment below
+                        // if (!exported) {
+                        //     return null;
+                        // }
+                        value.push(exported);
+                    }
+                    result[key] = value;
+                } else {
+                    const exported = await exportNode(cache, bus, strapi, fetched);
+                    // bubble the error TODO: uncomment below
+                    // if (!exported) {
+                    //     return null;
+                    // }
+                    result[key] = exported;
+                }
+                break;
+
+            default:
+                showErrorScreen(
+                    bus,
+                    `ERROR parsing ${key}`,
+                    `Unrecognized mapping operator [${operator}] for mapping ${mapping}`
+                );
+                return null;
+        }
+    }
+    return result;
 }
 
 export async function exportToFlutter(api: PluginAPI, bus: MessageBus, strapi: Strapi, id: string): Promise<any> {
@@ -46,6 +132,7 @@ export async function exportToFlutter(api: PluginAPI, bus: MessageBus, strapi: S
         return null;
     }
 
-    return await exportNode(bus, strapi, node);
+    const cache = new Map<string, any>();
+    return await exportNode(cache, bus, strapi, node);
 }
 

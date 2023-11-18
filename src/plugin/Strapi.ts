@@ -41,7 +41,7 @@ export class Strapi {
                     this.server = server.trim();
                     updateMetadata(this.api.root, LayerMetadata.strapiJWT, this.jwt);
                     return true;
-                }else if (result.error) {
+                } else if (result.error) {
                     showLoginScreen(bus, this.api, result.error.message);
                 } else {
                     showLoginScreen(bus, this.api, 'UNKNOWN ERROR, CONTACT DARIO!');
@@ -56,9 +56,13 @@ export class Strapi {
         return false;
     }
 
-    async getTypeMapping(bus: MessageBus, type: string): Promise<string | null> {
+    async getTypeSpec(cache: Map<string, any>, bus: MessageBus, type: string): Promise<any | null> {
+        if (cache.has(type)) {
+            return cache.get(type);
+        }
+
         try {
-            const url = `${this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec)}?filters[type][$eq]=${type}`;
+            const url = `${this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec)}?filters[type][$eq]=${type}&populate=fields`;
             const response = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -67,7 +71,6 @@ export class Strapi {
             });
 
             const result = await response.json();
-            console.log(result);
             if (result.error) {
                 if (result.error.status === 403) {
                     this.api.root.setPluginData(LayerMetadata.strapiJWT, '');
@@ -79,15 +82,29 @@ export class Strapi {
                         result.error.message,
                     );
                 }
+            } else if (!result.data.length) {
+                showErrorScreen(
+                    bus,
+                    'ERROR',
+                    `Could not find type [${type}] in strapi`,
+                );
+            } else if (result.data.length > 1) {
+                showErrorScreen(
+                    bus,
+                    'ERROR',
+                    `Ambiguous results for type [${type}], expected 1, got ${result.data.length}`,
+                );
             } else {
-
+                console.log(result);
+                const spec = result.data[0].attributes;
+                cache.set(type, spec);
+                return spec;
             }
-
         } catch (e: any) {
             showErrorScreen(
                 bus,
                 'ERROR',
-                `Could not load type [${type}] from strapi: ${e.message}`
+                `Could not load type [${type}] from strapi: ${e.message}`,
             );
         }
 
