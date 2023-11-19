@@ -75,7 +75,13 @@ function _input(type: string, data: InputData) {
     }
 
     async function handleFocus(this: HTMLInputElement, e: FocusEvent) {
-        await autocompleteFocus(this, e, state, data.provider as AutocompleteProvider);
+        if (e.type === 'focus') {
+            this.select();
+        }
+        
+        if (data.provider) {
+            await autocompleteFocus(this, e, state, data.provider as AutocompleteProvider);
+        }
     }
 
     async function handleInput(this: HTMLInputElement, _e: InputEvent) {
@@ -98,7 +104,7 @@ function _input(type: string, data: InputData) {
                 type="${type}"
                 placeholder="${data.placeholder}"
                 .value="${live(data.value || '')}"
-                @focus="${data.provider ? handleFocus : null}"
+                @focus="${handleFocus}"
                 @blur="${data.provider ? handleFocus : null}"
                 @input="${data.provider ? handleInput : null}"
                 @change="${(e: Event) => {
