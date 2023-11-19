@@ -66,7 +66,7 @@ function _resolvePath(obj: any, path: string[]): any {
     return value;
 }
 
-async function _fetchValue(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode, mapping: MappingString) {
+async function _fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode, mapping: MappingString) {
     const operator = mapping.substring(0, 1);
     const path = mapping.substring(1);
     const components = path.split('.');
@@ -82,33 +82,33 @@ async function _fetchValue(cache: Map<string, any>, bus: MessageBus, strapi: Str
             if (Array.isArray(fetched)) {
                 const value = [];
                 for (const n of fetched) {
-                    const exported = await exportNode(cache, bus, strapi, n);
+                    const exported = await exportNode(cache, strapi, n);
                     value.push(exported);
                 }
                 return value;
             }
-            return await exportNode(cache, bus, strapi, fetched);
+            return await exportNode(cache, strapi, fetched);
 
         case MappingAction.inherit:
-            const spec = await strapi.getTypeSpec(cache, bus, path);
+            const spec = await strapi.getTypeSpec(cache, path);
             if (!spec) {
                 return null;
             }
-            return await _processSpec(cache, bus, strapi, node, spec.mappings);
+            return await _processSpec(cache, strapi, node, spec.mappings);
 
         default:
             throw `ERROR parsing - Unrecognized mapping operator [${operator}] for mapping ${mapping}`;
     }
 }
 
-async function _processSpec(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode, spec: MappingSpec): Promise<any> {
+async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINode, spec: MappingSpec): Promise<any> {
     if (Array.isArray(spec)) {
         const result = [];
         for (const entry of spec) {
             if (typeof entry as any === 'string') {
-                result.push(await _fetchValue(cache, bus, strapi, node, entry as MappingString));
+                result.push(await _fetchValue(cache, strapi, node, entry as MappingString));
             } else {
-                result.push(await _processSpec(cache, bus, strapi, node, entry as MappingSpec));
+                result.push(await _processSpec(cache, strapi, node, entry as MappingSpec));
             }
         }
         return result;
@@ -118,42 +118,37 @@ async function _processSpec(cache: Map<string, any>, bus: MessageBus, strapi: St
     for (const key of Object.keys(spec)) {
         const entry: MappingEntry = spec[key];
         if (typeof entry as any === 'string') {
-            result[key] = await _fetchValue(cache, bus, strapi, node, entry as MappingString);
+            result[key] = await _fetchValue(cache, strapi, node, entry as MappingString);
         } else {
-            result[key] = await _processSpec(cache, bus, strapi, node, entry as MappingSpec);
+            result[key] = await _processSpec(cache, strapi, node, entry as MappingSpec);
         }
     }
     return result;
 }
 
-export async function exportNode(cache: Map<string, any>, bus: MessageBus, strapi: Strapi, node: UINode) {
+export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
     try {
         console.log(node);
         const type = node.getPluginData(LayerMetadata.widgetOverride) || figmaTypeToWidget(node);
-        const spec = await strapi.getTypeSpec(cache, bus, type);
+        const spec = await strapi.getTypeSpec(cache, type);
         if (!spec) {
             return null;
         }
 
-        return _processSpec(cache, bus, strapi, node, spec.mappings);
+        return _processSpec(cache, strapi, node, spec.mappings);
     } catch (e) {
         console.log(e);
         throw e;
     }
 }
 
-export async function exportToFlutter(api: PluginAPI, bus: MessageBus, strapi: Strapi, id: string): Promise<any> {
+export async function exportToFlutter(api: PluginAPI, strapi: Strapi, id: string): Promise<any> {
     const node = findNode(api, id);
     if (!node) {
-        showErrorScreen(
-            bus,
-            'ERROR',
-            `Could not find node with ID [${id}] for export.`
-        );
-        return null;
+        throw new Error(`Could not find node with ID [${id}] for export.`);
     }
 
     const cache = new Map<string, any>();
-    return await exportNode(cache, bus, strapi, node);
+    return await exportNode(cache, strapi, node);
 }
 

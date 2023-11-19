@@ -11,11 +11,8 @@ export enum StrapiEndpoints {
     widgetSpec = '/api/figma-widget-specs',
 }
 
-export class ForbiddenError extends Error {
-    constructor(msg: string) {
-        super(msg);
-    }
-}
+export class ForbiddenError extends Error {}
+export class DataError extends Error {}
 
 export class UnknownError extends Error {
     data: any;
@@ -73,63 +70,28 @@ export class Strapi {
         return false;
     }
 
-    async getTypeSpec(cache: Map<string, any>, bus: MessageBus, type: string): Promise<any | null> {
+    async getTypeSpec(cache: Map<string, any>, type: string): Promise<any | null> {
         if (cache.has(type)) {
             return cache.get(type);
         }
 
-        try {
-            const query = qs.stringify({
-                filters: {
-                    type: {
-                        $eq: type,
-                    }
+        const query = qs.stringify({
+            filters: {
+                type: {
+                    $eq: type,
                 }
-            });
-            const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, query);
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${this.jwt}`,
-                },
-            });
-
-            const result = await response.json();
-            if (result.error) {
-                if (result.error.status === 403) {
-                    this.api.root.setPluginData(LayerMetadata.strapiJWT, '');
-                    showLoginScreen(bus, this.api, `Forbidden, please login again`);
-                } else {
-                    showErrorScreen(
-                        bus,
-                        `ERROR ${result.error.status}`,
-                        result.error.message,
-                    );
-                }
-            } else if (!result.data.length) {
-                showErrorScreen(
-                    bus,
-                    'ERROR',
-                    `Could not find type [${type}] in strapi`,
-                );
-            } else if (result.data.length > 1) {
-                showErrorScreen(
-                    bus,
-                    'ERROR',
-                    `Ambiguous results for type [${type}], expected 1, got ${result.data.length}`,
-                );
-            } else {
-                console.log(result);
-                const spec = result.data[0].attributes;
-                cache.set(type, spec);
-                return spec;
             }
-        } catch (e: any) {
-            showErrorScreen(
-                bus,
-                'ERROR',
-                `Could not load type [${type}] from strapi: ${e.message}`,
-            );
+        });
+        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, query);
+        const data = await this._fetchGET(url);
+
+        if (data.length > 1) {
+            throw new DataError(`Ambiguous results for type [${type}], expected 1, got ${data.length}`);
+        } else if (data.length === 1) {
+            console.log(data);
+            const spec = data[0].attributes;
+            cache.set(type, spec);
+            return spec;
         }
 
         return null;

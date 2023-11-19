@@ -2,7 +2,7 @@ import {MessageBus} from "../shared/MessageBus";
 import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
 import {showEmptyScreen, showErrorScreen, showLayerScreen, showLoginScreen} from "./screens";
 import {UINode, exportToFlutter, findNode, figmaTypeToWidget} from "./export";
-import {Strapi} from "./Strapi";
+import {ForbiddenError, Strapi} from "./Strapi";
 import { updateMetadata } from "./metadata";
 import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData} from "../shared/MessageBusTypes";
 
@@ -103,14 +103,25 @@ export class PhenoUI {
             return null;
         }
 
-        return exportToFlutter(this.api, this.bus, this.strapi, data.id);
+        return exportToFlutter(this.api, this.strapi, data.id);
     }
 
     async getTypeList(data: TypeListData): Promise<string[]> {
         if (!this.isLoggedIn()) {
             return [];
         }
-        return this.strapi.getTypeList(data.search, data.limit);
+
+        try {
+            return this.strapi.getTypeList(data.search, data.limit);
+        } catch (e: unknown) {
+            if (e instanceof ForbiddenError) {
+                showLoginScreen(this.bus, this.api, e.message);
+            } else {
+                showErrorScreen(this.bus, 'ERROR', (e as Error).message);
+            }
+
+            return [];
+        }
     }
 
     _callLayerScreenUpdate(node: UINode): void {
