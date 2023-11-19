@@ -33,7 +33,7 @@ export class PhenoUI {
     setupLocalEvents(): void {
         this.api.on('run', evt => this.isLoggedIn() ? this.handleOpen(evt) : null);
         this.api.on('selectionchange', () => this.isLoggedIn() ? this.handleSelectionChange(this.api.currentPage.selection) : null);
-        this.api.on('documentchange', evt => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges) : null);
+        // this.api.on('documentchange', evt => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges) : null);
     }
 
     printTypes(nodes: readonly UINode[]): void {
@@ -77,6 +77,7 @@ export class PhenoUI {
             if (change.origin === 'LOCAL' && change.type === 'PROPERTY_CHANGE' && change.properties.length === 1 && change.properties[0] === 'pluginData') {
                 continue;
             }
+
             if ('node' in change && selection.find(n => n.id === change.node.id)) {
                 this.handleSelectionChange(selection);
                 break;
@@ -99,6 +100,10 @@ export class PhenoUI {
             // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
             console.warn(`Node with id [${data.id}] could not be found to update its metadata`);
         }
+    }
+
+    updateLayerView() {
+        this.handleSelectionChange(figma.currentPage.selection);
     }
 
     async exportToFlutter(data: ExportData): Promise<any> {

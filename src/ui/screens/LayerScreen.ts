@@ -39,11 +39,14 @@ export class LayerScreen extends Screen {
                         icon: flutter,
                         placeholder: data.layer.widgetDefault,
                         value: data.layer.widgetOverride,
-                        onUpdate: (id, value) => bus.execute('updateMetadata', {
-                            id,
-                            key: LayerMetadata.widgetOverride,
-                            value
-                        }),
+                        onUpdate: async (id, value) => {
+                            await bus.execute('updateMetadata', {
+                                id,
+                                key: LayerMetadata.widgetOverride,
+                                value
+                            });
+                            await bus.execute('updateLayerView', undefined);
+                        },
                         provider: async (value) => {
                             return await bus.execute('getTypeList', {
                                 search: value,

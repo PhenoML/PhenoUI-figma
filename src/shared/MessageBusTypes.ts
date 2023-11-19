@@ -42,6 +42,7 @@ export type FunctionParams = {
     performLogin: PerformLoginData,
     exportToFlutter: ExportData,
     getTypeList: TypeListData,
+    updateLayerView: undefined,
 }
 
 export type FunctionName = keyof FunctionParams;
