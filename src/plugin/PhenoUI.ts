@@ -3,7 +3,7 @@ import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
 import {showEmptyScreen, showErrorScreen, showLayerScreen, showLoginScreen} from "./screens";
 import {UINode, exportToFlutter, findNode, figmaTypeToWidget} from "./export";
 import {ForbiddenError, Strapi} from "./Strapi";
-import { updateMetadata } from "./metadata";
+import {getMetadata, updateMetadata} from "./metadata";
 import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData} from "../shared/MessageBusTypes";
 
 export class PhenoUI {
@@ -74,6 +74,9 @@ export class PhenoUI {
 
     handleDocumentChange(selection: readonly UINode[], changes: DocumentChange[]): void {
         for (const change of changes) {
+            if (change.origin === 'LOCAL' && change.type === 'PROPERTY_CHANGE' && change.properties.length === 1 && change.properties[0] === 'pluginData') {
+                continue;
+            }
             if ('node' in change && selection.find(n => n.id === change.node.id)) {
                 this.handleSelectionChange(selection);
                 break;
@@ -124,13 +127,25 @@ export class PhenoUI {
         }
     }
 
-    _callLayerScreenUpdate(node: UINode): void {
+    async _callLayerScreenUpdate(node: UINode): Promise<void> {
+        const defaultType = figmaTypeToWidget(node);
+        const customType = getMetadata(node, LayerMetadata.widgetOverride) as string;
+        const type = customType || defaultType;
+        const typeData = await this.strapi.getTypeSpec(type);
+
+        if (typeData && typeData.userData) {
+            for (const key of Object.keys(typeData.userData)) {
+                typeData.userData[key].value = getMetadata(node, `${type}_${key}`);
+            }
+        }
+
         showLayerScreen(this.bus, {
             layer: {
                 id: node.id,
                 name: node.name,
-                widgetDefault: figmaTypeToWidget(node),
-                widgetOverride: node.getPluginData(LayerMetadata.widgetOverride),
+                widgetDefault: defaultType,
+                widgetOverride: customType,
+                typeData,
             }
         });
     }

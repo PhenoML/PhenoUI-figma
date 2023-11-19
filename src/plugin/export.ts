@@ -2,6 +2,7 @@ import {LayerMetadata} from "../shared/Metadata";
 import {Strapi} from "./Strapi";
 import {MessageBus} from "../shared/MessageBus";
 import {showErrorScreen} from "./screens";
+import {getMetadata} from "./metadata";
 
 enum MappingAction {
     literal = '!',
@@ -25,7 +26,7 @@ export function findNode(api: PluginAPI, id: string): UINode | null {
     if (id === api.root.id) {
         return api.root;
     }
-    return api.currentPage.findOne(n => n.id === id);
+    return api.getNodeById(id) as (UINode | null);
 }
 
 export function figmaTypeToWidget(node: UINode): string {
@@ -90,7 +91,7 @@ async function _fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode
             return await exportNode(cache, strapi, fetched);
 
         case MappingAction.inherit:
-            const spec = await strapi.getTypeSpec(cache, path);
+            const spec = await strapi.getTypeSpec(path, cache);
             if (!spec) {
                 return null;
             }
@@ -129,8 +130,8 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
 export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
     try {
         console.log(node);
-        const type = node.getPluginData(LayerMetadata.widgetOverride) || figmaTypeToWidget(node);
-        const spec = await strapi.getTypeSpec(cache, type);
+        const type = getMetadata(node, LayerMetadata.widgetOverride) as string || figmaTypeToWidget(node);
+        const spec = await strapi.getTypeSpec(type, cache);
         if (!spec) {
             return null;
         }

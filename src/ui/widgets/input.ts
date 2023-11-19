@@ -15,8 +15,8 @@ type InputData = {
     label: string,
     icon?: TemplateResult | string,
     placeholder?: string,
-    value?: string,
-    onUpdate?: (id: string, value: string) => void,
+    value?: string | number | boolean,
+    onUpdate?: (id: string, value: string | number | boolean) => void,
     provider?: AutocompleteProvider,
 }
 
@@ -78,7 +78,7 @@ function _input(type: string, data: InputData) {
         if (e.type === 'focus') {
             this.select();
         }
-        
+
         if (data.provider) {
             await autocompleteFocus(this, e, state, data.provider as AutocompleteProvider);
         }
@@ -134,4 +134,29 @@ export function passwordInput(data: InputData): TemplateResult {
 
 export function textInput(data: InputData): TemplateResult {
     return _input('text', data);
+}
+
+export function numberInput(data: InputData): TemplateResult {
+    return _input('number', data);
+}
+
+export function booleanInput(data: InputData): TemplateResult {
+    return html`
+        <div class="input-container">
+            <div class="input-icon">
+                <input
+                    id="${data.id}"
+                    class="bool-input"
+                    type="checkbox"
+                    ?checked="${Boolean(data.value)}"
+                    @change="${function (this:HTMLInputElement, _e: Event) {
+                        if (data.onUpdate) {
+                            data.onUpdate(data.id, this.checked);
+                        }
+                    }}"
+                / >
+            </div>
+            <label>${data.label}</label>
+        </div>
+    `;
 }

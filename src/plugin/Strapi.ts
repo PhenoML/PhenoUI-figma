@@ -1,6 +1,6 @@
 import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
 import {showErrorScreen, showLoginScreen} from "./screens";
-import {updateMetadata} from "./metadata";
+import {getMetadata, updateMetadata} from "./metadata";
 import {MessageBus} from "../shared/MessageBus";
 // @ts-ignore
 import qs from 'qs';
@@ -9,6 +9,20 @@ import qs from 'qs';
 export enum StrapiEndpoints {
     login = '/api/auth/local',
     widgetSpec = '/api/figma-widget-specs',
+}
+
+export type UserType = {
+    type: string,
+    default?: string | null,
+    description: string,
+    value?: string | number | boolean,
+}
+
+export type TypeSpec = {
+    mappings: any,
+    userData: null | {
+        [key: string]: UserType,
+    } ,
 }
 
 export class ForbiddenError extends Error {}
@@ -28,8 +42,8 @@ export class Strapi {
     jwt: string;
     constructor(api: PluginAPI) {
         this.api = api;
-        this.jwt = this.api.root.getPluginData(LayerMetadata.strapiJWT);
-        this.server = this.api.root.getPluginData(LayerMetadata.strapiServer).trim();
+        this.jwt = getMetadata(this.api.root, LayerMetadata.strapiJWT) as string;
+        this.server = (getMetadata(this.api.root, LayerMetadata.strapiServer) as string).trim() || MetadataDefaults[LayerMetadata.strapiServer];
     }
 
     isLoggedIn(): boolean {
@@ -70,8 +84,8 @@ export class Strapi {
         return false;
     }
 
-    async getTypeSpec(cache: Map<string, any>, type: string): Promise<any | null> {
-        if (cache.has(type)) {
+    async getTypeSpec(type: string, cache?: Map<string, any>): Promise<TypeSpec | null> {
+        if (cache && cache.has(type)) {
             return cache.get(type);
         }
 
@@ -88,9 +102,10 @@ export class Strapi {
         if (data.length > 1) {
             throw new DataError(`Ambiguous results for type [${type}], expected 1, got ${data.length}`);
         } else if (data.length === 1) {
-            console.log(data);
             const spec = data[0].attributes;
-            cache.set(type, spec);
+            if (cache) {
+                cache.set(type, spec);
+            }
             return spec;
         }
 
@@ -138,7 +153,7 @@ export class Strapi {
         const result = await response.json();
         if (result.error) {
             if (result.error.status === 403) {
-                this.api.root.setPluginData(LayerMetadata.strapiJWT, '');
+                updateMetadata(this.api.root, LayerMetadata.strapiJWT, '');
                 throw new ForbiddenError('Forbidden, please login again');
             } else {
                 throw new UnknownError(result.error.message, result.error);

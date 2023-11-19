@@ -1,12 +1,12 @@
 import {Screen} from "./Screen";
-import {html, TemplateResult} from "lit-html";
+import {html, TemplateResult, nothing} from "lit-html";
 import {MessageBus} from "../../shared/MessageBus";
 import {LayerMetadata} from "../../shared/Metadata";
-import {live} from "lit-html/directives/live.js";
 import {title} from "../widgets/title";
-import {textInput} from "../widgets/input";
+import {booleanInput, numberInput, textInput} from "../widgets/input";
 import {flutter} from "../widgets/icons";
 import {button} from "../widgets/button";
+import {TypeSpec, UserType} from "../../plugin/Strapi";
 
 export type LayerData = {
     layer: {
@@ -14,6 +14,7 @@ export type LayerData = {
         name: string,
         widgetDefault: string,
         widgetOverride?: string,
+        typeData?: TypeSpec | null;
     }
 }
 
@@ -26,19 +27,10 @@ export class LayerScreen extends Screen {
                 <div class="row">
                     ${title(data.layer.name)}
                 </div>
-                <div class="row">
-                    <div class="container">
-                        ${button({
-                            id: data.layer.id,
-                            label: 'Export to Flutter UI',
-                            onClick: async (id: string) => await this.exportToFlutter(id, bus),
-                        })}
-                    </div>
-                </div>
             </section>
             <section>
                 <div class="row">
-                    <div class="text-container bold">Flutter Properties</div>
+                    <div class="text-container bold">Properties</div>
                 </div>
                 <div class="row">
                     ${textInput({
@@ -57,8 +49,20 @@ export class LayerScreen extends Screen {
                                 search: value,
                                 limit: 4,
                             });
-                        } 
+                        }
                     })}
+                </div>
+                ${this.getCustomDataFields(bus, data)}
+            </section>
+            <section>
+                <div class="row-full">
+                    <div class="container">
+                        ${button({
+                            id: data.layer.id,
+                            label: 'Export to Flutter UI',
+                            onClick: async (id: string) => await this.exportToFlutter(id, bus),
+                        })}
+                    </div>
                 </div>
             </section>
         `;
@@ -66,6 +70,66 @@ export class LayerScreen extends Screen {
         this.template = [template];
 
         return this.template;
+    }
+
+    getCustomDataFields(bus: MessageBus, data: LayerData): TemplateResult[] | typeof nothing {
+        if (data.layer.typeData && data.layer.typeData.userData) {
+            const userData = data.layer.typeData.userData;
+            const rows: TemplateResult[] = [];
+            const layerType = data.layer.widgetOverride || data.layer.widgetDefault;
+            for (const key of Object.keys(userData)) {
+                rows.push(html`
+                    <div class="row">
+                        ${this._getUserField(bus, data.layer.id, layerType, key, userData[key])}
+                    </div>
+                `);
+            }
+            return rows;
+        }
+        return nothing;
+    }
+
+    _getUserField(bus: MessageBus, layerID: string, widgetType: string, name: string, data: UserType): TemplateResult {
+        const key = `${widgetType}_${name}`;
+        const onUpdate = (_id: string, value: string | number | boolean) => bus.execute('updateMetadata', {
+            id: layerID,
+            key,
+            value
+        });
+
+        switch (data.type) {
+            case 'string':
+                return textInput({
+                    id: key,
+                    label: data.description,
+                    icon: name.charAt(0).toUpperCase(),
+                    placeholder: data.default || data.description,
+                    value: data.value,
+                    onUpdate,
+                });
+
+            case 'number':
+                return numberInput({
+                    id: key,
+                    label: data.description,
+                    icon: name.charAt(0).toUpperCase(),
+                    value: data.value ?? data.default ?? undefined,
+                    onUpdate,
+                });
+
+            case 'boolean':
+                return booleanInput({
+                    id: key,
+                    label: data.description,
+                    value: data.value ?? data.default ?? undefined,
+                    onUpdate,
+                });
+
+            default:
+                return html`
+                    <div class="error-description">ERROR: Unknown type [${name}]</div>
+                `
+        }
     }
 
     async exportToFlutter(id: string, bus: MessageBus) {

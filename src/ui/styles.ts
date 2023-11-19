@@ -80,6 +80,14 @@ export function getStyles(): TemplateResult[] {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
+                padding: 2px 32px 2px 8px;
+            }
+            
+            .row-full {
+                height: 32px;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
                 padding: 2px 8px;
             }
             
@@ -133,6 +141,7 @@ export function getStyles(): TemplateResult[] {
             }
 
             .text-input {
+                width: 100%;
                 height: 26px;
                 flex-grow: 1;
                 border: none;

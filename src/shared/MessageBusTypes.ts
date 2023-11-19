@@ -14,7 +14,7 @@ export type ScreenData = EmptyScreenData | ErrorScreenData | LoginScreenData | L
 export type UpdateMetadataData = {
     id: string,
     key: string,
-    value: string,
+    value: string | number| boolean,
 }
 
 /** Login Data **/
