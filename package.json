@@ -19,6 +19,7 @@
   "dependencies": {
     "lit-html": "^3.0.2",
     "polyfill-crypto.getrandomvalues": "^1.0.0",
+    "qs": "^6.11.2",
     "uuid": "^9.0.1"
   }
 }

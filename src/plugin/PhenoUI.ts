@@ -4,7 +4,7 @@ import {showEmptyScreen, showErrorScreen, showLayerScreen, showLoginScreen} from
 import {UINode, exportToFlutter, findNode, figmaTypeToWidget} from "./export";
 import {Strapi} from "./Strapi";
 import { updateMetadata } from "./metadata";
-import {ExportData, PerformLoginData, UpdateMetadataData} from "../shared/MessageBusTypes";
+import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData} from "../shared/MessageBusTypes";
 
 export class PhenoUI {
     api: PluginAPI;
@@ -104,6 +104,13 @@ export class PhenoUI {
         }
 
         return exportToFlutter(this.api, this.bus, this.strapi, data.id);
+    }
+
+    async getTypeList(data: TypeListData): Promise<string[]> {
+        if (!this.isLoggedIn()) {
+            return [];
+        }
+        return this.strapi.getTypeList(data.search, data.limit);
     }
 
     _callLayerScreenUpdate(node: UINode): void {

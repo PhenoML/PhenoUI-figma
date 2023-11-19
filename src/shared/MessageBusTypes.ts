@@ -29,12 +29,19 @@ export type ExportData = {
     id: string,
 }
 
+/** Type List **/
+export type TypeListData = {
+    search: string,
+    limit: number,
+}
+
 /** FUNCTIONS **/
 export type FunctionParams = {
     updateScreen: ScreenData,
     updateMetadata: UpdateMetadataData,
     performLogin: PerformLoginData,
     exportToFlutter: ExportData,
+    getTypeList: TypeListData,
 }
 
 export type FunctionName = keyof FunctionParams;

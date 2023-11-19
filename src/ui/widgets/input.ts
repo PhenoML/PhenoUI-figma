@@ -40,16 +40,14 @@ async function autocompleteInput(el: HTMLInputElement, state: AutocompleteState,
     if (!state.debounce) {
         state.debounce = true;
         const items = await provider(el.value);
-        if (items.length) {
-            const parent = el.parentElement as HTMLElement;
-            const itemElements: HTMLElement[] = Array.from(parent.querySelectorAll('.autocomplete-item'));
-            for (let i = 0, n = itemElements.length; i < n; ++i) {
-                if (i < items.length) {
-                    itemElements[i].style.display = 'flex';
-                    itemElements[i].innerText = items[i];
-                } else {
-                    itemElements[i].style.display = 'none';
-                }
+        const parent = el.parentElement as HTMLElement;
+        const itemElements: HTMLElement[] = Array.from(parent.querySelectorAll('.autocomplete-item'));
+        for (let i = 0, n = itemElements.length; i < n; ++i) {
+            if (i < items.length) {
+                itemElements[i].style.display = 'flex';
+                itemElements[i].innerText = items[i];
+            } else {
+                itemElements[i].style.display = 'none';
             }
         }
 

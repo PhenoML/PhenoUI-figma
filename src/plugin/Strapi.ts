@@ -2,10 +2,27 @@ import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
 import {showErrorScreen, showLoginScreen} from "./screens";
 import {updateMetadata} from "./metadata";
 import {MessageBus} from "../shared/MessageBus";
+// @ts-ignore
+import qs from 'qs';
+
 
 export enum StrapiEndpoints {
     login = '/api/auth/local',
     widgetSpec = '/api/figma-widget-specs',
+}
+
+export class ForbiddenError extends Error {
+    constructor(msg: string) {
+        super(msg);
+    }
+}
+
+export class UnknownError extends Error {
+    data: any;
+    constructor(msg: string, data: any) {
+        super(msg);
+        this.data = data;
+    }
 }
 
 export class Strapi {
@@ -62,7 +79,14 @@ export class Strapi {
         }
 
         try {
-            const url = `${this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec)}?filters[type][$eq]=${type}`;
+            const query = qs.stringify({
+                filters: {
+                    type: {
+                        $eq: type,
+                    }
+                }
+            });
+            const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, query);
             const response = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -111,8 +135,54 @@ export class Strapi {
         return null;
     }
 
-    _urlForEndpoint(server: string, endpoint: StrapiEndpoints): string {
+    async getTypeList(search: string, limit: number): Promise<string[]> {
+        if (!search) {
+            return [];
+        }
+
+        const query = qs.stringify({
+            filters: {
+                type: {
+                    $startsWithi: search,
+                }
+            },
+            fields: ['type'],
+            pagination: {
+                limit,
+            }
+        });
+        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, query);
+        const data = await this._fetchGET(url);
+        if (data) {
+            return data.map((d: any) => d.attributes.type);
+        }
+
+        return [];
+    }
+
+    _urlForEndpoint(server: string, endpoint: StrapiEndpoints, query?: string): string {
         server = server.endsWith('/') ? server.substring(0, server.length - 1) : server;
-        return `${server}${endpoint}`;
+        return `${server}${endpoint}${query ? `?${query}` : ''}`;
+    }
+
+    async _fetchGET(url: string) {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${this.jwt}`,
+            },
+        });
+
+        const result = await response.json();
+        if (result.error) {
+            if (result.error.status === 403) {
+                this.api.root.setPluginData(LayerMetadata.strapiJWT, '');
+                throw new ForbiddenError('Forbidden, please login again');
+            } else {
+                throw new UnknownError(result.error.message, result.error);
+            }
+        }
+
+        return result.data;
     }
 }
