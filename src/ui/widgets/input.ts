@@ -142,7 +142,7 @@ export function numberInput(data: InputData): TemplateResult {
 
 export function booleanInput(data: InputData): TemplateResult {
     return html`
-        <div class="input-container">
+        <div class="input-container" title="${data.placeholder}" aria-label="${data.placeholder}">
             <div class="input-icon">
                 <input
                     id="${data.id}"

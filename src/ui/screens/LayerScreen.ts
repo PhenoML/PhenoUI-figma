@@ -121,6 +121,7 @@ export class LayerScreen extends Screen {
                 return booleanInput({
                     id: key,
                     label: data.description,
+                    placeholder: data.description,
                     value: data.value ?? data.default ?? undefined,
                     onUpdate,
                 });
