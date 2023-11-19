@@ -9,10 +9,10 @@ export class EmptyScreen implements Screen {
         const template = html`
             <section class="centered">
                 <div class="logo">${logoPhenoML}</div>
-                <div class="row">
+                <div class="row-full">
                     <div class="title">select an object to get started</div>
                 </div>
-                <div class="row"></div>
+                <div class="row-full"></div>
             </section>
         `;
 

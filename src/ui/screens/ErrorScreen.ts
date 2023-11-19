@@ -14,11 +14,11 @@ export class ErrorScreen implements Screen {
     updateTemplate(data: ErrorData, _bus?: MessageBus): TemplateResult[] {
         const template = html`
             <section>
-                <div class="row"></div>
-                <div class="row">
+                <div class="row-full"></div>
+                <div class="row-full">
                     <div class="error-title">${data.error.title}</div>
                 </div>
-                <div class="row">
+                <div class="row-full">
                     <div class="error-description">${data.error.description}</div>
                 </div>
             </section>
