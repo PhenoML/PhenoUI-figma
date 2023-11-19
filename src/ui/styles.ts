@@ -164,6 +164,7 @@ export function getStyles(): TemplateResult[] {
                 outline: 1px solid var(--figma-color-border);
                 margin-top: 4px;
                 z-index: 1;
+                background-color: var(--figma-color-bg);
             }
 
             .autocomplete-item + .autocomplete-item {
