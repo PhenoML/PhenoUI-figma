@@ -63,7 +63,7 @@ export class LayerScreen extends Screen {
                         ${button({
                             id: data.layer.id,
                             label: 'Export to Flutter UI',
-                            onClick: async (id: string) => await this.exportToFlutter(id, bus),
+                            onClick: async (id: string) => await this.exportToFlutter(id, bus, data.layer.name),
                         })}
                     </div>
                 </div>
@@ -136,13 +136,19 @@ export class LayerScreen extends Screen {
         }
     }
 
-    async exportToFlutter(id: string, bus: MessageBus) {
+    async exportToFlutter(id: string, bus: MessageBus, name: string) {
         if (!this.exporting) {
             this.exporting = true;
             const payload = await bus.execute('exportToFlutter', { id });
             if (payload) {
-                // initiate download
-                console.log(payload);
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const blobURL = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                // link.className = 'button button--primary';
+                link.href = blobURL;
+                link.download = `${name}.json`;
+                link.click();
+                link.setAttribute('download', `${name},json`);
             }
             this.exporting = false;
         }

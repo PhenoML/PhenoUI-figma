@@ -1,7 +1,5 @@
 import {LayerMetadata} from "../shared/Metadata";
 import {Strapi} from "./Strapi";
-import {MessageBus} from "../shared/MessageBus";
-import {showErrorScreen} from "./screens";
 import {getMetadata} from "./metadata";
 
 enum MappingAction {
