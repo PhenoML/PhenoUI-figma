@@ -74,7 +74,7 @@ async function _fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode
             return path;
 
         case MappingAction.valuePath:
-            return _resolvePath(node, components);
+            return JSON.parse(JSON.stringify(_resolvePath(node, components)));
 
         case MappingAction.nodePath:
             const fetched = _resolvePath(node, components);
@@ -100,6 +100,10 @@ async function _fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode
     }
 }
 
+function _isObject(val: any): boolean {
+    return typeof val === 'object' && !Array.isArray(val) && val !== null;
+}
+
 async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINode, spec: MappingSpec): Promise<any> {
     if (Array.isArray(spec)) {
         const result = [];
@@ -116,10 +120,28 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
     const result: any = {};
     for (const key of Object.keys(spec)) {
         const entry: MappingEntry = spec[key];
+        const keyPath = key.split('.');
+        let base = result;
+        let prop = keyPath.shift() as string;
+        while (keyPath.length) {
+            if (!_isObject(base[prop])) {
+                base[prop] = {} as any;
+            }
+            base = base[prop];
+            prop = keyPath.shift() as string;
+        }
+
+        let val;
         if (typeof entry as any === 'string') {
-            result[key] = await _fetchValue(cache, strapi, node, entry as MappingString);
+            val = await _fetchValue(cache, strapi, node, entry as MappingString);
         } else {
-            result[key] = await _processSpec(cache, strapi, node, entry as MappingSpec);
+            val = await _processSpec(cache, strapi, node, entry as MappingSpec);
+        }
+
+        if (_isObject(val) && _isObject(base[prop])) {
+            base[prop] = Object.assign(base[prop], val);
+        } else {
+            base[prop] = val;
         }
     }
     return result;
