@@ -2,6 +2,7 @@ import {Screen} from "./Screen";
 import {MessageBus} from "../../shared/MessageBus";
 import {TemplateResult} from "lit-html/development/lit-html";
 import {html} from "lit-html";
+import {UIManager} from "../UIManager";
 
 export type ErrorData = {
     error: {
@@ -10,7 +11,7 @@ export type ErrorData = {
     }
 }
 
-export class ErrorScreen implements Screen {
+export class ErrorScreen extends Screen {
     updateTemplate(data: ErrorData, _bus?: MessageBus): TemplateResult[] {
         const template = html`
             <section>
@@ -24,6 +25,8 @@ export class ErrorScreen implements Screen {
             </section>
         `;
 
-        return [template];
+        this.template = [template];
+
+        return this.template;
     }
 }

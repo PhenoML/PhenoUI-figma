@@ -4,7 +4,7 @@ import {TemplateResult} from "lit-html/development/lit-html";
 import {html} from "lit-html";
 import {logoPhenoML} from "../widgets/logoPhenoML";
 
-export class EmptyScreen implements Screen {
+export class EmptyScreen extends Screen {
     updateTemplate(_data?: unknown, _bus?: MessageBus): TemplateResult[] {
         const template = html`
             <section class="centered">
@@ -16,6 +16,8 @@ export class EmptyScreen implements Screen {
             </section>
         `;
 
-        return [template];
+        this.template = [template];
+
+        return this.template;
     }
 }

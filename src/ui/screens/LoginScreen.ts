@@ -6,6 +6,7 @@ import {title} from "../widgets/title";
 import {passwordInput, textInput} from "../widgets/input";
 import {LayerMetadata, MetadataDefaults} from "../../shared/Metadata";
 import {button} from "../widgets/button";
+import {AvailableScreens} from "../../shared/AvailableScreens";
 
 export type LoginData = {
     credentials: {
@@ -16,7 +17,7 @@ export type LoginData = {
     }
 }
 
-export class LoginScreen implements Screen {
+export class LoginScreen extends Screen {
     working: boolean = false;
     updateTemplate(data: LoginData, bus: MessageBus): TemplateResult[] {
         const template = html`
@@ -83,7 +84,9 @@ export class LoginScreen implements Screen {
             </section>
         `;
 
-        return [template];
+        this.template = [template];
+
+        return this.template;
     }
 
     async _login(_: string, bus: MessageBus) {
@@ -95,6 +98,9 @@ export class LoginScreen implements Screen {
             const passwordElement = document.getElementById('password');
 
             if (serverElement && userElement && passwordElement) {
+                const loading = this._manager._getScreen(AvailableScreens.loading);
+                this._manager.renderScreen(loading, this._manager.root);
+
                 const server = (serverElement as HTMLInputElement).value;
                 const user = (userElement as HTMLInputElement).value;
                 const password = (passwordElement as HTMLInputElement).value;

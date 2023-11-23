@@ -216,6 +216,16 @@ export function getStyles(): TemplateResult[] {
                 font-family: Inter, sans-serif;
                 font-size: 11px;
             }
+            
+            .loading-animation {
+                width: 200px;
+                height: 200px;
+                
+                > svg {
+                    max-width: 100%;
+                    max-height: 100%;
+                }
+            }
         </style>
     `];
 }

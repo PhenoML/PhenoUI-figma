@@ -1,5 +1,5 @@
 import {Screen} from "./Screen";
-import {html, TemplateResult, nothing} from "lit-html";
+import {html, nothing, TemplateResult} from "lit-html";
 import {MessageBus} from "../../shared/MessageBus";
 import {LayerMetadata} from "../../shared/Metadata";
 import {title} from "../widgets/title";
@@ -7,6 +7,7 @@ import {booleanInput, numberInput, textInput} from "../widgets/input";
 import {flutter} from "../widgets/icons";
 import {button} from "../widgets/button";
 import {TypeSpec, UserType} from "../../plugin/Strapi";
+import {AvailableScreens} from "../../shared/AvailableScreens";
 
 export type LayerData = {
     layer: {
@@ -20,7 +21,6 @@ export type LayerData = {
 
 export class LayerScreen extends Screen {
     exporting: boolean = false;
-    template?: TemplateResult[];
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
         const template = html`
             <section>
@@ -138,6 +138,8 @@ export class LayerScreen extends Screen {
 
     async exportToFlutter(id: string, bus: MessageBus, name: string) {
         if (!this.exporting) {
+            const loading = this._manager._getScreen(AvailableScreens.loading);
+            this._manager.renderScreen(loading, this._manager.root);
             this.exporting = true;
             const payload = await bus.execute('exportToFlutter', { id });
             if (payload) {
@@ -149,7 +151,10 @@ export class LayerScreen extends Screen {
                 link.download = `${name}.json`;
                 link.click();
                 link.setAttribute('download', `${name},json`);
+                // artificially wait for a bit to wait for the download screen to appear
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
+            this._manager.renderScreen(this, this._manager.root);
             this.exporting = false;
         }
     }
