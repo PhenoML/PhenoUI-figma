@@ -2,7 +2,7 @@ import {Strapi} from "./Strapi";
 import {fetchValue, MappingString, resolvePath, UINode} from "./export";
 
 const funcRegex = /([^(]+)\((.*)\)\s*$/;
-const splitArgsRegex = /,(?![^()]+\))/;
+const splitArgsRegex = /,(?![^()[\]]+[)\]])/;
 
 const builtInMethods: { [key: string]: Function } = {
     hello: (subject: string) => {

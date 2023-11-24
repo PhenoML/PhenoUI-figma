@@ -46,7 +46,6 @@ export function figmaTypeToWidget(node: UINode): string {
 }
 
 export function resolvePath(obj: any, path: string[]): { value: any, parent: any } {
-    console.log('resolvePath', obj, path);
     let parent = null;
     let value = obj;
     for (const comp of path) {
@@ -79,10 +78,14 @@ export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: 
     const path = mapping.substring(1);
     switch (operator) {
         case MappingAction.literal:
-            return path;
+            try {
+                return JSON.parse(path);
+            } catch (e) {
+                return path;
+            }
 
         case MappingAction.valuePath:
-            return JSON.parse(JSON.stringify(resolvePath(node, path.split('.'))));
+            return JSON.parse(JSON.stringify(resolvePath(node, path.split('.')).value));
 
         case MappingAction.nodePath:
             const solved = resolvePath(node, path.split('.'));
