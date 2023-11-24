@@ -50,6 +50,20 @@ export class PhenoUI {
                         console.log(`\t${key} => `, (node as any)[key]);
                     }
                 }
+            } else if (node.type === 'TEXT') {
+                console.log(node.getStyledTextSegments([
+                    'fontSize',
+                    'fontName',
+                    'fontWeight',
+                    'textDecoration',
+                    'textCase',
+                    'lineHeight',
+                    'letterSpacing',
+                    'fills',
+                    'listOptions',
+                    'indentation',
+                    'hyperlink',
+                ]));
             }
         }
     }
