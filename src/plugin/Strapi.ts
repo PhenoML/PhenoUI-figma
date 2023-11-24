@@ -14,17 +14,19 @@ export enum StrapiEndpoints {
 }
 
 export type UserType = {
-    type: string,
-    default?: string | null,
+    type: 'string' | 'number' | 'boolean',
+    default?: string | number | boolean,
     description: string,
     value?: string | number | boolean,
 }
 
+export type UserDataSpec = {
+    [key: string]: UserType,
+}
+
 export type TypeSpec = {
     mappings: any,
-    userData: null | {
-        [key: string]: UserType,
-    } ,
+    userData: null | UserDataSpec,
 }
 
 export class ForbiddenError extends Error {}

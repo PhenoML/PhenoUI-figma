@@ -1,7 +1,7 @@
 import {MessageBus} from "../shared/MessageBus";
 import {LayerMetadata} from "../shared/Metadata";
 import {showEmptyScreen, showErrorScreen, showLayerScreen, showLoginScreen} from "./screens";
-import {UINode, exportToFlutter, findNode, figmaTypeToWidget} from "./export";
+import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getUserData} from "./export";
 import {ForbiddenError, Strapi} from "./Strapi";
 import {getMetadata, updateMetadata} from "./metadata";
 import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData, UploadData} from "../shared/MessageBusTypes";
@@ -161,9 +161,7 @@ export class PhenoUI {
         const typeData = await this.strapi.getTypeSpec(type);
 
         if (typeData && typeData.userData) {
-            for (const key of Object.keys(typeData.userData)) {
-                typeData.userData[key].value = getMetadata(node, `${type}_${key}`);
-            }
+            typeData.userData = getUserData(node, type, typeData.userData);
         }
 
         showLayerScreen(this.bus, {

@@ -1,5 +1,5 @@
 import {LayerMetadata} from "../shared/Metadata";
-import {Strapi} from "./Strapi";
+import {Strapi, UserDataSpec} from "./Strapi";
 import {getMetadata} from "./metadata";
 import {execute} from "./execute";
 
@@ -166,6 +166,33 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
     return result;
 }
 
+export function getUserData(node: UINode, type: string, userData: UserDataSpec) {
+    for (const key of Object.keys(userData)) {
+        const value = getMetadata(node, `${type}_${key}`);
+        if (userData[key].type == 'number') {
+            // when read from input fields, numbers are strings, so they come back as strings
+            userData[key].value = parseFloat(value as string);
+        } else {
+            userData[key].value = value;
+        }
+    }
+
+    return userData;
+}
+
+function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec | null) {
+    if (!userData) {
+        return null;
+    }
+    const withValues = getUserData(node, type, userData);
+    const result: { [key: string]: any } = {};
+    for (const key of Object.keys(userData)) {
+        result[key] = withValues[key].value;
+    }
+    console.log(result);
+    return result;
+}
+
 export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
     try {
         console.log(node);
@@ -175,7 +202,12 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
             return null;
         }
 
-        return _processSpec(cache, strapi, node, spec.mappings);
+        const result = await _processSpec(cache, strapi, node, spec.mappings);
+        const userData = _getUserDataExport(node, type, spec.userData);
+        if (userData) {
+            result['__userData'] = userData;
+        }
+        return result;
     } catch (e) {
         console.log(e);
         throw e;
