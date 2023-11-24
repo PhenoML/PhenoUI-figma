@@ -1,15 +1,17 @@
 import {LayerMetadata} from "../shared/Metadata";
 import {Strapi} from "./Strapi";
 import {getMetadata} from "./metadata";
+import {execute} from "./execute";
 
 enum MappingAction {
     literal = '!',
     valuePath = '#',
     nodePath = '$',
     inherit = '@',
+    execute = '%',
 }
 
-type MappingString = `${MappingAction}${string}`;
+export type MappingString = `${MappingAction}${string}`;
 
 type MappingSpecObj = {
     [key: string]: MappingString | MappingSpec | MappingString[] | MappingSpec[];
@@ -43,50 +45,61 @@ export function figmaTypeToWidget(node: UINode): string {
     }
 }
 
-function _resolvePath(obj: any, path: string[]): any {
+export function resolvePath(obj: any, path: string[]): { value: any, parent: any } {
+    console.log('resolvePath', obj, path);
+    let parent = null;
     let value = obj;
     for (const comp of path) {
+        if (!comp) {
+            continue;
+        }
         const openBracket = comp.indexOf('[');
         const closeBracket = comp.indexOf(']');
         if (openBracket !== -1 && closeBracket !== -1) {
             const base = comp.substring(0, openBracket);
             const index = comp.substring(openBracket + 1, closeBracket);
             if (!(base in value) || !(index in value[base])) {
-                return null;
+                return { value: null, parent };
             }
+            parent = value[base];
             value = value[base][index];
         } else {
             if (!(comp in value)) {
-                return null;
+                return { value: null, parent };
             }
+            parent = value;
             value = value[comp];
         }
     }
-    return value;
+    return { value, parent };
 }
 
-async function _fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode, mapping: MappingString) {
+export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode, mapping: MappingString, rawNodes: boolean = false) {
     const operator = mapping.substring(0, 1);
     const path = mapping.substring(1);
-    const components = path.split('.');
     switch (operator) {
         case MappingAction.literal:
             return path;
 
         case MappingAction.valuePath:
-            return JSON.parse(JSON.stringify(_resolvePath(node, components)));
+            return JSON.parse(JSON.stringify(resolvePath(node, path.split('.'))));
 
         case MappingAction.nodePath:
-            const fetched = _resolvePath(node, components);
-            if (Array.isArray(fetched)) {
-                const value = [];
-                for (const n of fetched) {
-                    const exported = await exportNode(cache, strapi, n);
-                    value.push(exported);
+            const solved = resolvePath(node, path.split('.'));
+            const fetched = solved.value;
+            if (!rawNodes) {
+                if (Array.isArray(fetched)) {
+                    const value = [];
+                    for (const n of fetched) {
+                        const exported = await exportNode(cache, strapi, n);
+                        value.push(exported);
+                    }
+                    return value;
+                } else if (fetched) {
+                    return await exportNode(cache, strapi, fetched);
                 }
-                return value;
             }
-            return await exportNode(cache, strapi, fetched);
+            return fetched;
 
         case MappingAction.inherit:
             const spec = await strapi.getTypeSpec(path, cache);
@@ -94,6 +107,9 @@ async function _fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode
                 return null;
             }
             return await _processSpec(cache, strapi, node, spec.mappings);
+
+        case MappingAction.execute:
+            return await execute(cache, strapi, node, path);
 
         default:
             throw `ERROR parsing - Unrecognized mapping operator [${operator}] for mapping ${mapping}`;
@@ -109,7 +125,7 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
         const result = [];
         for (const entry of spec) {
             if (typeof entry as any === 'string') {
-                result.push(await _fetchValue(cache, strapi, node, entry as MappingString));
+                result.push(await fetchValue(cache, strapi, node, entry as MappingString));
             } else {
                 result.push(await _processSpec(cache, strapi, node, entry as MappingSpec));
             }
@@ -133,7 +149,7 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
 
         let val;
         if (typeof entry as any === 'string') {
-            val = await _fetchValue(cache, strapi, node, entry as MappingString);
+            val = await fetchValue(cache, strapi, node, entry as MappingString);
         } else {
             val = await _processSpec(cache, strapi, node, entry as MappingSpec);
         }
