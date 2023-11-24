@@ -9,6 +9,8 @@ import qs from 'qs';
 export enum StrapiEndpoints {
     login = '/api/auth/local',
     widgetSpec = '/api/figma-widget-specs',
+    screenCategories = '/api/screen-categories',
+    screens = '/api/screens',
 }
 
 export type UserType = {
@@ -96,7 +98,7 @@ export class Strapi {
                 }
             }
         });
-        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, query);
+        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, {query});
         const data = await this._fetchGET(url);
 
         if (data.length > 1) {
@@ -128,7 +130,7 @@ export class Strapi {
                 limit,
             }
         });
-        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, query);
+        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, {query});
         const data = await this._fetchGET(url);
         if (data) {
             return data.map((d: any) => d.attributes.type);
@@ -137,20 +139,43 @@ export class Strapi {
         return [];
     }
 
-    _urlForEndpoint(server: string, endpoint: StrapiEndpoints, query?: string): string {
-        server = server.endsWith('/') ? server.substring(0, server.length - 1) : server;
-        return `${server}${endpoint}${query ? `?${query}` : ''}`;
+    async uploadData(collection: StrapiEndpoints, name: string, payload: any) {
+        const query = qs.stringify({
+            filters: {
+                name: {
+                    $eq: name,
+                }
+            }
+        });
+        const existingURL = this._urlForEndpoint(this.server, collection, {query});
+        const existing = await this._fetchGET(existingURL);
+
+        let url;
+        let method;
+        if (existing.length) {
+            url = this._urlForEndpoint(this.server, collection, { id: existing[0].id });
+            method = 'PUT';
+        } else {
+            url = this._urlForEndpoint(this.server, collection);
+            method = 'POST';
+        }
+
+        const data = {
+            name,
+            screen_category: 1, // TODO: Hardcoded to 1 (debug) category, should be selected by the user...
+            spec: payload,
+        }
+
+        const result = await this._fetchUpload(url, method, data);
+        console.log(result);
     }
 
-    async _fetchGET(url: string) {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${this.jwt}`,
-            },
-        });
+    _urlForEndpoint(server: string, endpoint: StrapiEndpoints, options: { query?: string, id?: number } = {}): string {
+        server = server.endsWith('/') ? server.substring(0, server.length - 1) : server;
+        return `${server}${endpoint}${options.id ? `/${options.id}` : ''}${options.query ? `?${options.query}` : ''}`;
+    }
 
-        const result = await response.json();
+    _checkFetchResult(result: any) {
         if (result.error) {
             if (result.error.status === 403) {
                 updateMetadata(this.api.root, LayerMetadata.strapiJWT, '');
@@ -159,7 +184,40 @@ export class Strapi {
                 throw new UnknownError(result.error.message, result.error);
             }
         }
+    }
+
+    async _fetch(url: string, method: string, headers: any, body?: string) {
+        const response = await fetch(url, {
+            method,
+            headers,
+            body,
+        });
+
+        const result = await response.json();
+        this._checkFetchResult(result);
 
         return result.data;
+    }
+
+    async _fetchGET(url: string) {
+        return await this._fetch(url, 'GET', {
+            "Authorization": `Bearer ${this.jwt}`,
+        });
+    }
+
+    async _fetchUpload(url: string, method: string, data: any) {
+        return await this._fetch(url, method, {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${this.jwt}`,
+        }, JSON.stringify({ data }));
+    }
+
+    async _fetchPOST(url: string, data: any) {
+        return await this._fetchUpload(url, 'POST', data);
+    }
+
+    async _fetchPUT(url: string, data: any) {
+        return await this._fetchUpload(url, 'PUT', data);
     }
 }

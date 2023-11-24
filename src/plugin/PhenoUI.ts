@@ -1,10 +1,10 @@
 import {MessageBus} from "../shared/MessageBus";
-import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
+import {LayerMetadata} from "../shared/Metadata";
 import {showEmptyScreen, showErrorScreen, showLayerScreen, showLoginScreen} from "./screens";
 import {UINode, exportToFlutter, findNode, figmaTypeToWidget} from "./export";
 import {ForbiddenError, Strapi} from "./Strapi";
 import {getMetadata, updateMetadata} from "./metadata";
-import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData} from "../shared/MessageBusTypes";
+import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData, UploadData} from "../shared/MessageBusTypes";
 
 export class PhenoUI {
     api: PluginAPI;
@@ -33,6 +33,10 @@ export class PhenoUI {
     setupLocalEvents(): void {
         this.api.on('run', evt => this.isLoggedIn() ? this.handleOpen(evt) : null);
         this.api.on('selectionchange', () => this.isLoggedIn() ? this.handleSelectionChange(this.api.currentPage.selection) : null);
+        // future Dario... there are some changes we want to look for, like name changes, etc. I think that the best way
+        // to fix this is to make a method that updates the layer data without querying strapi for updates triggered by
+        // figma, and hit strapi for user triggered events. Another option could be to explicitly allow users to decide
+        // when to update the strapi data (via a refresh button or similar). I do think this is the best UX option.
         // this.api.on('documentchange', evt => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges) : null);
     }
 
@@ -114,6 +118,10 @@ export class PhenoUI {
         return exportToFlutter(this.api, this.strapi, data.id);
     }
 
+    async uploadToStrapi(data: UploadData) {
+        await this.strapi.uploadData(data.collection, data.name, data.payload);
+    }
+
     async getTypeList(data: TypeListData): Promise<string[]> {
         if (!this.isLoggedIn()) {
             return [];
@@ -151,6 +159,7 @@ export class PhenoUI {
                 widgetDefault: defaultType,
                 widgetOverride: customType,
                 typeData,
+                isRoot: Boolean(node.parent && node.parent.type === 'PAGE'),
             }
         });
     }

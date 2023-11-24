@@ -6,8 +6,14 @@ import {title} from "../widgets/title";
 import {booleanInput, numberInput, textInput} from "../widgets/input";
 import {flutter} from "../widgets/icons";
 import {button} from "../widgets/button";
-import {TypeSpec, UserType} from "../../plugin/Strapi";
+import {StrapiEndpoints, TypeSpec, UserType} from "../../plugin/Strapi";
 import {AvailableScreens} from "../../shared/AvailableScreens";
+
+
+enum ExportMode {
+    json,
+    strapiUpload,
+}
 
 export type LayerData = {
     layer: {
@@ -15,7 +21,8 @@ export type LayerData = {
         name: string,
         widgetDefault: string,
         widgetOverride?: string,
-        typeData?: TypeSpec | null;
+        typeData?: TypeSpec | null,
+        isRoot?: boolean,
     }
 }
 
@@ -62,11 +69,22 @@ export class LayerScreen extends Screen {
                     <div class="container">
                         ${button({
                             id: data.layer.id,
-                            label: 'Export to Flutter UI',
-                            onClick: async (id: string) => await this.exportToFlutter(id, bus, data.layer.name),
+                            label: 'Export to JSON',
+                            onClick: async (id: string) => await this.exportToFlutter(id, bus, data.layer.name, ExportMode.json),
                         })}
                     </div>
                 </div>
+                ${!data.layer.isRoot ? nothing : html`
+                    <div class="row-full">
+                        <div class="container">
+                            ${button({
+                                id: data.layer.id,
+                                label: 'Upload to strapi',
+                                onClick: async (id: string) => await this.exportToFlutter(id, bus, data.layer.name, ExportMode.strapiUpload),
+                            })}
+                        </div>
+                    </div>
+                `}
             </section>
         `;
 
@@ -136,23 +154,42 @@ export class LayerScreen extends Screen {
         }
     }
 
-    async exportToFlutter(id: string, bus: MessageBus, name: string) {
+    async _downloadExport(name: string, payload: any) {
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const blobURL = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        // link.className = 'button button--primary';
+        link.href = blobURL;
+        link.download = `${name}.json`;
+        link.click();
+        link.setAttribute('download', `${name},json`);
+        // artificially wait for a bit to wait for the download screen to appear
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    async _uploadToStrapi(bus: MessageBus, name: string, payload: any) {
+        await bus.execute('uploadToStrapi', { collection: StrapiEndpoints.screens, name, payload });
+    }
+
+    async exportToFlutter(id: string, bus: MessageBus, name: string, mode: ExportMode) {
         if (!this.exporting) {
             const loading = this._manager._getScreen(AvailableScreens.loading);
             this._manager.renderScreen(loading, this._manager.root);
             this.exporting = true;
             const payload = await bus.execute('exportToFlutter', { id });
             if (payload) {
-                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-                const blobURL = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                // link.className = 'button button--primary';
-                link.href = blobURL;
-                link.download = `${name}.json`;
-                link.click();
-                link.setAttribute('download', `${name},json`);
-                // artificially wait for a bit to wait for the download screen to appear
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                switch (mode) {
+                    case ExportMode.json:
+                        await this._downloadExport(name, payload);
+                        break;
+
+                    case ExportMode.strapiUpload:
+                        await this._uploadToStrapi(bus, name, payload);
+                        break;
+
+                    default:
+                        throw 'not implemented';
+                }
             }
             this._manager.renderScreen(this, this._manager.root);
             this.exporting = false;

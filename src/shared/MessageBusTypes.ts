@@ -2,6 +2,7 @@ import {AvailableScreens} from "./AvailableScreens";
 import {ErrorData} from "../ui/screens/ErrorScreen";
 import {LoginData} from "../ui/screens/LoginScreen";
 import {LayerData} from "../ui/screens/LayerScreen";
+import {StrapiEndpoints} from "../plugin/Strapi";
 
 /** Screen Data **/
 export type EmptyScreenData = { screen: AvailableScreens.empty };
@@ -35,6 +36,13 @@ export type TypeListData = {
     limit: number,
 }
 
+/** Upload to Strapi **/
+export type UploadData = {
+    collection: StrapiEndpoints,
+    name: string,
+    payload: any,
+}
+
 /** FUNCTIONS **/
 export type FunctionParams = {
     updateScreen: ScreenData,
@@ -43,6 +51,7 @@ export type FunctionParams = {
     exportToFlutter: ExportData,
     getTypeList: TypeListData,
     updateLayerView: undefined,
+    uploadToStrapi: UploadData,
 }
 
 export type FunctionName = keyof FunctionParams;
