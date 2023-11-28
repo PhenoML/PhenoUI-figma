@@ -9,6 +9,13 @@ const builtInMethods: { [key: string]: Function } = {
         const r = `Hello ${subject}!`
         console.log(r);
         return r;
+    },
+    exportSVG: async (node: SceneNode) => {
+        return await node.exportAsync({ format: 'SVG_STRING' });
+    },
+    exportPNG: async (node: SceneNode) => {
+        const bytes = await node.exportAsync({ format: 'PNG' });
+        return figma.base64Encode(bytes);
     }
 }
 
@@ -29,7 +36,9 @@ export async function execute(cache: Map<string, any>, strapi: Strapi, node: UIN
         } else {
             const funcComps = funcPath.split('.');
             const solved = resolvePath(node, funcComps);
-            return await solved.value.apply(solved.parent, args);
+            if (solved) {
+                return await solved.value.apply(solved.parent, args);
+            }
         }
     }
     return null;

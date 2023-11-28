@@ -124,7 +124,7 @@ export class LayerScreen extends Screen {
                     id: key,
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
-                    placeholder: data.default || data.description,
+                    placeholder: data.default as string || data.description,
                     value: data.value,
                     onUpdate,
                 });
