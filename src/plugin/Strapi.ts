@@ -14,11 +14,20 @@ export enum StrapiEndpoints {
 }
 
 export type UserType = {
+    description: string,
+} & ({
     type: 'string' | 'number' | 'boolean',
     default?: string | number | boolean,
-    description: string,
     value?: string | number | boolean,
-}
+} | {
+    type: 'select',
+    default?: string,
+    value?: string,
+    options: Array<{
+        value: string,
+        label: string,
+    }>,
+})
 
 export type UserDataSpec = {
     [key: string]: UserType,

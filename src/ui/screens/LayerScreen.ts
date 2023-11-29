@@ -3,7 +3,7 @@ import {html, nothing, TemplateResult} from "lit-html";
 import {MessageBus} from "../../shared/MessageBus";
 import {LayerMetadata} from "../../shared/Metadata";
 import {title} from "../widgets/title";
-import {booleanInput, numberInput, textInput} from "../widgets/input";
+import {booleanInput, numberInput, selectInput, textInput} from "../widgets/input";
 import {flutter} from "../widgets/icons";
 import {button} from "../widgets/button";
 import {StrapiEndpoints, TypeSpec, UserType} from "../../plugin/Strapi";
@@ -147,9 +147,19 @@ export class LayerScreen extends Screen {
                     onUpdate,
                 });
 
+            case 'select':
+                return selectInput({
+                    id: key,
+                    label: data.description,
+                    icon: name.charAt(0).toUpperCase(),
+                    value: data.value ?? data.default ?? undefined,
+                    options: data.options,
+                    onUpdate,
+                });
+
             default:
                 return html`
-                    <div class="error-description">ERROR: Unknown type [${name}]</div>
+                    <div class="error-description">ERROR: Unknown type [${(data as any).type}]</div>
                 `
         }
     }
