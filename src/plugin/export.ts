@@ -187,7 +187,7 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
     const withValues = getUserData(node, type, userData);
     const result: { [key: string]: any } = {};
     for (const key of Object.keys(userData)) {
-        result[key] = withValues[key].value;
+        result[key] = withValues[key].value ?? withValues[key].default;
     }
     console.log(result);
     return result;
