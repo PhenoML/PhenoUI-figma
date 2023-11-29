@@ -185,6 +185,21 @@ export function getStyles(): TemplateResult[] {
                 background-color: var(--figma-color-bg-hover);
             }
             
+            .select-input {
+                width: 100%;
+                height: 26px;
+                flex-grow: 1;
+                border: none;
+                background-color: transparent;
+                font-family: Inter, sans-serif;
+                font-size: 11px;
+                color: var(--figma-color-text);
+            }
+            
+            .select-input:focus {
+                outline: none;
+            }
+            
             .button {
                 display: flex;
                 align-items: center;

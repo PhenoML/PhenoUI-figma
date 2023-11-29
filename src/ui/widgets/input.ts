@@ -20,6 +20,10 @@ type InputData = {
     provider?: AutocompleteProvider,
 }
 
+type DropdownData = {
+    options: { value: string, label: string }[],
+} & InputData;
+
 async function autocompleteFocus(el: HTMLInputElement, event: FocusEvent, state: AutocompleteState, provider: AutocompleteProvider) {
     const parent = el.parentElement as HTMLElement;
     const container = parent.querySelector('.autocomplete-container') as HTMLElement;
@@ -138,6 +142,27 @@ export function textInput(data: InputData): TemplateResult {
 
 export function numberInput(data: InputData): TemplateResult {
     return _input('number', data);
+}
+
+export function selectInput(data: DropdownData): TemplateResult {
+    return html`
+        <div class="input-container" title="${data.label}" aria-label="${data.label}">
+            <div class="input-icon">
+                ${data.icon}
+            </div>
+            <select
+                id="${data.id}"
+                class="select-input"
+                @change="${function (this:HTMLInputElement, _e: Event) {
+                    if (data.onUpdate) {
+                        data.onUpdate(data.id, this.value);
+                    }
+                }}"
+            >
+                ${data.options.map(o => html`<option value="${o.value}" ?selected="${o.value === data.value}">${o.label}</option>`)}
+            </select>
+        </div>
+    `;
 }
 
 export function booleanInput(data: InputData): TemplateResult {
