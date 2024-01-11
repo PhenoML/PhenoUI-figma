@@ -4,7 +4,7 @@ import {showEmptyScreen, showErrorScreen, showLayerScreen, showLoginScreen} from
 import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getUserData} from "./export";
 import {ForbiddenError, Strapi} from "./Strapi";
 import {getMetadata, updateMetadata} from "./metadata";
-import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData, UploadData} from "../shared/MessageBusTypes";
+import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData, UploadData, GetMetadataData} from "../shared/MessageBusTypes";
 
 export class PhenoUI {
     api: PluginAPI;
@@ -118,6 +118,17 @@ export class PhenoUI {
         } else {
             // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
             console.warn(`Node with id [${data.id}] could not be found to update its metadata`);
+        }
+    }
+
+    getMetadata(data: GetMetadataData): string | number | boolean | null {
+        const node = data.id === null ? this.api.root : findNode(this.api, data.id);
+        if (node) {
+            return getMetadata(node, data.key);
+        } else {
+            // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
+            console.warn(`Node with id [${data.id}] could not be found to get its metadata`);
+            return null;
         }
     }
 

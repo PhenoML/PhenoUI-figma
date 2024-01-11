@@ -18,6 +18,12 @@ export type UpdateMetadataData = {
     value: string | number| boolean,
 }
 
+/** Get Metadata Data **/
+export type GetMetadataData = {
+    id: string | null,
+    key: string,
+}
+
 /** Login Data **/
 export type PerformLoginData = {
     server: string,
