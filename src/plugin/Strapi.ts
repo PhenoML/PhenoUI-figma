@@ -50,6 +50,7 @@ export class UnknownError extends Error {
 }
 
 export class Strapi {
+    defaultCache: Map<string, any> = new Map<string, any>()
     api: PluginAPI;
     server: string;
     jwt: string;
@@ -97,9 +98,16 @@ export class Strapi {
         return false;
     }
 
-    async getTypeSpec(type: string, cache?: Map<string, any>): Promise<TypeSpec | null> {
+    async getTypeSpec(type: string, cache?: Map<string, any>, useDefaultCache: boolean = false): Promise<TypeSpec | null> {
         if (cache && cache.has(type)) {
             return cache.get(type);
+        }
+
+        if (useDefaultCache) {
+            if (this.defaultCache.has(type)) {
+                return this.defaultCache.get(type);
+            }
+            return null;
         }
 
         const query = qs.stringify({
@@ -203,6 +211,10 @@ export class Strapi {
             headers,
             body,
         });
+
+        if (!response.ok && response.status === 401) {
+            throw new ForbiddenError('Unauthorized, please login again');
+        }
 
         const result = await response.json();
         this._checkFetchResult(result);
