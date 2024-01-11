@@ -37,7 +37,8 @@ export class PhenoUI {
         // to fix this is to make a method that updates the layer data without querying strapi for updates triggered by
         // figma, and hit strapi for user triggered events. Another option could be to explicitly allow users to decide
         // when to update the strapi data (via a refresh button or similar). I do think this is the best UX option.
-        // this.api.on('documentchange', evt => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges) : null);
+        // future future Dario... for now simply update the data without hitting strappi
+        this.api.on('documentchange', evt => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges, true) : null);
     }
 
     printTypes(nodes: readonly UINode[]): void {
@@ -72,7 +73,7 @@ export class PhenoUI {
         this.handleSelectionChange(figma.currentPage.selection);
     }
 
-    handleSelectionChange(selection: readonly UINode[]): void {
+    handleSelectionChange(selection: readonly UINode[], useDefaultCache: boolean = false): void {
         this.printTypes(selection);
         if (selection.length > 1) {
             // multiple objects selected
@@ -83,21 +84,21 @@ export class PhenoUI {
             );
         } else if (selection.length === 1) {
             // single object selected
-            this._callLayerScreenUpdate(selection[0]);
+            this._callLayerScreenUpdate(selection[0], useDefaultCache);
         } else {
             // no object selected
             showEmptyScreen(this.bus);
         }
     }
 
-    handleDocumentChange(selection: readonly UINode[], changes: DocumentChange[]): void {
+    handleDocumentChange(selection: readonly UINode[], changes: DocumentChange[], useDefaultCache: boolean = false): void {
         for (const change of changes) {
             if (change.origin === 'LOCAL' && change.type === 'PROPERTY_CHANGE' && change.properties.length === 1 && change.properties[0] === 'pluginData') {
                 continue;
             }
 
             if ('node' in change && selection.find(n => n.id === change.node.id)) {
-                this.handleSelectionChange(selection);
+                this.handleSelectionChange(selection, useDefaultCache);
                 break;
             }
         }
@@ -154,26 +155,34 @@ export class PhenoUI {
         }
     }
 
-    async _callLayerScreenUpdate(node: UINode): Promise<void> {
+    async _callLayerScreenUpdate(node: UINode, useDefaultCache: boolean = false): Promise<void> {
         const defaultType = figmaTypeToWidget(node);
         const customType = getMetadata(node, LayerMetadata.widgetOverride) as string;
         const type = customType || defaultType;
-        const typeData = await this.strapi.getTypeSpec(type);
 
-        if (typeData && typeData.userData) {
-            typeData.userData = getUserData(node, type, typeData.userData);
-        }
-
-        showLayerScreen(this.bus, {
-            layer: {
-                id: node.id,
-                name: node.name,
-                widgetDefault: defaultType,
-                widgetOverride: customType,
-                typeData,
-                isRoot: Boolean(node.parent && node.parent.type === 'PAGE'),
+        try {
+            const typeData = await this.strapi.getTypeSpec(type, undefined, useDefaultCache);
+            if (typeData && typeData.userData) {
+                typeData.userData = getUserData(node, type, typeData.userData);
             }
-        });
+
+            showLayerScreen(this.bus, {
+                layer: {
+                    id: node.id,
+                    name: node.name,
+                    widgetDefault: defaultType,
+                    widgetOverride: customType,
+                    typeData,
+                    isRoot: Boolean(node.parent && node.parent.type === 'PAGE'),
+                }
+            });
+        } catch (e: unknown) {
+            if (e instanceof ForbiddenError) {
+                showLoginScreen(this.bus, this.api, e.message);
+            } else {
+                showErrorScreen(this.bus, 'ERROR', (e as Error).message);
+            }
+        }
     }
 
 }
