@@ -1,7 +1,7 @@
 import {AvailableScreens} from "../shared/AvailableScreens";
 import {MessageBus} from "../shared/MessageBus";
 import {LayerMetadata} from "../shared/Metadata";
-import {LayerData} from "../ui/screens/LayerScreen";
+import {LayerData} from "../ui/screens/figma/LayerScreen";
 import {LayerScreenData} from "../shared/MessageBusTypes";
 import {getMetadata} from "./metadata";
 

@@ -1,7 +1,7 @@
 import {AvailableScreens} from "./AvailableScreens";
 import {ErrorData} from "../ui/screens/ErrorScreen";
-import {LoginData} from "../ui/screens/LoginScreen";
-import {LayerData} from "../ui/screens/LayerScreen";
+import {LoginData} from "../ui/screens/strapi/LoginScreen";
+import {LayerData} from "../ui/screens/figma/LayerScreen";
 import {StrapiEndpoints} from "../plugin/Strapi";
 
 /** Screen Data **/

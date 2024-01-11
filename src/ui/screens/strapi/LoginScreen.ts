@@ -1,12 +1,12 @@
-import {Screen} from "./Screen";
-import {MessageBus} from "../../shared/MessageBus";
+import {Screen} from "../Screen";
+import {MessageBus} from "../../../shared/MessageBus";
 import {html, TemplateResult, nothing} from "lit-html";
-import {logoPhenoML} from "../widgets/logoPhenoML";
-import {title} from "../widgets/title";
-import {passwordInput, textInput} from "../widgets/input";
-import {LayerMetadata, MetadataDefaults} from "../../shared/Metadata";
-import {button} from "../widgets/button";
-import {AvailableScreens} from "../../shared/AvailableScreens";
+import {logoPhenoML} from "../../widgets/logoPhenoML";
+import {title} from "../../widgets/title";
+import {passwordInput, textInput} from "../../widgets/input";
+import {LayerMetadata, MetadataDefaults} from "../../../shared/Metadata";
+import {button} from "../../widgets/button";
+import {AvailableScreens} from "../../../shared/AvailableScreens";
 
 export type LoginData = {
     credentials: {

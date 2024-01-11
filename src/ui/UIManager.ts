@@ -1,12 +1,12 @@
 import {MessageBus} from "../shared/MessageBus";
-import {LayerScreen} from "./screens/LayerScreen";
+import {LayerScreen} from "./screens/figma/LayerScreen";
 import {html, render, RootPart, TemplateResult} from "lit-html";
 import {AvailableScreens} from "../shared/AvailableScreens";
 import {getStyles} from "./styles";
 import {EmptyScreen} from "./screens/EmptyScreen";
 import {Screen} from "./screens/Screen";
 import {ErrorScreen} from "./screens/ErrorScreen";
-import {LoginScreen} from "./screens/LoginScreen";
+import {LoginScreen} from "./screens/strapi/LoginScreen";
 import {LoadingScreen} from "./screens/LoadingScreen";
 
 type ScreenData = {

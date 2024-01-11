@@ -1,13 +1,13 @@
-import {Screen} from "./Screen";
+import {Screen} from "../Screen";
 import {html, nothing, TemplateResult} from "lit-html";
-import {MessageBus} from "../../shared/MessageBus";
-import {LayerMetadata} from "../../shared/Metadata";
-import {title} from "../widgets/title";
-import {booleanInput, numberInput, selectInput, textInput} from "../widgets/input";
-import {flutter} from "../widgets/icons";
-import {button} from "../widgets/button";
-import {StrapiEndpoints, TypeSpec, UserType} from "../../plugin/Strapi";
-import {AvailableScreens} from "../../shared/AvailableScreens";
+import {MessageBus} from "../../../shared/MessageBus";
+import {LayerMetadata} from "../../../shared/Metadata";
+import {title} from "../../widgets/title";
+import {booleanInput, numberInput, selectInput, textInput} from "../../widgets/input";
+import {flutter} from "../../widgets/icons";
+import {button} from "../../widgets/button";
+import {StrapiEndpoints, TypeSpec, UserType} from "../../../plugin/Strapi";
+import {AvailableScreens} from "../../../shared/AvailableScreens";
 
 
 enum ExportMode {
