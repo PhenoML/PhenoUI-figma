@@ -2,7 +2,10 @@ export enum LayerMetadata {
     strapiServer = 'com.phenoui.strapi.auth.server',
     strapiUser = 'com.phenoui.strapi.auth.user',
     strapiJWT = 'com.phenoui.strapi.auth.token',
+
     widgetOverride = 'com.phenoui.layer.widget_override',
+
+    githubToken = 'com.phenoui.github.auth.token',
 }
 
 export const MetadataDefaults = {
