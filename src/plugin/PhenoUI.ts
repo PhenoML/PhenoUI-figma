@@ -112,7 +112,7 @@ export class PhenoUI {
     }
 
     updateMetadata(data: UpdateMetadataData) {
-        const node = findNode(this.api, data.id);
+        const node = data.id === null ? this.api.root : findNode(this.api, data.id);
         if (node) {
              updateMetadata(node, data.key, data.value);
         } else {

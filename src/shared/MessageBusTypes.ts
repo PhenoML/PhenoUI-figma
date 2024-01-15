@@ -13,9 +13,9 @@ export type ScreenData = EmptyScreenData | ErrorScreenData | LoginScreenData | L
 
 /** Update Metadata Data **/
 export type UpdateMetadataData = {
-    id: string,
+    id: string | null,
     key: string,
-    value: string | number| boolean,
+    value: string | number | boolean,
 }
 
 /** Get Metadata Data **/
@@ -52,6 +52,7 @@ export type UploadData = {
 /** FUNCTIONS **/
 export type FunctionParams = {
     updateScreen: ScreenData,
+    getMetadata: GetMetadataData,
     updateMetadata: UpdateMetadataData,
     performLogin: PerformLoginData,
     exportToFlutter: ExportData,
