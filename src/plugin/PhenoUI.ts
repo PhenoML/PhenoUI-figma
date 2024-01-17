@@ -1,15 +1,30 @@
 import {MessageBus} from "../shared/MessageBus";
 import {LayerMetadata} from "../shared/Metadata";
-import {showEmptyScreen, showErrorScreen, showLayerScreen, showLoginScreen} from "./screens";
+import {
+    showEmptyScreen,
+    showErrorScreen, showGithubLoginScreen,
+    showLayerScreen,
+    showStrapiLoginScreen
+} from "./screens";
 import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getUserData} from "./export";
 import {ForbiddenError, Strapi} from "./Strapi";
 import {getMetadata, updateMetadata} from "./metadata";
-import {ExportData, PerformLoginData, TypeListData, UpdateMetadataData, UploadData, GetMetadataData} from "../shared/MessageBusTypes";
+import {
+    ExportData,
+    PerformStrapiLoginData,
+    TypeListData,
+    UpdateMetadataData,
+    UploadData,
+    GetMetadataData,
+    SetTabData
+} from "../shared/MessageBusTypes";
+import {AvailableTabs} from "../shared/AvailableTabs";
 
 export class PhenoUI {
     api: PluginAPI;
     bus: MessageBus;
     strapi: Strapi;
+    tab: AvailableTabs = AvailableTabs.figma;
 
     constructor(api: PluginAPI, bus: MessageBus) {
         this.api = api;
@@ -26,7 +41,7 @@ export class PhenoUI {
             return true;
         }
 
-        showLoginScreen(this.bus, this.api);
+        showStrapiLoginScreen(this.bus, this.api);
         return false;
     }
 
@@ -37,7 +52,7 @@ export class PhenoUI {
         // to fix this is to make a method that updates the layer data without querying strapi for updates triggered by
         // figma, and hit strapi for user triggered events. Another option could be to explicitly allow users to decide
         // when to update the strapi data (via a refresh button or similar). I do think this is the best UX option.
-        // future future Dario... for now simply update the data without hitting strappi
+        // future future Dario... for now simply update the data without hitting strapi
         this.api.on('documentchange', evt => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges, true) : null);
     }
 
@@ -65,6 +80,8 @@ export class PhenoUI {
                     'indentation',
                     'hyperlink',
                 ]));
+            } else if (node.type === 'INSTANCE') {
+                console.log(node.componentProperties);
             }
         }
     }
@@ -104,7 +121,7 @@ export class PhenoUI {
         }
     }
 
-    async performLogin(data: PerformLoginData) {
+    async performStrapiLogin(data: PerformStrapiLoginData) {
         const success = await this.strapi.performLogin(this.bus, data.server, data.user, data.password);
         if (success) {
             this.handleSelectionChange(figma.currentPage.selection);
@@ -119,6 +136,25 @@ export class PhenoUI {
             // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
             console.warn(`Node with id [${data.id}] could not be found to update its metadata`);
         }
+    }
+
+    async setTab(data: SetTabData) {
+        if (data.tab !== this.tab) {
+            this.tab = data.tab;
+            if (this.tab === AvailableTabs.github) {
+                const loggedIn = await this.bus.execute('isGithubLoggedIn', undefined);
+                if (!loggedIn) {
+                    showGithubLoginScreen(this.bus, this.api);
+                    return;
+                }
+            }
+            this.handleSelectionChange(figma.currentPage.selection);
+        }
+    }
+
+    strapiLogout() {
+        this.strapi.logout();
+        this.handleSelectionChange(figma.currentPage.selection);
     }
 
     getMetadata(data: GetMetadataData): string | number | boolean | null {
@@ -157,7 +193,7 @@ export class PhenoUI {
             return this.strapi.getTypeList(data.search, data.limit);
         } catch (e: unknown) {
             if (e instanceof ForbiddenError) {
-                showLoginScreen(this.bus, this.api, e.message);
+                showStrapiLoginScreen(this.bus, this.api, e.message);
             } else {
                 showErrorScreen(this.bus, 'ERROR', (e as Error).message);
             }
@@ -184,12 +220,12 @@ export class PhenoUI {
                     widgetDefault: defaultType,
                     widgetOverride: customType,
                     typeData,
-                    isRoot: Boolean(node.parent && node.parent.type === 'PAGE'),
+                    exportable: Boolean((node.parent && node.parent.type === 'PAGE') || node.type === 'COMPONENT'),
                 }
-            });
+            }, this.tab);
         } catch (e: unknown) {
             if (e instanceof ForbiddenError) {
-                showLoginScreen(this.bus, this.api, e.message);
+                showStrapiLoginScreen(this.bus, this.api, e.message);
             } else {
                 showErrorScreen(this.bus, 'ERROR', (e as Error).message);
             }

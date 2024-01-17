@@ -5,7 +5,7 @@ export enum LayerMetadata {
 
     widgetOverride = 'com.phenoui.layer.widget_override',
 
-    githubToken = 'com.phenoui.github.auth.token',
+    githubAccessToken = 'com.phenoui.github.auth.token',
 }
 
 export const MetadataDefaults = {

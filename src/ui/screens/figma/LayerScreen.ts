@@ -2,39 +2,19 @@ import {Screen} from "../Screen";
 import {html, nothing, TemplateResult} from "lit-html";
 import {MessageBus} from "../../../shared/MessageBus";
 import {LayerMetadata} from "../../../shared/Metadata";
-import {title} from "../../widgets/title";
 import {booleanInput, numberInput, selectInput, textInput} from "../../widgets/input";
 import {flutter} from "../../widgets/icons";
 import {button} from "../../widgets/button";
-import {StrapiEndpoints, TypeSpec, UserType} from "../../../plugin/Strapi";
-import {AvailableScreens} from "../../../shared/AvailableScreens";
-
-
-enum ExportMode {
-    json,
-    strapiUpload,
-}
-
-export type LayerData = {
-    layer: {
-        id: string,
-        name: string,
-        widgetDefault: string,
-        widgetOverride?: string,
-        typeData?: TypeSpec | null,
-        isRoot?: boolean,
-    }
-}
+import {UserType} from "../../../plugin/Strapi";
+import {getHeader} from '../../widgets/header';
+import {AvailableTabs} from "../../../shared/AvailableTabs";
+import {LayerData} from "../../tools/layer";
+import {exportLayer, ExportLayerMode} from "../../tools/export";
 
 export class LayerScreen extends Screen {
-    exporting: boolean = false;
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
         const template = html`
-            <section>
-                <div class="row">
-                    ${title(data.layer.name)}
-                </div>
-            </section>
+            ${getHeader(data.layer.name, AvailableTabs.figma, bus)}
             <section>
                 <div class="row">
                     <div class="text-container bold">Properties</div>
@@ -70,21 +50,10 @@ export class LayerScreen extends Screen {
                         ${button({
                             id: data.layer.id,
                             label: 'Export to JSON',
-                            onClick: async (id: string) => await this.exportToFlutter(id, bus, data.layer.name, ExportMode.json),
+                            onClick: async (id: string) => await exportLayer(this._manager, bus, id, data.layer.name, ExportLayerMode.json, this),
                         })}
                     </div>
                 </div>
-                ${!data.layer.isRoot ? nothing : html`
-                    <div class="row-full">
-                        <div class="container">
-                            ${button({
-                                id: data.layer.id,
-                                label: 'Upload to strapi',
-                                onClick: async (id: string) => await this.exportToFlutter(id, bus, data.layer.name, ExportMode.strapiUpload),
-                            })}
-                        </div>
-                    </div>
-                `}
             </section>
         `;
 
@@ -161,48 +130,6 @@ export class LayerScreen extends Screen {
                 return html`
                     <div class="error-description">ERROR: Unknown type [${(data as any).type}]</div>
                 `
-        }
-    }
-
-    async _downloadExport(name: string, payload: any) {
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-        const blobURL = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        // link.className = 'button button--primary';
-        link.href = blobURL;
-        link.download = `${name}.json`;
-        link.click();
-        link.setAttribute('download', `${name},json`);
-        // artificially wait for a bit to wait for the download screen to appear
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    async _uploadToStrapi(bus: MessageBus, name: string, payload: any) {
-        await bus.execute('uploadToStrapi', { collection: StrapiEndpoints.screens, name, payload });
-    }
-
-    async exportToFlutter(id: string, bus: MessageBus, name: string, mode: ExportMode) {
-        if (!this.exporting) {
-            const loading = this._manager._getScreen(AvailableScreens.loading);
-            this._manager.renderScreen(loading, this._manager.root);
-            this.exporting = true;
-            const payload = await bus.execute('exportToFlutter', { id });
-            if (payload) {
-                switch (mode) {
-                    case ExportMode.json:
-                        await this._downloadExport(name, payload);
-                        break;
-
-                    case ExportMode.strapiUpload:
-                        await this._uploadToStrapi(bus, name, payload);
-                        break;
-
-                    default:
-                        throw 'not implemented';
-                }
-            }
-            this._manager.renderScreen(this, this._manager.root);
-            this.exporting = false;
         }
     }
 }

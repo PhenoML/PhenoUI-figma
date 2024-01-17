@@ -37,10 +37,10 @@ export function getStyles(): TemplateResult[] {
                 border-top: 1px solid var(--figma-color-border);
             }
             
-            svg {
-                max-width: 14px;
-                max-height: 14px;
-            }
+            /*svg {*/
+            /*    max-width: 14px;*/
+            /*    max-height: 14px;*/
+            /*}*/
             
             .centered {
                 flex-grow: 1;
@@ -138,6 +138,11 @@ export function getStyles(): TemplateResult[] {
                 fill: var(--figma-color-text-secondary);
                 color: var(--figma-color-text-secondary);
                 font-weight: 200;
+                
+                > svg {
+                    max-width: 14px;
+                    max-height: 14px;
+                }
             }
 
             .text-input {
@@ -218,9 +223,15 @@ export function getStyles(): TemplateResult[] {
                 outline: 2px solid var(--figma-color-border-selected);
             }
             
-            .button:active {
+            .button:enabled:active {
                 background-color: var(--figma-color-bg-pressed);
             }
+            
+            .button:disabled {
+                opacity: 0.5;
+            }
+            
+            
             
             .button-label {
                 display: flex;
@@ -240,6 +251,35 @@ export function getStyles(): TemplateResult[] {
                     max-width: 100%;
                     max-height: 100%;
                 }
+            }
+            
+            .tab-container {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                height: 32px;
+                padding: 0 4px;
+            }
+            
+            .tab-container:hover {
+                outline-offset: -1px;
+                outline: 1px solid var(--figma-color-border);
+            }
+            
+            .tab-icon {
+                width: 18px;
+                height: 18px;
+                margin: 0 4px;
+            }
+            
+            .tab-title {
+                margin: 0 4px;
+                user-select: none;
+            }
+            
+            .tab-selected {
+                background-color: var(--figma-color-bg-tertiary);
             }
         </style>
     `];

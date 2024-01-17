@@ -1,5 +1,5 @@
 import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
-import {showErrorScreen, showLoginScreen} from "./screens";
+import {showErrorScreen, showStrapiLoginScreen} from "./screens";
 import {getMetadata, updateMetadata} from "./metadata";
 import {MessageBus} from "../shared/MessageBus";
 // @ts-ignore
@@ -64,6 +64,11 @@ export class Strapi {
         return Boolean(this.jwt);
     }
 
+    logout(): void {
+        this.jwt = '';
+        updateMetadata(this.api.root, LayerMetadata.strapiJWT, '');
+    }
+
     async performLogin(bus: MessageBus, server: string, user: string, password: string) {
         if (user && password) {
             server = server ? server.trim() : MetadataDefaults[LayerMetadata.strapiServer];
@@ -84,16 +89,16 @@ export class Strapi {
                     updateMetadata(this.api.root, LayerMetadata.strapiJWT, this.jwt);
                     return true;
                 } else if (result.error) {
-                    showLoginScreen(bus, this.api, result.error.message);
+                    showStrapiLoginScreen(bus, this.api, result.error.message);
                 } else {
-                    showLoginScreen(bus, this.api, 'UNKNOWN ERROR, CONTACT DARIO!');
+                    showStrapiLoginScreen(bus, this.api, 'UNKNOWN ERROR, CONTACT DARIO!');
                 }
             } catch (e: any) {
-                showLoginScreen(bus, this.api, `ERROR contacting server: ${e.message}`);
+                showStrapiLoginScreen(bus, this.api, `ERROR contacting server: ${e.message}`);
                 return false
             }
         } else {
-            showLoginScreen(bus, this.api, 'Please enter all the required fields');
+            showStrapiLoginScreen(bus, this.api, 'Please enter all the required fields');
         }
         return false;
     }

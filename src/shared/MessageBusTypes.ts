@@ -1,15 +1,18 @@
 import {AvailableScreens} from "./AvailableScreens";
 import {ErrorData} from "../ui/screens/ErrorScreen";
-import {LoginData} from "../ui/screens/strapi/LoginScreen";
-import {LayerData} from "../ui/screens/figma/LayerScreen";
+import {StrapiLoginData} from "../ui/screens/strapi/LoginScreen";
 import {StrapiEndpoints} from "../plugin/Strapi";
+import {LayerData} from "../ui/tools/layer";
+import {AvailableTabs} from "./AvailableTabs";
+import {GithubLoginData} from "../ui/screens/github/LoginScreen";
 
 /** Screen Data **/
 export type EmptyScreenData = { screen: AvailableScreens.empty };
 export type ErrorScreenData = { screen: AvailableScreens.error } & ErrorData;
-export type LoginScreenData = { screen: AvailableScreens.login } & LoginData;
-export type LayerScreenData = { screen: AvailableScreens.layer } & LayerData;
-export type ScreenData = EmptyScreenData | ErrorScreenData | LoginScreenData | LayerScreenData;
+export type StrapiLoginScreenData = { screen: AvailableScreens.strapi_login } & StrapiLoginData;
+export type GithubLoginScreenData = { screen: AvailableScreens.github_login } & GithubLoginData;
+export type LayerScreenData = { screen: (AvailableScreens.figma_layer | AvailableScreens.github_layer | AvailableScreens.strapi_layer) } & LayerData;
+export type ScreenData = EmptyScreenData | ErrorScreenData | StrapiLoginScreenData | LayerScreenData | GithubLoginScreenData;
 
 /** Update Metadata Data **/
 export type UpdateMetadataData = {
@@ -25,7 +28,7 @@ export type GetMetadataData = {
 }
 
 /** Login Data **/
-export type PerformLoginData = {
+export type PerformStrapiLoginData = {
     server: string,
     user: string,
     password: string,
@@ -49,16 +52,23 @@ export type UploadData = {
     payload: any,
 }
 
+export type SetTabData = {
+    tab: AvailableTabs,
+}
+
 /** FUNCTIONS **/
 export type FunctionParams = {
     updateScreen: ScreenData,
     getMetadata: GetMetadataData,
     updateMetadata: UpdateMetadataData,
-    performLogin: PerformLoginData,
+    performStrapiLogin: PerformStrapiLoginData,
     exportToFlutter: ExportData,
     getTypeList: TypeListData,
     updateLayerView: undefined,
     uploadToStrapi: UploadData,
+    setTab: SetTabData,
+    strapiLogout: undefined,
+    isGithubLoggedIn: undefined,
 }
 
 export type FunctionName = keyof FunctionParams;

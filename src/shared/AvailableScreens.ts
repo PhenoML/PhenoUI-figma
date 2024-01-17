@@ -1,7 +1,10 @@
 export enum AvailableScreens {
     error,
-    login,
+    strapi_login,
+    github_login,
     empty,
-    layer,
+    figma_layer,
+    strapi_layer,
+    github_layer,
     loading,
 }

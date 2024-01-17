@@ -2,13 +2,12 @@ import {Screen} from "../Screen";
 import {MessageBus} from "../../../shared/MessageBus";
 import {html, TemplateResult, nothing} from "lit-html";
 import {logoPhenoML} from "../../widgets/logoPhenoML";
-import {title} from "../../widgets/title";
 import {passwordInput, textInput} from "../../widgets/input";
 import {LayerMetadata, MetadataDefaults} from "../../../shared/Metadata";
 import {button} from "../../widgets/button";
 import {AvailableScreens} from "../../../shared/AvailableScreens";
 
-export type LoginData = {
+export type StrapiLoginData = {
     credentials: {
         id: string,
         server?: string,
@@ -19,14 +18,14 @@ export type LoginData = {
 
 export class LoginScreen extends Screen {
     working: boolean = false;
-    updateTemplate(data: LoginData, bus: MessageBus): TemplateResult[] {
+    updateTemplate(data: StrapiLoginData, bus: MessageBus): TemplateResult[] {
         const template = html`
             <section>
                 <div class="row centered">
                     <div class="logo">${logoPhenoML}</div>
                 </div>
                 <div class="row">
-                    ${title('please connect to strapi')}
+                    <div class="title">please connect to strapi</div>
                 </div>
             </section>
             <section>
@@ -104,7 +103,7 @@ export class LoginScreen extends Screen {
                 const server = (serverElement as HTMLInputElement).value;
                 const user = (userElement as HTMLInputElement).value;
                 const password = (passwordElement as HTMLInputElement).value;
-                await bus.execute('performLogin', { server, user, password });
+                await bus.execute('performStrapiLogin', { server, user, password });
             }
 
             this.working = false;

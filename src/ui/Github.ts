@@ -39,13 +39,21 @@ export class Github {
     }
 
     constructor(bus: MessageBus) {
-        this.loginPromise = this._tryLogin();
         this.bus = bus;
+        this.loginPromise = this._tryLogin();
     }
 
     async login(authToken: string): Promise<boolean> {
         this.loginPromise = this._tryLogin(authToken);
         return this.loginPromise;
+    }
+
+    async logout(): Promise<void> {
+        this.octokit = undefined;
+        this._user = undefined;
+        this._repo = undefined;
+        await this._setAuthToken(this.bus, '');
+        this.loginPromise = Promise.resolve(false);
     }
 
     async commitFiles(files: Array<{path: string, content: string|Uint8Array}>, message: string): Promise<void> {
@@ -128,20 +136,20 @@ export class Github {
     async _getAuthToken(bus: MessageBus): Promise<string> {
         return await bus.execute('getMetadata', {
             id: null,
-            key: LayerMetadata.githubToken,
+            key: LayerMetadata.githubAccessToken,
         });
     }
 
     async _setAuthToken(bus: MessageBus, token: string): Promise<void> {
         await bus.execute('updateMetadata', {
             id: null,
-            key: LayerMetadata.githubToken,
+            key: LayerMetadata.githubAccessToken,
             value: token,
         });
     }
 
     _checkResponse<T>(response: OctokitResponse<T>): OctokitResponse<T> {
-        if (response.status !== 200) {
+        if (response.status < 200 || response.status >= 300) {
             throw new GithubBadResponseError(`Bad response from Github: ${response.status}`);
         }
         return response;
@@ -191,9 +199,4 @@ export class Github {
         return commit.data;
     }
 }
-
-export const github = 'github';
-
-
-
 
