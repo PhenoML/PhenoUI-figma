@@ -67,7 +67,23 @@ export class LayerScreen extends Screen {
             const userData = data.layer.typeData.userData;
             const rows: TemplateResult[] = [];
             const layerType = data.layer.widgetOverride || data.layer.widgetDefault;
-            for (const key of Object.keys(userData)) {
+            const keys = Object.keys(userData);
+            keys.forEach(k => console.log(k));
+            keys.sort((a, b) => {
+                const aV = userData[a];
+                const bV = userData[b];
+                if (aV.type === 'componentProperty' && bV.type !== 'componentProperty') {
+                    return 1;
+                } else if (aV.type !== 'componentProperty' && bV.type === 'componentProperty') {
+                    return -1;
+                } else if (aV.type !== 'componentProperty' && bV.type !== 'componentProperty') {
+                    return 0;
+                } else {
+                    return (aV as any).propertyId > (bV as any).propertyId ? 1 : -1;
+                }
+            });
+            keys.forEach(k => console.log(k));
+            for (const key of keys) {
                 rows.push(html`
                     <div class="row">
                         ${this._getUserField(bus, data.layer.id, layerType, key, userData[key])}
@@ -84,6 +100,12 @@ export class LayerScreen extends Screen {
         const onUpdate = (_id: string, value: string | number | boolean) => bus.execute('updateMetadata', {
             id: layerID,
             key,
+            value
+        });
+
+        const onUpdateComponentProperty = async (_id: string, value: string | number | boolean) => bus.execute('updateComponentProperty', {
+            id: layerID,
+            key: (data as any).key,
             value
         });
 
@@ -125,6 +147,27 @@ export class LayerScreen extends Screen {
                     options: data.options,
                     onUpdate,
                 });
+
+            case 'componentProperty':
+                if (data.valueType === 'TEXT') {
+                    return textInput({
+                        id: key,
+                        label: data.description,
+                        icon: name.charAt(0).toUpperCase(),
+                        placeholder: data.description,
+                        value: data.value,
+                        onUpdate: onUpdateComponentProperty,
+                    });
+                } else if (data.valueType === 'BOOLEAN') {
+                    return booleanInput({
+                        id: key,
+                        label: data.description,
+                        placeholder: data.description,
+                        value: data.value,
+                        onUpdate: onUpdateComponentProperty,
+                    });
+                }
+                // fall through
 
             default:
                 return html`

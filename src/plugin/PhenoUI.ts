@@ -6,7 +6,7 @@ import {
     showLayerScreen,
     showStrapiLoginScreen
 } from "./screens";
-import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getUserData} from "./export";
+import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getUserData, getTypeSpec} from "./export";
 import {ForbiddenError, Strapi} from "./Strapi";
 import {getMetadata, updateMetadata} from "./metadata";
 import {
@@ -138,6 +138,22 @@ export class PhenoUI {
         }
     }
 
+    updateComponentProperty(data: UpdateMetadataData) {
+        const node = data.id === null ? this.api.root : findNode(this.api, data.id);
+        if (node) {
+            if (node.type === 'COMPONENT') {
+                node.editComponentProperty(data.key, { defaultValue: data.value as string | boolean });
+            } else if (node.type === 'INSTANCE') {
+                node.setProperties({[data.key]: data.value as string | boolean});
+            } else {
+                console.warn(`Node with id [${data.id}] is not a component or instance and so it cannot have component properties`);
+            }
+        } else {
+            // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
+            console.warn(`Node with id [${data.id}] could not be found to update its component property`);
+        }
+    }
+
     async setTab(data: SetTabData) {
         if (data.tab !== this.tab) {
             this.tab = data.tab;
@@ -208,7 +224,8 @@ export class PhenoUI {
         const type = customType || defaultType;
 
         try {
-            const typeData = await this.strapi.getTypeSpec(type, undefined, useDefaultCache);
+            let typeData = await getTypeSpec(type, node, this.strapi, undefined, useDefaultCache);
+
             if (typeData && typeData.userData) {
                 typeData.userData = getUserData(node, type, typeData.userData);
             }

@@ -61,6 +61,7 @@ export type FunctionParams = {
     updateScreen: ScreenData,
     getMetadata: GetMetadataData,
     updateMetadata: UpdateMetadataData,
+    updateComponentProperty: UpdateMetadataData,
     performStrapiLogin: PerformStrapiLoginData,
     exportToFlutter: ExportData,
     getTypeList: TypeListData,

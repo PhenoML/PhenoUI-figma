@@ -27,6 +27,13 @@ export type UserType = {
         value: string,
         label: string,
     }>,
+} | {
+    type: 'componentProperty',
+    valueType: ComponentPropertyType,
+    default?: never,
+    value?: string | number | boolean,
+    key: string,
+    propertyId: string,
 })
 
 export type UserDataSpec = {

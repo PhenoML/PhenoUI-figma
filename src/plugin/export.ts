@@ -1,5 +1,5 @@
 import {LayerMetadata} from "../shared/Metadata";
-import {Strapi, UserDataSpec} from "./Strapi";
+import {Strapi, TypeSpec, UserDataSpec} from "./Strapi";
 import {getMetadata} from "./metadata";
 import {execute} from "./execute";
 
@@ -14,7 +14,7 @@ enum MappingAction {
 export type MappingString = `${MappingAction}${string}`;
 
 type MappingSpecObj = {
-    [key: string]: MappingString | MappingSpec | MappingString[] | MappingSpec[];
+    [key: string]: MappingString | MappingSpec | MappingString[] | MappingSpec[] | number | boolean | null;
 }
 type MappingEntry = MappingSpecObj[keyof MappingSpecObj];
 type MappingSpecArr = MappingEntry[];
@@ -129,6 +129,8 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
         for (const entry of spec) {
             if (typeof entry as any === 'string') {
                 result.push(await fetchValue(cache, strapi, node, entry as MappingString));
+            } else if (typeof entry as any === 'number' || entry === null || entry === true || entry === false) {
+                result.push(entry);
             } else {
                 result.push(await _processSpec(cache, strapi, node, entry as MappingSpec));
             }
@@ -153,6 +155,8 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
         let val;
         if (typeof entry as any === 'string') {
             val = await fetchValue(cache, strapi, node, entry as MappingString);
+        } else if (typeof entry as any === 'number' || entry === null || entry === true || entry === false) {
+            val = entry;
         } else {
             val = await _processSpec(cache, strapi, node, entry as MappingSpec);
         }
@@ -169,11 +173,20 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
 export function getUserData(node: UINode, type: string, userData: UserDataSpec) {
     for (const key of Object.keys(userData)) {
         const value = getMetadata(node, `${type}_${key}`);
-        if (userData[key].type == 'number') {
+        const data = userData[key];
+        if (data.type == 'number') {
             // when read from input fields, numbers are strings, so they come back as strings
-            userData[key].value = parseFloat(value as string);
+            data.value = parseFloat(value as string);
+        } else if (data.type === 'componentProperty') {
+            if (node.type === 'COMPONENT') {
+                data.value = node.componentPropertyDefinitions[data.key].defaultValue;
+                data.valueType = node.componentPropertyDefinitions[data.key].type;
+            } else {
+                data.value = (node as InstanceNode).componentProperties[data.key].value;
+                data.valueType = (node as InstanceNode).componentProperties[data.key].type;
+            }
         } else {
-            userData[key].value = value;
+            data.value = value;
         }
     }
 
@@ -193,13 +206,49 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
     return result;
 }
 
+export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, cache?: Map<string, any>, useDefaultCache: boolean = false): Promise<TypeSpec | null> {
+    let typeData = await strapi.getTypeSpec(type, cache, useDefaultCache);
+    if (!typeData && (node.type === 'COMPONENT' || node.type === 'INSTANCE')) {
+        const properties = node.type === 'COMPONENT' ? node.componentPropertyDefinitions : node.componentProperties;
+        if (Object.keys(properties).length) {
+            typeData = {
+                mappings: {},
+                userData: {},
+            }
+            for (const key in properties) {
+                const [description, propertyId] = key.split(/#(?!.*#)/);
+                // @ts-ignore
+                typeData.userData[key] = {
+                    description,
+                    type: 'componentProperty',
+                    key,
+                    propertyId,
+                }
+            }
+        }
+    }
+    return typeData;
+}
+
 export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
     try {
         console.log(node);
         const type = getMetadata(node, LayerMetadata.widgetOverride) as string || figmaTypeToWidget(node);
-        const spec = await strapi.getTypeSpec(type, cache);
+        const spec = await getTypeSpec(type, node, strapi, cache);
         if (!spec) {
             return null;
+        }
+
+        // if the node is a component, merge the spec with frame mappings
+        if (node.type === 'COMPONENT') {
+            const frameSpec = await getTypeSpec('Frame', node, strapi, cache);
+            if (frameSpec) {
+                spec.mappings = {
+                    type: '!figma-component',
+                    componentType: `!${type}`,
+                    component: frameSpec.mappings,
+                }
+            }
         }
 
         const result = await _processSpec(cache, strapi, node, spec.mappings);
@@ -207,6 +256,16 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
         if (userData) {
             result['__userData'] = userData;
         }
+
+        // if the node is a component set the parent dimensions elements and the parent layout to null
+        if (node.type === 'COMPONENT') {
+            result['component']['dimensions']['parent']['x'] = null;
+            result['component']['dimensions']['parent']['y'] = null;
+            result['component']['dimensions']['parent']['width'] = null;
+            result['component']['dimensions']['parent']['height'] = null;
+            result['component']['layout']['parent']['layoutMode'] = null;
+        }
+
         return result;
     } catch (e) {
         console.log(e);
