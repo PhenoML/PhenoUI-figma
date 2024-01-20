@@ -106,6 +106,32 @@ export class Github {
         }));
     }
 
+    async createPullRequest(title: string, body?: string): Promise<boolean> {
+        if (!await this.isLoggedIn || !this.octokit) {
+            return false;
+        }
+
+        const baseBranch = await this._getBranch();
+
+        // create a branch name from the use login name and current UNIX timestamp
+        const branchName = `${this._user!.login}-${Date.now()}`;
+
+        // create a branch based on the user's branch to base this PR off of
+        await this._createBranch(branchName, baseBranch.commit.sha);
+        const branch = await this._getBranch(branchName);
+
+        this._checkResponse(await this.octokit!.rest.pulls.create({
+            owner: this._repo!.owner.login,
+            repo: this._repo!.name,
+            title,
+            body,
+            head: branch.name,
+            base: 'develop',
+        }));
+
+        return true;
+    }
+
     async _tryLogin(authToken?: string): Promise<boolean> {
         authToken = authToken || await this._getAuthToken(this.bus);
         if (!authToken) {
@@ -172,20 +198,24 @@ export class Github {
         const hasBranch = branches.data.some((branch) => branch.name === this._user!.login);
         if (!hasBranch) {
             // create a branch based on the `develop` branch
-            this._checkResponse(await this.octokit.rest.git.createRef({
-                owner: this._repo!.owner.login,
-                repo: this._repo!.name,
-                ref: `refs/heads/${this._user!.login}`,
-                sha: branches.data.find((branch) => branch.name === 'develop')!.commit.sha,
-            }));
+            await this._createBranch(this._user!.login, branches.data.find((branch) => branch.name === 'develop')!.commit.sha);
         }
     }
 
-    async _getBranch(): Promise<RestEndpointMethodTypes['repos']['getBranch']['response']['data']> {
+    async _createBranch(branch: string, sha: string): Promise<RestEndpointMethodTypes['git']['createRef']['response']['data']> {
+        return this._checkResponse(await (this.octokit as Octokit).rest.git.createRef({
+            owner: this._repo!.owner.login,
+            repo: this._repo!.name,
+            ref: `refs/heads/${branch}`,
+            sha,
+        })).data;
+    }
+
+    async _getBranch(branchName: string = this._user!.login): Promise<RestEndpointMethodTypes['repos']['getBranch']['response']['data']> {
         const branch = this._checkResponse(await this.octokit!.rest.repos.getBranch({
             owner: this._repo!.owner.login,
             repo: this._repo!.name,
-            branch: this._user!.login,
+            branch: branchName,
         }));
         return branch.data;
     }

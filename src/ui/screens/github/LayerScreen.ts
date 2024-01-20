@@ -31,7 +31,7 @@ export class LayerScreen extends Screen {
                         ${button({
                             id: data.layer.id,
                             label: 'PR all changes',
-                            onClick: () => console.log('TODO: implement github PR'),
+                            onClick: async () => await this.makeGithubPR(),
                         })}
                     </div>
                 </div>
@@ -61,5 +61,10 @@ export class LayerScreen extends Screen {
         this.template = [template];
 
         return this.template;
+    }
+
+    async makeGithubPR() {
+        const github = this._manager.github;
+        await github.createPullRequest(`[${github._user?.login.toUpperCase()}] ${Date()}`);
     }
 }
