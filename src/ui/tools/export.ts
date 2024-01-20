@@ -71,7 +71,7 @@ async function _commitToGithub(bus: MessageBus, name: string, payload: any, gith
         return;
     }
 
-    const message = '[TEST] Commit from figma plugin';
+    const message = `[${github._user?.login.toUpperCase()}] Widget: ${name}`;
     console.log(message);
 
     await github.commitFiles([{
@@ -82,7 +82,6 @@ async function _commitToGithub(bus: MessageBus, name: string, payload: any, gith
 }
 
 export async function exportLayer(manager: UIManager, bus: MessageBus, id: string, name: string, mode: ExportLayerMode, from: Screen) {
-    console.log('exportLayer');
     if (!_exporting) {
         const loading = manager._getScreen(AvailableScreens.loading);
 
