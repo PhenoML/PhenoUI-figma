@@ -10,6 +10,8 @@ import {AvailableScreens} from "../../../shared/AvailableScreens";
 import {ScreenData} from "../../../shared/MessageBusTypes";
 
 export class LayerScreen extends Screen {
+    exporting: boolean = false;
+
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
         const template = html`
             ${getHeader(data.layer.name, AvailableTabs.github, bus)}
@@ -64,7 +66,16 @@ export class LayerScreen extends Screen {
     }
 
     async makeGithubPR() {
-        const github = this._manager.github;
-        await github.createPullRequest(`[${github._user?.login.toUpperCase()}] ${Date()}`);
+        if (!this.exporting) {
+            const loading = this._manager._getScreen(AvailableScreens.loading);
+            this._manager.renderScreen(loading, this._manager.root);
+            this.exporting = true;
+
+            const github = this._manager.github;
+            await github.createPullRequest(`[${github._user?.login.toUpperCase()}] ${Date()}`);
+
+            this._manager.renderScreen(this, this._manager.root);
+            this.exporting = false;
+        }
     }
 }
