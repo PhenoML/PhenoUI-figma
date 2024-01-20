@@ -16,7 +16,7 @@ import {
     UpdateMetadataData,
     UploadData,
     GetMetadataData,
-    SetTabData
+    SetTabData, CategoryData
 } from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
 
@@ -193,11 +193,24 @@ export class PhenoUI {
             return null;
         }
 
-        return exportToFlutter(this.api, this.strapi, data.id);
+        const node = findNode(this.api, data.id);
+        if (!node) {
+            throw new Error(`Could not find node with ID [${data.id}] for export.`);
+        }
+
+        return exportToFlutter(this.strapi, node);
     }
 
     async uploadToStrapi(data: UploadData) {
-        await this.strapi.uploadData(data.collection, data.name, data.payload);
+        await this.strapi.uploadData(data.collection, data.payload);
+    }
+
+    async getCategory(data: CategoryData) {
+        return await this.strapi.getCategory(data.collection, data.uid);
+    }
+
+    async createCategory(data: CategoryData) {
+        return await this.strapi.createCategory(data.collection, data.uid);
     }
 
     async getTypeList(data: TypeListData): Promise<string[]> {

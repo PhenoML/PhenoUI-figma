@@ -202,19 +202,22 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
     for (const key of Object.keys(userData)) {
         result[key] = withValues[key].value ?? withValues[key].default;
     }
-    console.log(result);
     return result;
 }
 
 export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, cache?: Map<string, any>, useDefaultCache: boolean = false): Promise<TypeSpec | null> {
     let typeData = await strapi.getTypeSpec(type, cache, useDefaultCache);
-    if (!typeData && (node.type === 'COMPONENT' || node.type === 'INSTANCE')) {
+    if (node.type === 'COMPONENT' || node.type === 'INSTANCE') {
         const properties = node.type === 'COMPONENT' ? node.componentPropertyDefinitions : node.componentProperties;
         if (Object.keys(properties).length) {
-            typeData = {
+            typeData = Object.assign({}, typeData, {
                 mappings: {},
                 userData: {},
-            }
+            });
+
+            // the userData could be null so we need to initialize it
+            typeData.userData = typeData.userData || {};
+
             for (const key in properties) {
                 const [description, propertyId] = key.split(/#(?!.*#)/);
                 // @ts-ignore
@@ -239,15 +242,15 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
             return null;
         }
 
-        // if the node is a component, merge the spec with frame mappings
+        // if the node is a component, add frame mappings spec to the `component` field
         if (node.type === 'COMPONENT') {
-            const frameSpec = await getTypeSpec('Frame', node, strapi, cache);
+            const frameSpec = await getTypeSpec('Frame', { type: 'FRAME' } as any, strapi, cache);
             if (frameSpec) {
-                spec.mappings = {
+                spec.mappings = Object.assign(spec.mappings, {
                     type: '!figma-component',
                     componentType: `!${type}`,
                     component: frameSpec.mappings,
-                }
+                });
             }
         }
 
@@ -268,17 +271,12 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
 
         return result;
     } catch (e) {
-        console.log(e);
+        console.error(e);
         throw e;
     }
 }
 
-export async function exportToFlutter(api: PluginAPI, strapi: Strapi, id: string): Promise<any> {
-    const node = findNode(api, id);
-    if (!node) {
-        throw new Error(`Could not find node with ID [${id}] for export.`);
-    }
-
+export async function exportToFlutter(strapi: Strapi, node: UINode): Promise<any> {
     const cache = new Map<string, any>();
     return await exportNode(cache, strapi, node);
 }

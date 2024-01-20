@@ -19,7 +19,7 @@ export class LayerScreen extends Screen {
                         ${button({
                             id: data.layer.id,
                             label: 'Commit to github',
-                            onClick: () => console.log('TODO: implement github commit'),
+                            onClick: async (id: string) => await exportLayer(this._manager, bus, id, data.layer.name, ExportLayerMode.githubCommit, this),
                             disabled: !Boolean(data.layer.exportable),
                         })}
                     </div>

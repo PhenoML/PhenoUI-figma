@@ -8,7 +8,9 @@ import qs from 'qs';
 
 export enum StrapiEndpoints {
     login = '/api/auth/local',
-    widgetSpec = '/api/figma-widget-specs',
+    widgets = '/api/figma-widgets',
+    widgetSpecs = '/api/figma-widget-specs',
+    widgetCategories = '/api/figma-widget-categories',
     screenCategories = '/api/screen-categories',
     screens = '/api/screens',
 }
@@ -129,7 +131,7 @@ export class Strapi {
                 }
             }
         });
-        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, {query});
+        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpecs, {query});
         const data = await this._fetchGET(url);
 
         if (data.length > 1) {
@@ -161,7 +163,7 @@ export class Strapi {
                 limit,
             }
         });
-        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpec, {query});
+        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpecs, {query});
         const data = await this._fetchGET(url);
         if (data) {
             return data.map((d: any) => d.attributes.type);
@@ -170,11 +172,16 @@ export class Strapi {
         return [];
     }
 
-    async uploadData(collection: StrapiEndpoints, name: string, payload: any) {
+    async uploadData(collection: StrapiEndpoints, payload: any) {
         const query = qs.stringify({
             filters: {
                 name: {
-                    $eq: name,
+                    $eq: payload.name,
+                },
+                category: {
+                    id: {
+                        $eq: payload.category,
+                    }
                 }
             }
         });
@@ -191,14 +198,40 @@ export class Strapi {
             method = 'POST';
         }
 
-        const data = {
-            name,
-            screen_category: 1, // TODO: Hardcoded to 1 (debug) category, should be selected by the user...
-            spec: payload,
+        const result = await this._fetchUpload(url, method, payload);
+        console.log(result);
+    }
+
+    async getCategory(collection: StrapiEndpoints, uid: string) {
+        const query = qs.stringify({
+            filters: {
+                uid: {
+                    $eq: uid,
+                }
+            }
+        });
+
+        const existingURL = this._urlForEndpoint(this.server, collection, {query});
+        const existing = await this._fetchGET(existingURL);
+
+        if (existing.length) {
+            return existing[0];
+        }
+        return null;
+    }
+
+    async createCategory(collection: StrapiEndpoints, uid: string) {
+        const existing = await this.getCategory(collection, uid);
+        if (existing) {
+            return existing.id;
         }
 
-        const result = await this._fetchUpload(url, method, data);
-        console.log(result);
+        const url = this._urlForEndpoint(this.server, collection);
+        const data = {
+            uid,
+        }
+
+        return await this._fetchUpload(url, 'POST', data);
     }
 
     _urlForEndpoint(server: string, endpoint: StrapiEndpoints, options: { query?: string, id?: number } = {}): string {

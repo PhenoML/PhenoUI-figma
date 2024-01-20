@@ -48,8 +48,13 @@ export type TypeListData = {
 /** Upload to Strapi **/
 export type UploadData = {
     collection: StrapiEndpoints,
-    name: string,
     payload: any,
+}
+
+/** Get category from Strapi **/
+export type CategoryData = {
+    collection: StrapiEndpoints,
+    uid: string,
 }
 
 export type SetTabData = {
@@ -67,6 +72,8 @@ export type FunctionParams = {
     getTypeList: TypeListData,
     updateLayerView: undefined,
     uploadToStrapi: UploadData,
+    getCategory: CategoryData,
+    createCategory: CategoryData,
     setTab: SetTabData,
     strapiLogout: undefined,
     isGithubLoggedIn: undefined,
