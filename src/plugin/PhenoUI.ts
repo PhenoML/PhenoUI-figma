@@ -141,7 +141,7 @@ export class PhenoUI {
     updateComponentProperty(data: UpdateMetadataData) {
         const node = data.id === null ? this.api.root : findNode(this.api, data.id);
         if (node) {
-            if (node.type === 'COMPONENT') {
+            if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
                 node.editComponentProperty(data.key, { defaultValue: data.value as string | boolean });
             } else if (node.type === 'INSTANCE') {
                 node.setProperties({[data.key]: data.value as string | boolean});
@@ -250,7 +250,7 @@ export class PhenoUI {
                     widgetDefault: defaultType,
                     widgetOverride: customType,
                     typeData,
-                    exportable: Boolean((node.parent && node.parent.type === 'PAGE') || node.type === 'COMPONENT'),
+                    exportable: Boolean((node.parent && node.parent.type === 'PAGE') || node.type === 'COMPONENT' || node.type === 'COMPONENT_SET'),
                 }
             }, this.tab);
         } catch (e: unknown) {

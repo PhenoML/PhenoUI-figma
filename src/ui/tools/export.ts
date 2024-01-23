@@ -40,14 +40,11 @@ async function _uploadToStrapi(bus: MessageBus, name: string, payload: any) {
         data = {
             name,
             category,
-            defaultVariant: 'default',
-            variants: {
-                default: payload,
-            },
+            defaultVariant: payload.defaultVariant,
+            variants: payload.variants,
         }
         if ('__userData' in payload) {
             data['arguments'] = payload.__userData;
-            delete payload.__userData;
         }
     } else {
         data = {

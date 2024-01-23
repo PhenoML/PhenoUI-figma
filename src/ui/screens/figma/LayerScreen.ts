@@ -68,7 +68,7 @@ export class LayerScreen extends Screen {
             const rows: TemplateResult[] = [];
             const layerType = data.layer.widgetOverride || data.layer.widgetDefault;
             const keys = Object.keys(userData);
-            keys.forEach(k => console.log(k));
+            // keys.forEach(k => console.log(k));
             keys.sort((a, b) => {
                 const aV = userData[a];
                 const bV = userData[b];
@@ -82,7 +82,7 @@ export class LayerScreen extends Screen {
                     return (aV as any).propertyId > (bV as any).propertyId ? 1 : -1;
                 }
             });
-            keys.forEach(k => console.log(k));
+            // keys.forEach(k => console.log(k));
             for (const key of keys) {
                 rows.push(html`
                     <div class="row">
@@ -164,6 +164,15 @@ export class LayerScreen extends Screen {
                         label: data.description,
                         placeholder: data.description,
                         value: data.value,
+                        onUpdate: onUpdateComponentProperty,
+                    });
+                } else if (data.valueType === 'VARIANT') {
+                    return selectInput({
+                        id: key,
+                        label: data.description,
+                        icon: name.charAt(0).toUpperCase(),
+                        value: data.value ?? data.default ?? undefined,
+                        options: data.options as [],
                         onUpdate: onUpdateComponentProperty,
                     });
                 }

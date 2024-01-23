@@ -9,6 +9,7 @@ enum MappingAction {
     nodePath = '$',
     inherit = '@',
     execute = '%',
+    source = '*',
 }
 
 export type MappingString = `${MappingAction}${string}`;
@@ -32,13 +33,22 @@ export function findNode(api: PluginAPI, id: string): UINode | null {
 export function figmaTypeToWidget(node: UINode): string {
     switch (node.type) {
         case 'COMPONENT':
+            if (node.parent && node.parent.type === 'COMPONENT_SET') {
+                return node.parent.name;
+            }
+            return node.name;
+        case 'COMPONENT_SET':
             return node.name;
 
         case 'FRAME':
             return 'Frame'
 
         case 'INSTANCE':
-            return (node.mainComponent as UINode).name;
+            const main = (node.mainComponent as UINode);
+            if (main.parent && main.parent.type === 'COMPONENT_SET') {
+                return main.parent.name;
+            }
+            return main.name;
 
         default:
             return `${node.type.charAt(0).toUpperCase()}${node.type.slice(1).toLowerCase()}`;
@@ -73,7 +83,7 @@ export function resolvePath(obj: any, path: string[]): { value: any, parent: any
     return { value, parent };
 }
 
-export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode, mapping: MappingString, rawNodes: boolean = false) {
+export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: UINode, mapping: MappingString, rawNodes: boolean = false): Promise<any> {
     const operator = mapping.substring(0, 1);
     const path = mapping.substring(1);
     switch (operator) {
@@ -113,6 +123,12 @@ export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: 
 
         case MappingAction.execute:
             return await execute(cache, strapi, node, path);
+
+        case MappingAction.source:
+            const components = path.split(MappingAction.source);
+            const source: any = resolvePath(node, components[0].split('.')).value;
+            const r = await fetchValue(cache, strapi, source, components[1] as MappingString);
+            return r;
 
         default:
             throw `ERROR parsing - Unrecognized mapping operator [${operator}] for mapping ${mapping}`;
@@ -178,12 +194,40 @@ export function getUserData(node: UINode, type: string, userData: UserDataSpec) 
             // when read from input fields, numbers are strings, so they come back as strings
             data.value = parseFloat(value as string);
         } else if (data.type === 'componentProperty') {
-            if (node.type === 'COMPONENT') {
-                data.value = node.componentPropertyDefinitions[data.key].defaultValue;
-                data.valueType = node.componentPropertyDefinitions[data.key].type;
+            if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+                const key = node.componentPropertyDefinitions[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
+                data.value = node.componentPropertyDefinitions[key].defaultValue;
+                data.valueType = node.componentPropertyDefinitions[key].type;
             } else {
-                data.value = (node as InstanceNode).componentProperties[data.key].value;
-                data.valueType = (node as InstanceNode).componentProperties[data.key].type;
+                const iNode = node as InstanceNode;
+                const key = iNode.componentProperties[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
+                data.value = iNode.componentProperties[key].value;
+                data.valueType = iNode.componentProperties[key].type;
+            }
+
+            if (data.valueType === 'VARIANT') {
+                data.options = [];
+                let componentNode: any = node;
+                while (componentNode.type !== 'COMPONENT_SET' && componentNode.parent) {
+                    if ('mainComponent' in componentNode) {
+                        componentNode = componentNode.mainComponent;
+                    } else {
+                        componentNode = componentNode.parent;
+                    }
+                }
+                if (componentNode) {
+                    const key = componentNode.componentPropertyDefinitions[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
+                    const variantOptions = componentNode.componentPropertyDefinitions[key].variantOptions;
+                    if (variantOptions) {
+                        data.options = [];
+                        for (const option of variantOptions) {
+                            data.options.push({
+                                value: option,
+                                label: option,
+                            });
+                        }
+                    }
+                }
             }
         } else {
             data.value = value;
@@ -207,18 +251,19 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
 
 export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, cache?: Map<string, any>, useDefaultCache: boolean = false): Promise<TypeSpec | null> {
     let typeData = await strapi.getTypeSpec(type, cache, useDefaultCache);
-    if (node.type === 'COMPONENT' || node.type === 'INSTANCE') {
-        const properties = node.type === 'COMPONENT' ? node.componentPropertyDefinitions : node.componentProperties;
+    if (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET') {
+        const properties = node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' ? node.componentPropertyDefinitions : node.componentProperties;
         if (Object.keys(properties).length) {
             typeData = Object.assign({}, typeData, {
                 mappings: {},
                 userData: {},
             });
 
-            // the userData could be null so we need to initialize it
+            // the userData could be null, so we need to initialize it
             typeData.userData = typeData.userData || {};
 
-            for (const key in properties) {
+            for (let key in properties) {
+                key = properties[key].type === 'VARIANT' ? `${key}#variant` : key;
                 const [description, propertyId] = key.split(/#(?!.*#)/);
                 // @ts-ignore
                 typeData.userData[key] = {
@@ -233,6 +278,31 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
     return typeData;
 }
 
+function _overrideSource(spec: MappingSpec, source: string): MappingSpec {
+    if (Array.isArray(spec)) {
+        const result = [];
+        for (const entry of spec) {
+            if (typeof entry as any === 'string') {
+                result.push(`${MappingAction.source}${source}${MappingAction.source}${entry}`);
+            } else {
+                result.push(_overrideSource(entry as MappingSpec, source));
+            }
+        }
+        return result as MappingSpec;
+    }
+
+    const result: any = {};
+    for (const key of Object.keys(spec)) {
+        const entry: MappingEntry = spec[key];
+        if (typeof entry as any === 'string') {
+            result[key] = `${MappingAction.source}${source}${MappingAction.source}${entry}`;
+        } else {
+            result[key] = _overrideSource(entry as MappingSpec, source);
+        }
+    }
+    return result;
+}
+
 export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
     try {
         console.log(node);
@@ -243,14 +313,37 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
         }
 
         // if the node is a component, add frame mappings spec to the `component` field
-        if (node.type === 'COMPONENT') {
+        if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
             const frameSpec = await getTypeSpec('Frame', { type: 'FRAME' } as any, strapi, cache);
             if (frameSpec) {
-                spec.mappings = Object.assign(spec.mappings, {
-                    type: '!figma-component',
-                    componentType: `!${type}`,
-                    component: frameSpec.mappings,
-                });
+                switch (node.type) {
+                    case 'COMPONENT':
+                        spec.mappings = Object.assign(spec.mappings, {
+                            type: '!figma-component',
+                            componentType: `!${type}`,
+                            defaultVariant: '!default',
+                            variants: {
+                                default: frameSpec.mappings
+                            },
+                        });
+                        break;
+
+                    case 'COMPONENT_SET':
+                        Object.assign(frameSpec.mappings, {
+                            variantProperties: '#variantProperties',
+                        });
+                        const variants: any = {};
+                        for (let i = 0, n = node.children.length; i < n; ++i) {
+                            variants[node.children[i].name] = _overrideSource(frameSpec.mappings, `children[${i}]`);
+                        }
+                        spec.mappings = Object.assign(spec.mappings, {
+                            type: '!figma-component',
+                            componentType: `!${type}`,
+                            defaultVariant: '#defaultVariant.name',
+                            variants,
+                        });
+                        break;
+                }
             }
         }
 

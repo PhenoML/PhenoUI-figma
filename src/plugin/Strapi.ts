@@ -36,6 +36,10 @@ export type UserType = {
     value?: string | number | boolean,
     key: string,
     propertyId: string,
+    options?: Array<{
+        value: string,
+        label: string,
+    }>,
 })
 
 export type UserDataSpec = {
