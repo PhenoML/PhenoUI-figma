@@ -2198,6 +2198,12 @@ function getMetadata(node, key) {
     return "";
   }
 }
+async function setLocalData(key, value) {
+  await figma.clientStorage.setAsync(key, value);
+}
+async function getLocalData(key) {
+  return await figma.clientStorage.getAsync(key);
+}
 
 // src/plugin/screens.ts
 function showEmptyScreen(bus) {
@@ -2587,14 +2593,13 @@ async function exportNode(cache, strapi, node) {
       result["__userData"] = userData;
     }
     if (node.type === "COMPONENT" || node.type === "COMPONENT_SET") {
-      for (const variant of Object.keys(result.variants)) {
-        result.variants[variant]["dimensions"]["parent"]["x"] = null;
-        result.variants[variant]["dimensions"]["parent"]["y"] = null;
-        result.variants[variant]["dimensions"]["parent"]["width"] = null;
-        result.variants[variant]["dimensions"]["parent"]["height"] = null;
-        result.variants[variant]["layout"]["parent"]["layoutMode"] = null;
+      for (const key of Object.keys(result.variants)) {
+        result.variants[key]["dimensions"]["parent"]["x"] = null;
+        result.variants[key]["dimensions"]["parent"]["y"] = null;
+        result.variants[key]["dimensions"]["parent"]["width"] = null;
+        result.variants[key]["dimensions"]["parent"]["height"] = null;
+        result.variants[key]["layout"]["parent"]["layoutMode"] = null;
       }
-
     }
     return result;
   } catch (e) {
@@ -2622,16 +2627,21 @@ var UnknownError = class extends Error {
 var Strapi = class {
   constructor(api) {
     this.defaultCache = /* @__PURE__ */ new Map();
+    this.server = "";
+    this.jwt = "";
+    this.loaded = (async () => {
+      this.jwt = await getLocalData("com.phenoui.strapi.auth.token" /* strapiJWT */) || "";
+      this.server = await getLocalData("com.phenoui.strapi.auth.server" /* strapiServer */) || MetadataDefaults["com.phenoui.strapi.auth.server" /* strapiServer */];
+    })();
     this.api = api;
-    this.jwt = getMetadata(this.api.root, "com.phenoui.strapi.auth.token" /* strapiJWT */);
-    this.server = getMetadata(this.api.root, "com.phenoui.strapi.auth.server" /* strapiServer */).trim() || MetadataDefaults["com.phenoui.strapi.auth.server" /* strapiServer */];
   }
-  isLoggedIn() {
+  async isLoggedIn() {
+    await this.loaded;
     return Boolean(this.jwt);
   }
-  logout() {
+  async logout() {
     this.jwt = "";
-    updateMetadata(this.api.root, "com.phenoui.strapi.auth.token" /* strapiJWT */, "");
+    await setLocalData("com.phenoui.strapi.auth.token" /* strapiJWT */, "");
   }
   async performLogin(bus, server, user, password) {
     if (user && password) {
@@ -2649,7 +2659,8 @@ var Strapi = class {
         if (result.jwt) {
           this.jwt = result.jwt;
           this.server = server.trim();
-          updateMetadata(this.api.root, "com.phenoui.strapi.auth.token" /* strapiJWT */, this.jwt);
+          await setLocalData("com.phenoui.strapi.auth.token" /* strapiJWT */, this.jwt);
+          await setLocalData("com.phenoui.strapi.auth.server" /* strapiServer */, this.server);
           return true;
         } else if (result.error) {
           showStrapiLoginScreen(bus, this.api, result.error.message);
@@ -2774,10 +2785,11 @@ var Strapi = class {
     server = server.endsWith("/") ? server.substring(0, server.length - 1) : server;
     return `${server}${endpoint}${options.id ? `/${options.id}` : ""}${options.query ? `?${options.query}` : ""}`;
   }
-  _checkFetchResult(result) {
+  async _checkFetchResult(result) {
     if (result.error) {
       if (result.error.status === 403) {
-        updateMetadata(this.api.root, "com.phenoui.strapi.auth.token" /* strapiJWT */, "");
+        this.jwt = "";
+        await setLocalData("com.phenoui.strapi.auth.token" /* strapiJWT */, "");
         throw new ForbiddenError("Forbidden, please login again");
       } else {
         throw new UnknownError(result.error.message, result.error);
@@ -2794,7 +2806,7 @@ var Strapi = class {
       throw new ForbiddenError("Unauthorized, please login again");
     }
     const result = await response.json();
-    this._checkFetchResult(result);
+    await this._checkFetchResult(result);
     return result.data;
   }
   async _fetchGET(url) {
@@ -2827,17 +2839,17 @@ var PhenoUI = class {
     this.strapi = new Strapi(this.api);
     this.setupLocalEvents();
   }
-  isLoggedIn() {
-    if (this.strapi.isLoggedIn()) {
+  async isLoggedIn() {
+    if (await this.strapi.isLoggedIn()) {
       return true;
     }
     showStrapiLoginScreen(this.bus, this.api);
     return false;
   }
   setupLocalEvents() {
-    this.api.on("run", (evt) => this.isLoggedIn() ? this.handleOpen(evt) : null);
-    this.api.on("selectionchange", () => this.isLoggedIn() ? this.handleSelectionChange(this.api.currentPage.selection) : null);
-    this.api.on("documentchange", (evt) => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges, true) : null);
+    this.api.on("run", async (evt) => await this.isLoggedIn() ? this.handleOpen(evt) : null);
+    this.api.on("selectionchange", async () => await this.isLoggedIn() ? this.handleSelectionChange(this.api.currentPage.selection) : null);
+    this.api.on("documentchange", async (evt) => await this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges, true) : null);
   }
   printTypes(nodes) {
     for (const node of nodes) {
@@ -2910,13 +2922,38 @@ var PhenoUI = class {
       console.warn(`Node with id [${data.id}] could not be found to update its metadata`);
     }
   }
+  getMetadata(data) {
+    const node = data.id === null ? this.api.root : findNode(this.api, data.id);
+    if (node) {
+      return getMetadata(node, data.key);
+    } else {
+      console.warn(`Node with id [${data.id}] could not be found to get its metadata`);
+      return null;
+    }
+  }
+  async setLocalData(data) {
+    await setLocalData(data.key, data.value);
+  }
+  async getLocalData(key) {
+    return await getLocalData(key);
+  }
   updateComponentProperty(data) {
     const node = data.id === null ? this.api.root : findNode(this.api, data.id);
     if (node) {
       if (node.type === "COMPONENT" || node.type === "COMPONENT_SET") {
-        node.editComponentProperty(data.key, { defaultValue: data.value });
+        try {
+          node.editComponentProperty(data.key, { defaultValue: data.value });
+        } catch (e) {
+          const key = data.key.split(/#(?!.*#)/)[0];
+          node.editComponentProperty(key, { defaultValue: data.value });
+        }
       } else if (node.type === "INSTANCE") {
-        node.setProperties({ [data.key]: data.value });
+        try {
+          node.setProperties({ [data.key]: data.value });
+        } catch (e) {
+          const key = data.key.split(/#(?!.*#)/)[0];
+          node.setProperties({ [key]: data.value });
+        }
       } else {
         console.warn(`Node with id [${data.id}] is not a component or instance and so it cannot have component properties`);
       }
@@ -2937,18 +2974,9 @@ var PhenoUI = class {
       this.handleSelectionChange(figma.currentPage.selection);
     }
   }
-  strapiLogout() {
-    this.strapi.logout();
+  async strapiLogout() {
+    await this.strapi.logout();
     this.handleSelectionChange(figma.currentPage.selection);
-  }
-  getMetadata(data) {
-    const node = data.id === null ? this.api.root : findNode(this.api, data.id);
-    if (node) {
-      return getMetadata(node, data.key);
-    } else {
-      console.warn(`Node with id [${data.id}] could not be found to get its metadata`);
-      return null;
-    }
   }
   updateLayerView() {
     this.handleSelectionChange(figma.currentPage.selection);
@@ -2965,6 +2993,15 @@ var PhenoUI = class {
   }
   async uploadToStrapi(data) {
     await this.strapi.uploadData(data.collection, data.payload);
+  }
+  getStrapiJwt() {
+    return this.strapi.jwt;
+  }
+  getStrapiServer() {
+    return this.strapi.server;
+  }
+  getStrapiUrlForEndpoint(data) {
+    return this.strapi._urlForEndpoint(this.strapi.server, data.collection, data.options);
   }
   async getCategory(data) {
     return await this.strapi.getCategory(data.collection, data.uid);

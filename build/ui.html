@@ -25404,7 +25404,7 @@ var strapi = x`
         <path d="M212,285L113.828,285C112.046,285 111.154,282.846 112.414,281.586L212,182L212,285Z" style="fill:var(--figma-color-bg-disabled-secondary);fill-rule:nonzero;"/>
     </svg>
 `;
-var figma = x`
+var figma2 = x`
     <svg width="100%" height="100%" viewBox="0 0 475 686" version="1.1" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
         <g transform="matrix(1,0,0,1,-162.669,-55.9995)">
             <path d="M373.336,109.333L294.669,109.333C251.223,109.333 216.003,144.553 216.003,187.999C216.003,231.446 251.223,266.666 294.669,266.666L373.336,266.666L373.336,109.333ZM294.669,55.999L505.336,55.999C578.24,55.999 637.333,115.098 637.333,187.999C637.333,231.02 616.757,269.235 584.901,293.333C616.757,317.431 637.333,355.646 637.333,398.667C637.333,471.568 578.24,530.667 505.336,530.667C475.859,530.667 448.639,521.005 426.669,504.675L426.669,609.333C426.669,682.235 367.571,741.333 294.669,741.333C221.767,741.333 162.669,682.235 162.669,609.333C162.669,566.309 183.25,528.098 215.102,503.999C183.25,479.901 162.669,441.687 162.669,398.667C162.669,355.646 183.25,317.431 215.103,293.333C183.25,269.235 162.669,231.02 162.669,187.999C162.669,115.098 221.767,55.999 294.669,55.999ZM426.669,109.333L426.669,266.666L505.336,266.666C548.784,266.666 584,231.446 584,187.999C584,144.553 548.784,109.333 505.336,109.333L426.669,109.333ZM294.669,477.332L373.336,477.332L373.336,320L294.669,320C251.223,320 216.003,355.22 216.003,398.667C216.003,442.009 251.054,477.165 294.357,477.333L294.669,477.332ZM216.003,609.333C216.003,565.989 251.054,530.835 294.357,530.666L294.669,530.667L373.336,530.667L373.336,609.333C373.336,652.779 338.116,688 294.669,688C251.223,688 216.003,652.779 216.003,609.333ZM426.669,398.51C426.754,355.135 461.942,320 505.336,320C548.784,320 584,355.22 584,398.667C584,442.113 548.784,477.333 505.336,477.333C461.942,477.333 426.754,442.198 426.669,398.823L426.669,398.51Z" style="fill:var(--figma-color-text);"/>
@@ -25438,7 +25438,7 @@ function getHeader(title, selection, bus) {
                 <div class="tab-container ${selection === 0 /* figma */ ? "tab-selected" : ""}"
                     @click="${async () => await bus.execute("setTab", { tab: 0 /* figma */ })}"
                 >
-                    <div class="tab-icon">${figma}</div>
+                    <div class="tab-icon">${figma2}</div>
                     <div class="tab-title">figma</div>
                 </div>
                 <div class="tab-container ${selection === 1 /* strapi */ ? "tab-selected" : ""}"
@@ -25462,6 +25462,7 @@ function getHeader(title, selection, bus) {
 var import_qs = __toESM(require_lib());
 
 // src/ui/tools/export.ts
+var import_qs2 = __toESM(require_lib());
 var _exporting = false;
 async function _downloadExport(name2, payload) {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -25473,12 +25474,83 @@ async function _downloadExport(name2, payload) {
   link.setAttribute("download", `${name2},json`);
   await new Promise((resolve) => setTimeout(resolve, 1e3));
 }
+function _extractImages(bus, payload) {
+  console.log(payload);
+  const images = [];
+  if (payload.type === "figma-image") {
+    images.push(payload);
+  }
+  if ("children" in payload) {
+    for (const child of payload.children) {
+      images.push(..._extractImages(bus, child));
+    }
+  }
+  if ("variants" in payload) {
+    for (const key2 of Object.keys(payload.variants)) {
+      images.push(..._extractImages(bus, payload.variants[key2]));
+    }
+  }
+  return images;
+}
+async function _strapiImageExists(bus, name2, jwt) {
+  const query = import_qs2.default.stringify({
+    filters: {
+      name: {
+        $eq: name2
+      }
+    }
+  });
+  const url = await bus.execute("getStrapiUrlForEndpoint", { collection: "/api/upload/files" /* files */, options: { query } });
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${jwt}`
+    }
+  });
+  const result = await response.json();
+  if (result.length > 0) {
+    return result[0].id;
+  }
+  return null;
+}
+async function _uploadImagesToStrapi(bus, images) {
+  const jwt = await bus.execute("getStrapiJwt", void 0);
+  const server = await bus.execute("getStrapiServer", void 0);
+  const url = await bus.execute("getStrapiUrlForEndpoint", { collection: "/api/upload" /* upload */ });
+  for (const image of images) {
+    const filename = `${image.name}.${image.format}`;
+    const existing = await _strapiImageExists(bus, filename, jwt);
+    const query = existing ? `?id=${existing}` : "";
+    const form = new FormData();
+    if (image.format === "svg") {
+      const blob = new Blob([image.data], { type: "image/svg+xml" });
+      form.append("files", blob, filename);
+    } else {
+      const bytes = Uint8Array.from(atob(image.data), (c2) => c2.charCodeAt(0));
+      const blob = new Blob([bytes], { type: `image/${image.format}` });
+      form.append("files", blob, filename);
+    }
+    const response = await fetch(`${url}${query}`, {
+      method: "post",
+      headers: {
+        Authorization: `Bearer ${jwt}`
+      },
+      body: form
+    });
+    const result = await response.json();
+    const imageResult = Array.isArray(result) ? result[0] : result;
+    if (imageResult) {
+      image.data = new URL(imageResult.url, server).href;
+    }
+  }
+}
 async function _uploadToStrapi(bus, name2, payload) {
   const collection = payload.type === "figma-component" ? "/api/figma-widgets" /* widgets */ : "/api/screens" /* screens */;
   const categoryCollection = payload.type === "figma-component" ? "/api/figma-widget-categories" /* widgetCategories */ : "/api/screen-categories" /* screenCategories */;
   const categoryUid = payload.type === "figma-component" ? await bus.execute("getMetadata", { id: null, key: "com.phenoui.strapi.auth.user" /* strapiUser */ }) : "debug";
   const categoryData = await bus.execute("getCategory", { collection: categoryCollection, uid: categoryUid });
   const category = categoryData ? categoryData.id : (await bus.execute("createCategory", { collection: categoryCollection, uid: categoryUid })).id;
+  const images = _extractImages(bus, payload);
+  await _uploadImagesToStrapi(bus, images);
   let data2;
   if (payload.type === "figma-component") {
     data2 = {
@@ -25707,7 +25779,7 @@ var LayerScreen = class extends Screen {
 
 // src/ui/screens/strapi/LayerScreen.ts
 var LayerScreen2 = class extends Screen {
-  updateTemplate(data2, bus) {
+  async updateTemplate(data2, bus) {
     const template = x`
             ${getHeader(data2.layer.name, 1 /* strapi */, bus)}
             <section>
@@ -25732,6 +25804,9 @@ var LayerScreen2 = class extends Screen {
     })}
                     </div>
                 </div>
+                <div class="row-full">
+                    <div class="text-container">${await bus.execute("getStrapiServer", void 0)}</div>
+                </div>
             </section>
         `;
     this.template = [template];
@@ -25745,7 +25820,8 @@ var LayerScreen3 = class extends Screen {
     super(...arguments);
     this.exporting = false;
   }
-  updateTemplate(data2, bus) {
+  async updateTemplate(data2, bus) {
+    var _a3;
     const template = x`
             ${getHeader(data2.layer.name, 2 /* github */, bus)}
             <section>
@@ -25789,6 +25865,9 @@ var LayerScreen3 = class extends Screen {
       }
     })}
                     </div>
+                </div>
+                <div class="row-full">
+                    <div class="text-container bold">Logged in as:</div><div class="text-container">${(_a3 = await this._manager.github.user) == null ? void 0 : _a3.login}</div>
                 </div>
             </section>
         `;
@@ -25914,7 +25993,9 @@ function getStyles() {
             
             .text-container {
                 padding: 0 8px;
-                white-space:nowrap;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .bold {
@@ -27032,8 +27113,7 @@ var LoginScreen = class extends Screen {
       icon: "S",
       placeholder: MetadataDefaults["com.phenoui.strapi.auth.server" /* strapiServer */],
       value: data2.credentials.server,
-      onUpdate: (_id, value2) => bus.execute("updateMetadata", {
-        id: data2.credentials.id,
+      onUpdate: (_id, value2) => bus.execute("setLocalData", {
         key: "com.phenoui.strapi.auth.server" /* strapiServer */,
         value: value2
       })
@@ -27046,8 +27126,7 @@ var LoginScreen = class extends Screen {
       icon: "U",
       placeholder: "user name",
       value: data2.credentials.user,
-      onUpdate: (id, value2) => bus.execute("updateMetadata", {
-        id: data2.credentials.id,
+      onUpdate: (id, value2) => bus.execute("setLocalData", {
         key: "com.phenoui.strapi.auth.user" /* strapiUser */,
         value: value2
       })
@@ -30748,14 +30827,10 @@ var Github = class {
     return true;
   }
   async _getAuthToken(bus) {
-    return await bus.execute("getMetadata", {
-      id: null,
-      key: "com.phenoui.github.auth.token" /* githubAccessToken */
-    });
+    return await bus.execute("getLocalData", "com.phenoui.github.auth.token" /* githubAccessToken */) || "";
   }
   async _setAuthToken(bus, token) {
-    await bus.execute("updateMetadata", {
-      id: null,
+    await bus.execute("setLocalData", {
       key: "com.phenoui.github.auth.token" /* githubAccessToken */,
       value: token
     });
@@ -30848,9 +30923,9 @@ var UIManager = class {
     const part = this.render(screen.template, root);
     screen.renderComplete(part.parentNode);
   }
-  updateScreen(data2) {
+  async updateScreen(data2) {
     const screen = this._getScreen(data2.screen);
-    screen.updateTemplate(data2, this.bus);
+    await screen.updateTemplate(data2, this.bus);
     this.renderScreen(screen, this.root);
   }
   async isGithubLoggedIn() {
