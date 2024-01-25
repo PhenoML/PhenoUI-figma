@@ -39,8 +39,7 @@ export class LoginScreen extends Screen {
                         icon: 'S',
                         placeholder: MetadataDefaults[LayerMetadata.strapiServer],
                         value: data.credentials.server,
-                        onUpdate: (_id, value) => bus.execute('updateMetadata', {
-                            id: data.credentials.id, 
+                        onUpdate: (_id, value) => bus.execute('setLocalData', {
                             key: LayerMetadata.strapiServer,
                             value
                         }),
@@ -53,8 +52,7 @@ export class LoginScreen extends Screen {
                         icon: 'U',
                         placeholder: 'user name',
                         value: data.credentials.user,
-                        onUpdate: (id, value) => bus.execute('updateMetadata', {
-                            id: data.credentials.id, 
+                        onUpdate: (id, value) => bus.execute('setLocalData', {
                             key: LayerMetadata.strapiUser,
                             value
                         }),

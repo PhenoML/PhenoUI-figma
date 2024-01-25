@@ -51,6 +51,18 @@ export type UploadData = {
     payload: any,
 }
 
+/** Strapi Request Builder Data **/
+export type StrapiRequestBuilderData = {
+    collection: StrapiEndpoints,
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+}
+
+/** Strapi endpoint url data **/
+export type StrapiEndpointUrlData = {
+    collection: StrapiEndpoints,
+    options?: any,
+}
+
 /** Get category from Strapi **/
 export type CategoryData = {
     collection: StrapiEndpoints,
@@ -61,17 +73,27 @@ export type SetTabData = {
     tab: AvailableTabs,
 }
 
+export type SetLocalData = {
+    key: string,
+    value: string | number | boolean,
+}
+
 /** FUNCTIONS **/
 export type FunctionParams = {
     updateScreen: ScreenData,
     getMetadata: GetMetadataData,
     updateMetadata: UpdateMetadataData,
+    setLocalData: SetLocalData,
+    getLocalData: string,
     updateComponentProperty: UpdateMetadataData,
     performStrapiLogin: PerformStrapiLoginData,
     exportToFlutter: ExportData,
     getTypeList: TypeListData,
     updateLayerView: undefined,
     uploadToStrapi: UploadData,
+    getStrapiJwt: undefined,
+    getStrapiServer: undefined,
+    getStrapiUrlForEndpoint: StrapiEndpointUrlData,
     getCategory: CategoryData,
     createCategory: CategoryData,
     setTab: SetTabData,

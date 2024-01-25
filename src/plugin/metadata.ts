@@ -16,3 +16,11 @@ export function getMetadata(node: UINode, key: string): string | number | boolea
         return '';
     }
 }
+
+export async function setLocalData(key: string, value: string | number | boolean) {
+    await figma.clientStorage.setAsync(key, value);
+}
+
+export async function getLocalData(key: string): Promise<string | number | boolean> {
+    return await figma.clientStorage.getAsync(key);
+}

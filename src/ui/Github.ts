@@ -160,15 +160,11 @@ export class Github {
     }
 
     async _getAuthToken(bus: MessageBus): Promise<string> {
-        return await bus.execute('getMetadata', {
-            id: null,
-            key: LayerMetadata.githubAccessToken,
-        });
+        return (await bus.execute('getLocalData', LayerMetadata.githubAccessToken)) || '';
     }
 
     async _setAuthToken(bus: MessageBus, token: string): Promise<void> {
-        await bus.execute('updateMetadata', {
-            id: null,
+        await bus.execute('setLocalData', {
             key: LayerMetadata.githubAccessToken,
             value: token,
         });

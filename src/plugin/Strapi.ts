@@ -1,6 +1,6 @@
 import {LayerMetadata, MetadataDefaults} from "../shared/Metadata";
-import {showErrorScreen, showStrapiLoginScreen} from "./screens";
-import {getMetadata, updateMetadata} from "./metadata";
+import {showStrapiLoginScreen} from "./screens";
+import {getLocalData, setLocalData} from "./metadata";
 import {MessageBus} from "../shared/MessageBus";
 // @ts-ignore
 import qs from 'qs';
@@ -13,6 +13,8 @@ export enum StrapiEndpoints {
     widgetCategories = '/api/figma-widget-categories',
     screenCategories = '/api/screen-categories',
     screens = '/api/screens',
+    upload = '/api/upload',
+    files = '/api/upload/files',
 }
 
 export type UserType = {
@@ -65,21 +67,24 @@ export class UnknownError extends Error {
 export class Strapi {
     defaultCache: Map<string, any> = new Map<string, any>()
     api: PluginAPI;
-    server: string;
-    jwt: string;
+    server: string = '';
+    jwt: string = '';
+    loaded: Promise<void> = (async () => {
+        this.jwt = await getLocalData(LayerMetadata.strapiJWT) as string || '';
+        this.server = await getLocalData(LayerMetadata.strapiServer) as string || MetadataDefaults[LayerMetadata.strapiServer];
+    })();
     constructor(api: PluginAPI) {
         this.api = api;
-        this.jwt = getMetadata(this.api.root, LayerMetadata.strapiJWT) as string;
-        this.server = (getMetadata(this.api.root, LayerMetadata.strapiServer) as string).trim() || MetadataDefaults[LayerMetadata.strapiServer];
     }
 
-    isLoggedIn(): boolean {
+    async isLoggedIn(): Promise<boolean> {
+        await this.loaded;
         return Boolean(this.jwt);
     }
 
-    logout(): void {
+    async logout(): Promise<void> {
         this.jwt = '';
-        updateMetadata(this.api.root, LayerMetadata.strapiJWT, '');
+        await setLocalData(LayerMetadata.strapiJWT, '');
     }
 
     async performLogin(bus: MessageBus, server: string, user: string, password: string) {
@@ -99,7 +104,8 @@ export class Strapi {
                 if (result.jwt) {
                     this.jwt = result.jwt;
                     this.server = server.trim();
-                    updateMetadata(this.api.root, LayerMetadata.strapiJWT, this.jwt);
+                    await setLocalData(LayerMetadata.strapiJWT, this.jwt);
+                    await setLocalData(LayerMetadata.strapiServer, this.server);
                     return true;
                 } else if (result.error) {
                     showStrapiLoginScreen(bus, this.api, result.error.message);
@@ -243,10 +249,11 @@ export class Strapi {
         return `${server}${endpoint}${options.id ? `/${options.id}` : ''}${options.query ? `?${options.query}` : ''}`;
     }
 
-    _checkFetchResult(result: any) {
+    async _checkFetchResult(result: any) {
         if (result.error) {
             if (result.error.status === 403) {
-                updateMetadata(this.api.root, LayerMetadata.strapiJWT, '');
+                this.jwt = '';
+                await setLocalData(LayerMetadata.strapiJWT, '');
                 throw new ForbiddenError('Forbidden, please login again');
             } else {
                 throw new UnknownError(result.error.message, result.error);
@@ -266,7 +273,7 @@ export class Strapi {
         }
 
         const result = await response.json();
-        this._checkFetchResult(result);
+        await this._checkFetchResult(result);
 
         return result.data;
     }

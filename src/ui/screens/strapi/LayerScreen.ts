@@ -8,7 +8,7 @@ import {LayerData} from "../../tools/layer";
 import {exportLayer, ExportLayerMode} from "../../tools/export";
 
 export class LayerScreen extends Screen {
-    updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
+    async updateTemplate(data: LayerData, bus: MessageBus): Promise<TemplateResult[]> {
         const template = html`
             ${getHeader(data.layer.name, AvailableTabs.strapi, bus)}
             <section>
@@ -32,6 +32,9 @@ export class LayerScreen extends Screen {
                             onClick: async (id: string) => await bus.execute('strapiLogout', undefined),
                         })}
                     </div>
+                </div>
+                <div class="row-full">
+                    <div class="text-container">${await bus.execute('getStrapiServer', undefined)}</div>
                 </div>
             </section>
         `;

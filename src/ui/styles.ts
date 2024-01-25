@@ -104,7 +104,9 @@ export function getStyles(): TemplateResult[] {
             
             .text-container {
                 padding: 0 8px;
-                white-space:nowrap;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .bold {

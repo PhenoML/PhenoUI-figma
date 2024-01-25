@@ -66,9 +66,9 @@ export class UIManager {
         screen.renderComplete(part.parentNode as HTMLElement);
     }
 
-    updateScreen(data: ScreenData) {
+    async updateScreen(data: ScreenData) {
         const screen = this._getScreen(data.screen);
-        screen.updateTemplate(data, this.bus)
+        await screen.updateTemplate(data, this.bus)
         this.renderScreen(screen, this.root);
     }
 

@@ -12,7 +12,7 @@ import {ScreenData} from "../../../shared/MessageBusTypes";
 export class LayerScreen extends Screen {
     exporting: boolean = false;
 
-    updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
+    async updateTemplate(data: LayerData, bus: MessageBus): Promise<TemplateResult[]> {
         const template = html`
             ${getHeader(data.layer.name, AvailableTabs.github, bus)}
             <section>
@@ -56,6 +56,9 @@ export class LayerScreen extends Screen {
                             },
                         })}
                     </div>
+                </div>
+                <div class="row-full">
+                    <div class="text-container bold">Logged in as:</div><div class="text-container">${(await this._manager.github.user)?.login}</div>
                 </div>
             </section>
         `;

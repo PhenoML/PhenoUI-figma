@@ -7,8 +7,8 @@ import {
     showStrapiLoginScreen
 } from "./screens";
 import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getUserData, getTypeSpec} from "./export";
-import {ForbiddenError, Strapi} from "./Strapi";
-import {getMetadata, updateMetadata} from "./metadata";
+import {ForbiddenError, Strapi, StrapiEndpoints} from "./Strapi";
+import {getLocalData, getMetadata, setLocalData, updateMetadata} from "./metadata";
 import {
     ExportData,
     PerformStrapiLoginData,
@@ -16,7 +16,7 @@ import {
     UpdateMetadataData,
     UploadData,
     GetMetadataData,
-    SetTabData, CategoryData
+    SetTabData, CategoryData, StrapiEndpointUrlData, SetLocalData
 } from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
 
@@ -36,8 +36,8 @@ export class PhenoUI {
         this.setupLocalEvents();
     }
 
-    isLoggedIn(): boolean {
-        if (this.strapi.isLoggedIn()) {
+    async isLoggedIn(): Promise<boolean> {
+        if (await this.strapi.isLoggedIn()) {
             return true;
         }
 
@@ -46,14 +46,14 @@ export class PhenoUI {
     }
 
     setupLocalEvents(): void {
-        this.api.on('run', evt => this.isLoggedIn() ? this.handleOpen(evt) : null);
-        this.api.on('selectionchange', () => this.isLoggedIn() ? this.handleSelectionChange(this.api.currentPage.selection) : null);
+        this.api.on('run', async (evt) => await this.isLoggedIn() ? this.handleOpen(evt) : null);
+        this.api.on('selectionchange', async () => await this.isLoggedIn() ? this.handleSelectionChange(this.api.currentPage.selection) : null);
         // future Dario... there are some changes we want to look for, like name changes, etc. I think that the best way
         // to fix this is to make a method that updates the layer data without querying strapi for updates triggered by
         // figma, and hit strapi for user triggered events. Another option could be to explicitly allow users to decide
         // when to update the strapi data (via a refresh button or similar). I do think this is the best UX option.
         // future future Dario... for now simply update the data without hitting strapi
-        this.api.on('documentchange', evt => this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges, true) : null);
+        this.api.on('documentchange', async (evt) => await this.isLoggedIn() ? this.handleDocumentChange(this.api.currentPage.selection, evt.documentChanges, true) : null);
     }
 
     printTypes(nodes: readonly UINode[]): void {
@@ -168,8 +168,8 @@ export class PhenoUI {
         }
     }
 
-    strapiLogout() {
-        this.strapi.logout();
+    async strapiLogout() {
+        await this.strapi.logout();
         this.handleSelectionChange(figma.currentPage.selection);
     }
 
@@ -203,6 +203,18 @@ export class PhenoUI {
 
     async uploadToStrapi(data: UploadData) {
         await this.strapi.uploadData(data.collection, data.payload);
+    }
+
+    getStrapiJwt() {
+        return this.strapi.jwt;
+    }
+
+    getStrapiServer() {
+        return this.strapi.server;
+    }
+
+    getStrapiUrlForEndpoint(data: StrapiEndpointUrlData) {
+        return this.strapi._urlForEndpoint(this.strapi.server, data.collection, data.options);
     }
 
     async getCategory(data: CategoryData) {

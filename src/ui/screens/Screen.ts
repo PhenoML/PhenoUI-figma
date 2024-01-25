@@ -11,5 +11,5 @@ export abstract class Screen {
     renderComplete(_parent: HTMLElement) {}
 
     template?: TemplateResult[];
-    abstract updateTemplate(data: any, bus: MessageBus): TemplateResult[];
+    abstract updateTemplate(data: any, bus: MessageBus): TemplateResult[] | Promise<TemplateResult[]>;
 }
