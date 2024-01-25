@@ -138,13 +138,42 @@ export class PhenoUI {
         }
     }
 
+    getMetadata(data: GetMetadataData): string | number | boolean | null {
+        const node = data.id === null ? this.api.root : findNode(this.api, data.id);
+        if (node) {
+            return getMetadata(node, data.key);
+        } else {
+            // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
+            console.warn(`Node with id [${data.id}] could not be found to get its metadata`);
+            return null;
+        }
+    }
+
+    async setLocalData(data: SetLocalData) {
+        await setLocalData(data.key, data.value);
+    }
+
+    async getLocalData(key: string): Promise<string | number | boolean> {
+        return await getLocalData(key);
+    }
+
     updateComponentProperty(data: UpdateMetadataData) {
         const node = data.id === null ? this.api.root : findNode(this.api, data.id);
         if (node) {
             if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-                node.editComponentProperty(data.key, { defaultValue: data.value as string | boolean });
+                try {
+                    node.editComponentProperty(data.key, {defaultValue: data.value as string | boolean});
+                } catch (e: unknown) {
+                    const key = data.key.split(/#(?!.*#)/)[0];
+                    node.editComponentProperty(key, {defaultValue: data.value as string | boolean});
+                }
             } else if (node.type === 'INSTANCE') {
-                node.setProperties({[data.key]: data.value as string | boolean});
+                try {
+                    node.setProperties({[data.key]: data.value as string | boolean});
+                } catch (e: unknown) {
+                    const key = data.key.split(/#(?!.*#)/)[0];
+                    node.setProperties({[key]: data.value as string | boolean});
+                }
             } else {
                 console.warn(`Node with id [${data.id}] is not a component or instance and so it cannot have component properties`);
             }
@@ -171,17 +200,6 @@ export class PhenoUI {
     async strapiLogout() {
         await this.strapi.logout();
         this.handleSelectionChange(figma.currentPage.selection);
-    }
-
-    getMetadata(data: GetMetadataData): string | number | boolean | null {
-        const node = data.id === null ? this.api.root : findNode(this.api, data.id);
-        if (node) {
-            return getMetadata(node, data.key);
-        } else {
-            // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
-            console.warn(`Node with id [${data.id}] could not be found to get its metadata`);
-            return null;
-        }
     }
 
     updateLayerView() {
