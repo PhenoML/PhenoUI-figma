@@ -37,6 +37,11 @@ export function getStyles(): TemplateResult[] {
                 border-top: 1px solid var(--figma-color-border);
             }
             
+            option {
+                background-color: var(--figma-color-bg);
+                color: var(--figma-color-text);
+            }
+            
             /*svg {*/
             /*    max-width: 14px;*/
             /*    max-height: 14px;*/
