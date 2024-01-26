@@ -25461,37 +25461,8 @@ function getHeader(title, selection, bus) {
 // src/plugin/Strapi.ts
 var import_qs = __toESM(require_lib());
 
-// src/ui/tools/export.ts
+// src/ui/tools/export/strapi.ts
 var import_qs2 = __toESM(require_lib());
-var _exporting = false;
-async function _downloadExport(name2, payload) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const blobURL = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = blobURL;
-  link.download = `${name2}.json`;
-  link.click();
-  link.setAttribute("download", `${name2},json`);
-  await new Promise((resolve) => setTimeout(resolve, 1e3));
-}
-function _extractImages(bus, payload) {
-  console.log(payload);
-  const images = [];
-  if (payload.type === "figma-image") {
-    images.push(payload);
-  }
-  if ("children" in payload) {
-    for (const child of payload.children) {
-      images.push(..._extractImages(bus, child));
-    }
-  }
-  if ("variants" in payload) {
-    for (const key2 of Object.keys(payload.variants)) {
-      images.push(..._extractImages(bus, payload.variants[key2]));
-    }
-  }
-  return images;
-}
 async function _strapiImageExists(bus, name2, jwt) {
   const query = import_qs2.default.stringify({
     filters: {
@@ -25543,13 +25514,13 @@ async function _uploadImagesToStrapi(bus, images) {
     }
   }
 }
-async function _uploadToStrapi(bus, name2, payload) {
+async function uploadToStrapi(bus, name2, payload) {
   const collection = payload.type === "figma-component" ? "/api/figma-widgets" /* widgets */ : "/api/screens" /* screens */;
   const categoryCollection = payload.type === "figma-component" ? "/api/figma-widget-categories" /* widgetCategories */ : "/api/screen-categories" /* screenCategories */;
   const categoryUid = payload.type === "figma-component" ? await bus.execute("getMetadata", { id: null, key: "com.phenoui.strapi.auth.user" /* strapiUser */ }) : "debug";
   const categoryData = await bus.execute("getCategory", { collection: categoryCollection, uid: categoryUid });
   const category = categoryData ? categoryData.id : (await bus.execute("createCategory", { collection: categoryCollection, uid: categoryUid })).id;
-  const images = _extractImages(bus, payload);
+  const images = extractImages(payload);
   await _uploadImagesToStrapi(bus, images);
   let data2;
   if (payload.type === "figma-component") {
@@ -25571,22 +25542,65 @@ async function _uploadToStrapi(bus, name2, payload) {
   }
   await bus.execute("uploadToStrapi", { collection, payload: data2 });
 }
-async function _commitToGithub(bus, name2, payload, github2) {
+
+// src/ui/tools/export/github.ts
+async function commitToGithub(bus, name2, payload, github2) {
   var _a3;
   if (!await github2.isLoggedIn) {
     console.log("not logged in");
     return;
   }
-  if (payload.type !== "figma-component") {
-    console.log("only figma components are supported for now");
-    return;
+  const [type, folder] = payload.type === "figma-component" ? ["Widget", "widgets"] : ["Screen", "screens"];
+  const files = [];
+  const images = extractImages(payload);
+  for (const image of images) {
+    const filename = `${image.name}.${image.format}`;
+    const path = `assets/images/${filename}`;
+    files.push({
+      path,
+      content: image.data,
+      isBinary: image.format !== "svg"
+    });
+    image.data = path;
   }
-  const message = `[${(_a3 = github2._user) == null ? void 0 : _a3.login.toUpperCase()}] Widget: ${name2}`;
-  console.log(message);
-  await github2.commitFiles([{
-    path: `widgets/${name2}.json`,
+  files.push({
+    path: `${folder}/${name2}.json`,
     content: JSON.stringify(payload, null, 2)
-  }], message);
+  });
+  const message = `[${(_a3 = github2._user) == null ? void 0 : _a3.login.toUpperCase()}] ${type}: ${name2}`;
+  console.log(message);
+  await github2.commitFiles(files, message);
+}
+
+// src/ui/tools/export/export.ts
+var _exporting = false;
+async function _downloadExport(name2, payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const blobURL = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = blobURL;
+  link.download = `${name2}.json`;
+  link.click();
+  link.setAttribute("download", `${name2},json`);
+  await new Promise((resolve) => setTimeout(resolve, 1e3));
+}
+function extractImages(payload) {
+  console.log(payload);
+  const images = [];
+  if (payload.type === "figma-image") {
+    images.push(payload);
+  }
+  if ("children" in payload) {
+    for (const child of payload.children) {
+      images.push(...extractImages(child));
+    }
+  }
+  if ("variants" in payload) {
+    for (const key2 of Object.keys(payload.variants)) {
+      images.push(...extractImages(payload.variants[key2]));
+    }
+  }
+  return images;
 }
 async function exportLayer(manager, bus, id, name2, mode, from) {
   if (!_exporting) {
@@ -25600,10 +25614,10 @@ async function exportLayer(manager, bus, id, name2, mode, from) {
           await _downloadExport(name2, payload);
           break;
         case 1 /* strapiUpload */:
-          await _uploadToStrapi(bus, name2, payload);
+          await uploadToStrapi(bus, name2, payload);
           break;
         case 2 /* githubCommit */:
-          await _commitToGithub(bus, name2, payload, from._manager.github);
+          await commitToGithub(bus, name2, payload, from._manager.github);
           break;
         default:
           throw "not implemented";
@@ -30756,11 +30770,12 @@ var Github = class {
     const commit = await this._getCommit(branch.commit.sha);
     const blobs = await Promise.all(files.map(async (file) => {
       const content2 = ArrayBuffer.isView(file.content) ? await bufferToBase64(file.content) : file.content;
+      console.log(content2);
       const blob = this._checkResponse(await this.octokit.rest.git.createBlob({
         owner: this._repo.owner.login,
         repo: this._repo.name,
         content: content2,
-        encoding: ArrayBuffer.isView(file.content) ? "base64" : "utf-8"
+        encoding: ArrayBuffer.isView(file.content) || file.isBinary ? "base64" : "utf-8"
       }));
       return {
         path: file.path,

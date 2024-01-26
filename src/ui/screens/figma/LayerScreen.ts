@@ -9,7 +9,7 @@ import {UserType} from "../../../plugin/Strapi";
 import {getHeader} from '../../widgets/header';
 import {AvailableTabs} from "../../../shared/AvailableTabs";
 import {LayerData} from "../../tools/layer";
-import {exportLayer, ExportLayerMode} from "../../tools/export";
+import {exportLayer, ExportLayerMode} from "../../tools/export/export";
 
 export class LayerScreen extends Screen {
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {

@@ -6,6 +6,12 @@ import {LayerMetadata} from "../shared/Metadata";
 
 export class GithubBadResponseError extends Error {}
 
+export type GithubFile = {
+    path: string,
+    content: string|Uint8Array,
+    isBinary?: boolean,
+}
+
 // from https://stackoverflow.com/questions/12710001
 // note: `buffer` arg can be an ArrayBuffer or a Uint8Array
 async function bufferToBase64(buffer: Uint8Array | ArrayBuffer): Promise<string> {
@@ -56,7 +62,7 @@ export class Github {
         this.loginPromise = Promise.resolve(false);
     }
 
-    async commitFiles(files: Array<{path: string, content: string|Uint8Array}>, message: string): Promise<void> {
+    async commitFiles(files: GithubFile[], message: string): Promise<void> {
         if (!await this.isLoggedIn) {
             return;
         }
@@ -66,11 +72,12 @@ export class Github {
 
         const blobs = await Promise.all(files.map(async (file) => {
             const content = ArrayBuffer.isView(file.content) ? await bufferToBase64(file.content) : file.content;
+            console.log(content);
             const blob = this._checkResponse(await this.octokit!.rest.git.createBlob({
                 owner: this._repo!.owner.login,
                 repo: this._repo!.name,
                 content,
-                encoding: ArrayBuffer.isView(file.content) ? 'base64' : 'utf-8',
+                encoding: ArrayBuffer.isView(file.content) || file.isBinary ? 'base64' : 'utf-8',
             }));
             return {
                 path: file.path,
