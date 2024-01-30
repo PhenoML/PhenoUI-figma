@@ -6,7 +6,7 @@ import {
     showLayerScreen,
     showStrapiLoginScreen
 } from "./screens";
-import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getUserData, getTypeSpec} from "./export";
+import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getTypeSpec} from "./tools/export/export";
 import {ForbiddenError, Strapi, StrapiEndpoints} from "./Strapi";
 import {getLocalData, getMetadata, setLocalData, updateMetadata} from "./metadata";
 import {
@@ -19,6 +19,7 @@ import {
     SetTabData, CategoryData, StrapiEndpointUrlData, SetLocalData
 } from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
+import {getUserData} from "./tools/export/userdata";
 
 export class PhenoUI {
     api: PluginAPI;

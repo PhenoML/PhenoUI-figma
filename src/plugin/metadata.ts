@@ -1,4 +1,4 @@
-import {UINode} from "./export";
+import {UINode} from "./tools/export/export";
 
 export function updateMetadata(node: UINode, key: string, value: string | number | boolean) {
     if (!node.getPluginData(key)) {

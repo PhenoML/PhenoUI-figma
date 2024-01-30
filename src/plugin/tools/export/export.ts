@@ -1,7 +1,8 @@
-import {LayerMetadata} from "../shared/Metadata";
-import {Strapi, TypeSpec, UserDataSpec} from "./Strapi";
-import {getMetadata} from "./metadata";
-import {execute} from "./execute";
+import {LayerMetadata} from "../../../shared/Metadata";
+import {Strapi, TypeSpec, UserDataSpec} from "../../Strapi";
+import {getMetadata} from "../../metadata";
+import {execute} from "../../execute";
+import {getUserData} from "./userdata";
 
 enum MappingAction {
     literal = '!',
@@ -184,57 +185,6 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
         }
     }
     return result;
-}
-
-export function getUserData(node: UINode, type: string, userData: UserDataSpec) {
-    for (const key of Object.keys(userData)) {
-        const value = getMetadata(node, `${type}_${key}`);
-        const data = userData[key];
-        if (data.type == 'number') {
-            // when read from input fields, numbers are strings, so they come back as strings
-            data.value = parseFloat(value as string);
-        } else if (data.type === 'componentProperty') {
-            if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-                const key = node.componentPropertyDefinitions[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
-                data.value = node.componentPropertyDefinitions[key].defaultValue;
-                data.valueType = node.componentPropertyDefinitions[key].type;
-            } else {
-                const iNode = node as InstanceNode;
-                const key = iNode.componentProperties[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
-                data.value = iNode.componentProperties[key].value;
-                data.valueType = iNode.componentProperties[key].type;
-            }
-
-            if (data.valueType === 'VARIANT') {
-                data.options = [];
-                let componentNode: any = node;
-                while (componentNode.type !== 'COMPONENT_SET' && componentNode.parent) {
-                    if ('mainComponent' in componentNode) {
-                        componentNode = componentNode.mainComponent;
-                    } else {
-                        componentNode = componentNode.parent;
-                    }
-                }
-                if (componentNode) {
-                    const key = componentNode.componentPropertyDefinitions[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
-                    const variantOptions = componentNode.componentPropertyDefinitions[key].variantOptions;
-                    if (variantOptions) {
-                        data.options = [];
-                        for (const option of variantOptions) {
-                            data.options.push({
-                                value: option,
-                                label: option,
-                            });
-                        }
-                    }
-                }
-            }
-        } else {
-            data.value = value;
-        }
-    }
-
-    return userData;
 }
 
 function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec | null) {

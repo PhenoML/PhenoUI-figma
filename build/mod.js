@@ -2295,7 +2295,76 @@ async function execute(cache, strapi, node, instruction) {
   return null;
 }
 
-// src/plugin/export.ts
+// src/plugin/tools/export/userdata.ts
+function _getComponentProperty(node, key) {
+  if (node.type === "COMPONENT" || node.type === "COMPONENT_SET") {
+    const k = node.componentPropertyDefinitions[key] ? key : key.split(/#(?!.*#)/)[0];
+    if (node.componentPropertyDefinitions[k]) {
+      return {
+        value: node.componentPropertyDefinitions[k].defaultValue,
+        valueType: node.componentPropertyDefinitions[k].type
+      };
+    }
+  } else {
+    const instanceNode = node;
+    const k = instanceNode.componentProperties[key] ? key : key.split(/#(?!.*#)/)[0];
+    if (instanceNode.componentProperties[k]) {
+      return {
+        value: instanceNode.componentProperties[k].value,
+        valueType: instanceNode.componentProperties[k].type
+      };
+    }
+  }
+  return void 0;
+}
+function _getVariantOptions(node, key) {
+  let componentNode = node;
+  while (componentNode.type !== "COMPONENT_SET" && componentNode.parent) {
+    if ("mainComponent" in componentNode) {
+      componentNode = componentNode.mainComponent;
+    } else {
+      componentNode = componentNode.parent;
+    }
+  }
+  if (componentNode) {
+    const k = componentNode.componentPropertyDefinitions[key] ? key : key.split(/#(?!.*#)/)[0];
+    const variantOptions = componentNode.componentPropertyDefinitions[k].variantOptions;
+    if (variantOptions) {
+      const options = [];
+      for (const option of variantOptions) {
+        options.push({
+          value: option,
+          label: option
+        });
+      }
+      return options;
+    }
+  }
+  return [];
+}
+function getUserData(node, type, userData) {
+  for (const key of Object.keys(userData)) {
+    const value = getMetadata(node, `${type}_${key}`);
+    const data = userData[key];
+    switch (data.type) {
+      case "number":
+        data.value = parseFloat(value);
+        break;
+      case "componentProperty":
+        Object.assign(data, _getComponentProperty(node, data.key));
+        if (data.valueType === "VARIANT") {
+          data.options = _getVariantOptions(node, data.key);
+        }
+        break;
+      default:
+        data.value = value;
+        break;
+    }
+  }
+  return userData;
+}
+
+// src/plugin/tools/export/export.ts
 function findNode(api, id) {
   if (id === api.root.id) {
     return api.root;
@@ -2440,53 +2509,6 @@ async function _processSpec(cache, strapi, node, spec) {
     }
   }
   return result;
-}
-function getUserData(node, type, userData) {
-  for (const key of Object.keys(userData)) {
-    const value = getMetadata(node, `${type}_${key}`);
-    const data = userData[key];
-    if (data.type == "number") {
-      data.value = parseFloat(value);
-    } else if (data.type === "componentProperty") {
-      if (node.type === "COMPONENT" || node.type === "COMPONENT_SET") {
-        const key2 = node.componentPropertyDefinitions[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
-        data.value = node.componentPropertyDefinitions[key2].defaultValue;
-        data.valueType = node.componentPropertyDefinitions[key2].type;
-      } else {
-        const iNode = node;
-        const key2 = iNode.componentProperties[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
-        data.value = iNode.componentProperties[key2].value;
-        data.valueType = iNode.componentProperties[key2].type;
-      }
-      if (data.valueType === "VARIANT") {
-        data.options = [];
-        let componentNode = node;
-        while (componentNode.type !== "COMPONENT_SET" && componentNode.parent) {
-          if ("mainComponent" in componentNode) {
-            componentNode = componentNode.mainComponent;
-          } else {
-            componentNode = componentNode.parent;
-          }
-        }
-        if (componentNode) {
-          const key2 = componentNode.componentPropertyDefinitions[data.key] ? data.key : data.key.split(/#(?!.*#)/)[0];
-          const variantOptions = componentNode.componentPropertyDefinitions[key2].variantOptions;
-          if (variantOptions) {
-            data.options = [];
-            for (const option of variantOptions) {
-              data.options.push({
-                value: option,
-                label: option
-              });
-            }
-          }
-        }
-      }
-    } else {
-      data.value = value;
-    }
-  }
-  return userData;
 }
 function _getUserDataExport(node, type, userData) {
   var _a;

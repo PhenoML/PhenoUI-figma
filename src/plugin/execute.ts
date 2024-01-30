@@ -1,5 +1,5 @@
 import {Strapi} from "./Strapi";
-import {fetchValue, MappingString, resolvePath, UINode} from "./export";
+import {fetchValue, MappingString, resolvePath, UINode} from "./tools/export/export";
 
 const funcRegex = /([^(]+)\((.*)\)\s*$/;
 const splitArgsRegex = /,(?![^()[\]]+[)\]])/;
