@@ -104,6 +104,7 @@ export class Strapi {
                 if (result.jwt) {
                     this.jwt = result.jwt;
                     this.server = server.trim();
+                    await setLocalData(LayerMetadata.strapiUser, user);
                     await setLocalData(LayerMetadata.strapiJWT, this.jwt);
                     await setLocalData(LayerMetadata.strapiServer, this.server);
                     return true;

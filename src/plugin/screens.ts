@@ -1,7 +1,7 @@
 import {AvailableScreens} from "../shared/AvailableScreens";
 import {MessageBus} from "../shared/MessageBus";
 import {LayerMetadata} from "../shared/Metadata";
-import {getMetadata} from "./metadata";
+import {getLocalData, getMetadata} from "./metadata";
 import {LayerScreenData} from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
 import {LayerData} from "../ui/tools/layer";
@@ -20,13 +20,13 @@ export function showErrorScreen(bus: MessageBus, title: string, description: str
     });
 }
 
-export function showStrapiLoginScreen(bus: MessageBus, api: PluginAPI, error?: string) {
+export async function showStrapiLoginScreen(bus: MessageBus, api: PluginAPI, error?: string) {
     bus.execute('updateScreen', {
         screen: AvailableScreens.strapi_login,
         credentials: {
             id: api.root.id,
-            server: getMetadata(api.root, LayerMetadata.strapiServer) as string,
-            user: getMetadata(api.root, LayerMetadata.strapiUser) as string,
+            server: await getLocalData(LayerMetadata.strapiServer) as string,
+            user: await getLocalData(LayerMetadata.strapiUser) as string,
             error,
         }
     });
