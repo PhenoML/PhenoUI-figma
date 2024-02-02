@@ -153,13 +153,16 @@ export function selectInput(data: DropdownData): TemplateResult {
             <select
                 id="${data.id}"
                 class="select-input"
+                .value="${live(data.value)}"
                 @change="${function (this:HTMLInputElement, _e: Event) {
                     if (data.onUpdate) {
                         data.onUpdate(data.id, this.value);
                     }
                 }}"
             >
-                ${data.options.map(o => html`<option value="${o.value}" ?selected="${o.value === data.value}">${o.label}</option>`)}
+                ${data.options.map(o => 
+                        html`<option id="${o.value}-${data.value}" value="${o.value}" ?selected="${o.value === data.value}">${o.label}</option>`
+                )}
             </select>
         </div>
     `;

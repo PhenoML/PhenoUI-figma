@@ -25351,13 +25351,16 @@ function selectInput(data2) {
             <select
                 id="${data2.id}"
                 class="select-input"
+                .value="${l2(data2.value)}"
                 @change="${function(_e) {
     if (data2.onUpdate) {
       data2.onUpdate(data2.id, this.value);
     }
   }}"
             >
-                ${data2.options.map((o3) => x`<option value="${o3.value}" ?selected="${o3.value === data2.value}">${o3.label}</option>`)}
+                ${data2.options.map(
+    (o3) => x`<option id="${o3.value}-${data2.value}" value="${o3.value}" ?selected="${o3.value === data2.value}">${o3.label}</option>`
+  )}
             </select>
         </div>
     `;
