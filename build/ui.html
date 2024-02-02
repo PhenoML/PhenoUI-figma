@@ -25482,7 +25482,7 @@ async function _strapiImageExists(bus, name2, jwt) {
   });
   const result = await response.json();
   if (result.length > 0) {
-    return result[0].id;
+    return result[0];
   }
   return null;
 }
@@ -25491,9 +25491,16 @@ async function _uploadImagesToStrapi(bus, images) {
   const server = await bus.execute("getStrapiServer", void 0);
   const url = await bus.execute("getStrapiUrlForEndpoint", { collection: "/api/upload" /* upload */ });
   for (const image of images) {
+    if (image.__userData.method === "embed") {
+      continue;
+    }
     const filename = `${image.name}.${image.format}`;
     const existing = await _strapiImageExists(bus, filename, jwt);
-    const query = existing ? `?id=${existing}` : "";
+    if (image.__userData.method === "link" && existing) {
+      image.data = new URL(existing.url, server).href;
+      continue;
+    }
+    const query = existing ? `?id=${existing.id}` : "";
     const form = new FormData();
     if (image.format === "svg") {
       const blob = new Blob([image.data], { type: "image/svg+xml" });
@@ -25520,9 +25527,10 @@ async function _uploadImagesToStrapi(bus, images) {
 async function uploadToStrapi(bus, name2, payload) {
   const collection = payload.type === "figma-component" ? "/api/figma-widgets" /* widgets */ : "/api/screens" /* screens */;
   const categoryCollection = payload.type === "figma-component" ? "/api/figma-widget-categories" /* widgetCategories */ : "/api/screen-categories" /* screenCategories */;
-  const categoryUid = payload.type === "figma-component" ? await bus.execute("getMetadata", { id: null, key: "com.phenoui.strapi.auth.user" /* strapiUser */ }) : "debug";
+  const categoryUid = await bus.execute("getLocalData", "com.phenoui.strapi.auth.user" /* strapiUser */);
   const categoryData = await bus.execute("getCategory", { collection: categoryCollection, uid: categoryUid });
   const category = categoryData ? categoryData.id : (await bus.execute("createCategory", { collection: categoryCollection, uid: categoryUid })).id;
+  const slug = `${categoryUid.toLowerCase().replace(/ /g, "-")}-${name2.toLowerCase().replace(/ /g, "-")}`;
   const images = extractImages(payload);
   await _uploadImagesToStrapi(bus, images);
   let data2;
@@ -25530,6 +25538,7 @@ async function uploadToStrapi(bus, name2, payload) {
     data2 = {
       name: name2,
       category,
+      slug,
       defaultVariant: payload.defaultVariant,
       variants: payload.variants
     };
@@ -25540,9 +25549,11 @@ async function uploadToStrapi(bus, name2, payload) {
     data2 = {
       name: name2,
       category,
+      slug,
       spec: payload
     };
   }
+  console.log(data2);
   await bus.execute("uploadToStrapi", { collection, payload: data2 });
 }
 

@@ -2218,13 +2218,13 @@ function showErrorScreen(bus, title, description) {
     }
   });
 }
-function showStrapiLoginScreen(bus, api, error) {
+async function showStrapiLoginScreen(bus, api, error) {
   bus.execute("updateScreen", {
     screen: 1 /* strapi_login */,
     credentials: {
       id: api.root.id,
-      server: getMetadata(api.root, "com.phenoui.strapi.auth.server" /* strapiServer */),
-      user: getMetadata(api.root, "com.phenoui.strapi.auth.user" /* strapiUser */),
+      server: await getLocalData("com.phenoui.strapi.auth.server" /* strapiServer */),
+      user: await getLocalData("com.phenoui.strapi.auth.user" /* strapiUser */),
       error
     }
   });
@@ -2438,12 +2438,17 @@ async function fetchValue(cache, strapi, node, mapping, rawNodes = false) {
         if (Array.isArray(fetched)) {
           const value = [];
           for (const n of fetched) {
-            const exported = await exportNode(cache, strapi, n);
-            value.push(exported);
+            if (n.visible) {
+              const exported = await exportNode(cache, strapi, n);
+              value.push(exported);
+            }
           }
           return value;
         } else if (fetched) {
-          return await exportNode(cache, strapi, fetched);
+          if (fetched.visible) {
+            return await exportNode(cache, strapi, fetched);
+          }
+          return null;
         }
       }
       return fetched;
@@ -2681,6 +2686,7 @@ var Strapi = class {
         if (result.jwt) {
           this.jwt = result.jwt;
           this.server = server.trim();
+          await setLocalData("com.phenoui.strapi.auth.user" /* strapiUser */, user);
           await setLocalData("com.phenoui.strapi.auth.token" /* strapiJWT */, this.jwt);
           await setLocalData("com.phenoui.strapi.auth.server" /* strapiServer */, this.server);
           return true;
