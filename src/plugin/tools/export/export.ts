@@ -105,12 +105,17 @@ export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: 
                 if (Array.isArray(fetched)) {
                     const value = [];
                     for (const n of fetched) {
-                        const exported = await exportNode(cache, strapi, n);
-                        value.push(exported);
+                        if (n.visible) {
+                            const exported = await exportNode(cache, strapi, n);
+                            value.push(exported);
+                        }
                     }
                     return value;
                 } else if (fetched) {
-                    return await exportNode(cache, strapi, fetched);
+                    if (fetched.visible) {
+                        return await exportNode(cache, strapi, fetched);
+                    }
+                    return null;
                 }
             }
             return fetched;
