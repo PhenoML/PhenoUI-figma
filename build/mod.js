@@ -2531,12 +2531,11 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
   let typeData = await strapi.getTypeSpec(type, cache, useDefaultCache);
   if (node.type === "COMPONENT" || node.type === "INSTANCE" || node.type === "COMPONENT_SET") {
     const properties = node.type === "COMPONENT" || node.type === "COMPONENT_SET" ? node.componentPropertyDefinitions : node.componentProperties;
+    typeData = {
+      mappings: Object.assign({}, typeData == null ? void 0 : typeData.mappings),
+      userData: Object.assign({}, typeData == null ? void 0 : typeData.userData)
+    };
     if (Object.keys(properties).length) {
-      typeData = Object.assign({}, typeData, {
-        mappings: {},
-        userData: {}
-      });
-      typeData.userData = typeData.userData || {};
       for (let key in properties) {
         key = properties[key].type === "VARIANT" ? `${key}#variant` : key;
         const [description, propertyId] = key.split(/#(?!.*#)/);
@@ -2547,6 +2546,14 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
           propertyId
         };
       }
+    }
+    if (node.type === "INSTANCE") {
+      typeData.mappings = {
+        type: "!figma-component-instance",
+        widgetType: `!${type}`,
+        dimensions: "@_dimensions",
+        parentLayout: "@_parentLayout"
+      };
     }
   }
   return typeData;
@@ -2579,6 +2586,9 @@ async function exportNode(cache, strapi, node) {
     console.log(node);
     const type = getMetadata(node, "com.phenoui.layer.widget_override" /* widgetOverride */) || figmaTypeToWidget(node);
     const spec = await getTypeSpec(type, node, strapi, cache);
+    if (node.type === "INSTANCE") {
+      console.log("INSTANCE", type, spec);
+    }
     if (!spec) {
       return null;
     }
@@ -2615,6 +2625,8 @@ async function exportNode(cache, strapi, node) {
       }
     }
     const result = await _processSpec(cache, strapi, node, spec.mappings);
+    const infoSpec = await getTypeSpec("__info", { type: "FRAME" }, strapi, cache);
+    result["__info"] = await _processSpec(cache, strapi, node, infoSpec.mappings);
     const userData = _getUserDataExport(node, type, spec.userData);
     if (userData) {
       result["__userData"] = userData;

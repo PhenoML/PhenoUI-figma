@@ -208,15 +208,12 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
     let typeData = await strapi.getTypeSpec(type, cache, useDefaultCache);
     if (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET') {
         const properties = node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' ? node.componentPropertyDefinitions : node.componentProperties;
+        typeData = {
+            mappings: Object.assign({}, typeData?.mappings),
+            userData: Object.assign({}, typeData?.userData),
+        }
+
         if (Object.keys(properties).length) {
-            typeData = Object.assign({}, typeData, {
-                mappings: {},
-                userData: {},
-            });
-
-            // the userData could be null, so we need to initialize it
-            typeData.userData = typeData.userData || {};
-
             for (let key in properties) {
                 key = properties[key].type === 'VARIANT' ? `${key}#variant` : key;
                 const [description, propertyId] = key.split(/#(?!.*#)/);
@@ -227,6 +224,15 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
                     key,
                     propertyId,
                 }
+            }
+        }
+
+        if (node.type === 'INSTANCE') {
+            typeData.mappings = {
+                type: "!figma-component-instance",
+                widgetType: `!${type}`,
+                dimensions: "@_dimensions",
+                parentLayout: "@_parentLayout",
             }
         }
     }
@@ -263,6 +269,9 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
         console.log(node);
         const type = getMetadata(node, LayerMetadata.widgetOverride) as string || figmaTypeToWidget(node);
         const spec = await getTypeSpec(type, node, strapi, cache);
+        if (node.type === 'INSTANCE') {
+            console.log('INSTANCE', type, spec);
+        }
         if (!spec) {
             return null;
         }
@@ -303,6 +312,9 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
         }
 
         const result = await _processSpec(cache, strapi, node, spec.mappings);
+        const infoSpec = await getTypeSpec('__info', { type: 'FRAME' } as any, strapi, cache) as TypeSpec;
+        result['__info'] = await _processSpec(cache, strapi, node, infoSpec.mappings);
+
         const userData = _getUserDataExport(node, type, spec.userData);
         if (userData) {
             result['__userData'] = userData;
