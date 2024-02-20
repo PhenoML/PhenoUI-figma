@@ -2264,10 +2264,10 @@ var builtInMethods = {
     return r;
   },
   exportSVG: async (node) => {
-    return await node.exportAsync({ format: "SVG_STRING" });
+    return await node.exportAsync({ format: "SVG_STRING", useAbsoluteBounds: true });
   },
   exportPNG: async (node) => {
-    const bytes = await node.exportAsync({ format: "PNG" });
+    const bytes = await node.exportAsync({ format: "PNG", useAbsoluteBounds: true });
     return figma.base64Encode(bytes);
   }
 };

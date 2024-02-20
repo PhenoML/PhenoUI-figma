@@ -25487,16 +25487,18 @@ async function _strapiImageExists(bus, name2, jwt) {
   return null;
 }
 async function _uploadImagesToStrapi(bus, images) {
+  var _a3, _b;
   const jwt = await bus.execute("getStrapiJwt", void 0);
   const server = await bus.execute("getStrapiServer", void 0);
   const url = await bus.execute("getStrapiUrlForEndpoint", { collection: "/api/upload" /* upload */ });
   for (const image of images) {
-    if (image.__userData.method === "embed") {
+    const uploadMethod = (_b = (_a3 = image.__userData.method) != null ? _a3 : image.uploadMethod) != null ? _b : "embed";
+    if (uploadMethod === "embed") {
       continue;
     }
-    const filename = `${image.name}.${image.format}`;
+    const filename = `${image.__info.name}.${image.format}`;
     const existing = await _strapiImageExists(bus, filename, jwt);
-    if (image.__userData.method === "link" && existing) {
+    if (uploadMethod && existing) {
       image.data = new URL(existing.url, server).href;
       continue;
     }
