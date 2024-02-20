@@ -33,15 +33,16 @@ async function _uploadImagesToStrapi(bus: MessageBus, images: any[]) {
     const server = await bus.execute('getStrapiServer', undefined);
     const url = await bus.execute('getStrapiUrlForEndpoint', { collection: StrapiEndpoints.upload });
     for (const image of images) {
+        const uploadMethod = image.__userData.method ?? image.uploadMethod ?? 'embed';
         // if the image method is set to embed, skip uploading
-        if (image.__userData.method === 'embed') {
+        if (uploadMethod === 'embed') {
             continue;
         }
 
-        const filename = `${image.name}.${image.format}`;
+        const filename = `${image.__info.name}.${image.format}`;
         const existing = await _strapiImageExists(bus, filename, jwt);
         // if the method is set to link and the image exists, set the link as the data and skip uploading
-        if (image.__userData.method === 'link' && existing) {
+        if (uploadMethod && existing) {
             image.data = new URL(existing.url, server).href;
             continue;
         }
