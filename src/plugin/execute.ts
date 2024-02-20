@@ -11,10 +11,10 @@ const builtInMethods: { [key: string]: Function } = {
         return r;
     },
     exportSVG: async (node: SceneNode) => {
-        return await node.exportAsync({ format: 'SVG_STRING' });
+        return await node.exportAsync({ format: 'SVG_STRING', useAbsoluteBounds: true });
     },
     exportPNG: async (node: SceneNode) => {
-        const bytes = await node.exportAsync({ format: 'PNG' });
+        const bytes = await node.exportAsync({ format: 'PNG', useAbsoluteBounds: true });
         return figma.base64Encode(bytes);
     }
 }
