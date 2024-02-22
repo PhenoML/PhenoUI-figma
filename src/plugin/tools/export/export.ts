@@ -199,7 +199,10 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
     const withValues = getUserData(node, type, userData);
     const result: { [key: string]: any } = {};
     for (const key of Object.keys(userData)) {
-        result[key] = withValues[key].value ?? withValues[key].default;
+        result[key] = withValues[key].value;
+        if (result[key] === '' || result[key] === null || result[key] === undefined) {
+            result[key] = withValues[key].default;
+        }
     }
     return result;
 }

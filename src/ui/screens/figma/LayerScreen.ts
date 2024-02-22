@@ -143,7 +143,7 @@ export class LayerScreen extends Screen {
                     id: key,
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
-                    value: data.value ?? data.default ?? undefined,
+                    value: data.value || data.default || undefined,
                     options: data.options,
                     onUpdate,
                 });
@@ -171,7 +171,7 @@ export class LayerScreen extends Screen {
                         id: key,
                         label: data.description,
                         icon: name.charAt(0).toUpperCase(),
-                        value: data.value ?? data.default ?? undefined,
+                        value: data.value || data.default || undefined,
                         options: data.options as [],
                         onUpdate: onUpdateComponentProperty,
                     });
