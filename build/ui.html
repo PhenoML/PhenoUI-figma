@@ -25724,7 +25724,7 @@ var LayerScreen = class extends Screen {
     return T;
   }
   _getUserField(bus, layerID, widgetType, name2, data2) {
-    var _a3, _b, _c, _d, _e, _f, _g, _h;
+    var _a3, _b, _c, _d;
     const key2 = `${widgetType}_${name2}`;
     const onUpdate = (_id, value2) => bus.execute("updateMetadata", {
       id: layerID,
@@ -25767,7 +25767,7 @@ var LayerScreen = class extends Screen {
           id: key2,
           label: data2.description,
           icon: name2.charAt(0).toUpperCase(),
-          value: (_f = (_e = data2.value) != null ? _e : data2.default) != null ? _f : void 0,
+          value: data2.value || data2.default || void 0,
           options: data2.options,
           onUpdate
         });
@@ -25794,7 +25794,7 @@ var LayerScreen = class extends Screen {
             id: key2,
             label: data2.description,
             icon: name2.charAt(0).toUpperCase(),
-            value: (_h = (_g = data2.value) != null ? _g : data2.default) != null ? _h : void 0,
+            value: data2.value || data2.default || void 0,
             options: data2.options,
             onUpdate: onUpdateComponentProperty
           });

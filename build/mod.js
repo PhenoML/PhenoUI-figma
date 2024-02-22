@@ -2516,14 +2516,16 @@ async function _processSpec(cache, strapi, node, spec) {
   return result;
 }
 function _getUserDataExport(node, type, userData) {
-  var _a;
   if (!userData) {
     return null;
   }
   const withValues = getUserData(node, type, userData);
   const result = {};
   for (const key of Object.keys(userData)) {
-    result[key] = (_a = withValues[key].value) != null ? _a : withValues[key].default;
+    result[key] = withValues[key].value;
+    if (result[key] === "" || result[key] === null || result[key] === void 0) {
+      result[key] = withValues[key].default;
+    }
   }
   return result;
 }
