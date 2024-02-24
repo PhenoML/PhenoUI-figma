@@ -14,7 +14,7 @@ const builtInMethods: { [key: string]: Function } = {
         return await node.exportAsync({ format: 'SVG_STRING', useAbsoluteBounds: true });
     },
     exportPNG: async (node: SceneNode) => {
-        const bytes = await node.exportAsync({ format: 'PNG', useAbsoluteBounds: true });
+        const bytes = await node.exportAsync({ format: 'PNG', useAbsoluteBounds: true, constraint: { type: 'SCALE', value: 3 } });
         return figma.base64Encode(bytes);
     }
 }
