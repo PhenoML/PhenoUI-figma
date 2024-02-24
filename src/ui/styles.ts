@@ -101,6 +101,9 @@ export function getStyles(): TemplateResult[] {
                 font-weight: 600;
                 flex-grow: 1;
                 padding: 0 8px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
             
             .label {
