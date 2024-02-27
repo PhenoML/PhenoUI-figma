@@ -2631,7 +2631,10 @@ async function exportNode(cache, strapi, node) {
         }
       }
     }
-    const result = await _processSpec(cache, strapi, node, spec.mappings);
+    let result = await _processSpec(cache, strapi, node, spec.mappings);
+    if (Array.isArray(result)) {
+      result = Object.assign({}, ...result);
+    }
     const infoSpec = await getTypeSpec("__info", { type: "FRAME" }, strapi, cache);
     result["__info"] = await _processSpec(cache, strapi, node, infoSpec.mappings);
     const userData = _getUserDataExport(node, type, spec.userData);
