@@ -1,5 +1,5 @@
 import {Strapi} from "./Strapi";
-import {fetchValue, MappingString, resolvePath, UINode} from "./tools/export/export";
+import {fetchValue, figmaTypeToWidget, MappingString, resolvePath, UINode} from "./tools/export/export";
 
 const funcRegex = /([^(]+)\((.*)\)\s*$/;
 const splitArgsRegex = /,(?![^()[\]]+[)\]])/;
@@ -16,7 +16,8 @@ const builtInMethods: { [key: string]: Function } = {
     exportPNG: async (node: SceneNode) => {
         const bytes = await node.exportAsync({ format: 'PNG', useAbsoluteBounds: true, constraint: { type: 'SCALE', value: 3 } });
         return figma.base64Encode(bytes);
-    }
+    },
+    nativeType: figmaTypeToWidget,  
 }
 
 export async function execute(cache: Map<string, any>, strapi: Strapi, node: UINode, instruction: string): Promise<any> {

@@ -211,9 +211,9 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
     let typeData = await strapi.getTypeSpec(type, cache, useDefaultCache);
     if (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET') {
         const properties = node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' ? node.componentPropertyDefinitions : node.componentProperties;
-        typeData = {
-            mappings: Object.assign({}, typeData?.mappings),
-            userData: Object.assign({}, typeData?.userData),
+        const typeDataComponent = {
+            mappings: {} as MappingSpec,
+            userData: {} as UserDataSpec,
         }
 
         if (Object.keys(properties).length) {
@@ -221,7 +221,7 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
                 key = properties[key].type === 'VARIANT' ? `${key}#variant` : key;
                 const [description, propertyId] = key.split(/#(?!.*#)/);
                 // @ts-ignore
-                typeData.userData[key] = {
+                typeDataComponent.userData[key] = {
                     description,
                     type: 'componentProperty',
                     key,
@@ -231,12 +231,17 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
         }
 
         if (node.type === 'INSTANCE') {
-            typeData.mappings = {
+            typeDataComponent.mappings = {
                 type: "!figma-component-instance",
                 widgetType: `!${type}`,
                 dimensions: "@_dimensions",
                 parentLayout: "@_parentLayout",
             }
+        }
+
+        typeData = {
+            mappings: Object.assign(typeDataComponent.mappings, typeData?.mappings),
+            userData: Object.assign(typeDataComponent.userData, typeData?.userData),
         }
     }
     return typeData;
