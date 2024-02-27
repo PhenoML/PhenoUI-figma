@@ -319,7 +319,12 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
             }
         }
 
-        const result = await _processSpec(cache, strapi, node, spec.mappings);
+        let result = await _processSpec(cache, strapi, node, spec.mappings);
+        // if the result is an array, merge all the objects in order
+        if (Array.isArray(result)) {
+            result = Object.assign({}, ...result);
+        }
+
         const infoSpec = await getTypeSpec('__info', { type: 'FRAME' } as any, strapi, cache) as TypeSpec;
         result['__info'] = await _processSpec(cache, strapi, node, infoSpec.mappings);
 
