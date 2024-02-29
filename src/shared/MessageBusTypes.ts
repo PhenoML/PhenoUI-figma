@@ -1,7 +1,7 @@
 import {AvailableScreens} from "./AvailableScreens";
 import {ErrorData} from "../ui/screens/ErrorScreen";
 import {StrapiLoginData} from "../ui/screens/strapi/LoginScreen";
-import {StrapiEndpoints} from "../plugin/Strapi";
+import {PropertyBinding, StrapiEndpoints} from "../plugin/Strapi";
 import {LayerData} from "../ui/tools/layer";
 import {AvailableTabs} from "./AvailableTabs";
 import {GithubLoginData} from "../ui/screens/github/LoginScreen";
@@ -18,7 +18,7 @@ export type ScreenData = EmptyScreenData | ErrorScreenData | StrapiLoginScreenDa
 export type UpdateMetadataData = {
     id: string | null,
     key: string,
-    value: string | number | boolean,
+    value: string | number | boolean | PropertyBinding,
 }
 
 /** Get Metadata Data **/

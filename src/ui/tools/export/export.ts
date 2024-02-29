@@ -29,7 +29,6 @@ async function _downloadExport(name: string, payload: any) {
 }
 
 export function extractImages(payload: any): any[] {
-    console.log(payload);
     const images = []
     if (payload.type === 'figma-image') {
         images.push(payload);

@@ -31,6 +31,23 @@ export function findNode(api: PluginAPI, id: string): UINode | null {
     return api.getNodeById(id) as (UINode | null);
 }
 
+export function findComponentOrInstance(node: UINode): UINode | null {
+    if (node.type === 'COMPONENT') {
+        if (node.parent && node.parent.type === 'COMPONENT_SET') {
+            return node.parent as UINode;
+        }
+        return node;
+    } else if (node.type === 'INSTANCE' || node.type === 'COMPONENT_SET') {
+        return node as UINode;
+    }
+
+    if (node.parent) {
+        return findComponentOrInstance(node.parent as UINode);
+    }
+
+    return null;
+}
+
 export function figmaTypeToWidget(node: UINode): string {
     switch (node.type) {
         case 'COMPONENT':
@@ -274,12 +291,8 @@ function _overrideSource(spec: MappingSpec, source: string): MappingSpec {
 
 export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
     try {
-        console.log(node);
         const type = getMetadata(node, LayerMetadata.widgetOverride) as string || figmaTypeToWidget(node);
         const spec = await getTypeSpec(type, node, strapi, cache);
-        if (node.type === 'INSTANCE') {
-            console.log('INSTANCE', type, spec);
-        }
         if (!spec) {
             return null;
         }

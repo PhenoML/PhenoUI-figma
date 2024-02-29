@@ -72,7 +72,6 @@ export class Github {
 
         const blobs = await Promise.all(files.map(async (file) => {
             const content = ArrayBuffer.isView(file.content) ? await bufferToBase64(file.content) : file.content;
-            console.log(content);
             const blob = this._checkResponse(await this.octokit!.rest.git.createBlob({
                 owner: this._repo!.owner.login,
                 repo: this._repo!.name,

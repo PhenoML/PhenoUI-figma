@@ -30,7 +30,6 @@ export async function commitToGithub(bus: MessageBus, name: string, payload: any
     });
 
     const message = `[${github._user?.login.toUpperCase()}] ${type}: ${name}`;
-    console.log(message);
 
     await github.commitFiles(files, message);
 

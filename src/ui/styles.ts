@@ -133,6 +133,14 @@ export function getStyles(): TemplateResult[] {
                 outline-offset: -1px;
                 outline: 1px solid var(--figma-color-border);
             }
+
+            .input-container .unlink-icon {
+                visibility: hidden;
+            }
+
+            .input-container:hover .unlink-icon {
+                visibility: visible;
+            }
             
             .input-container:focus-within {
                 outline-offset: -2px;
@@ -164,6 +172,7 @@ export function getStyles(): TemplateResult[] {
                 font-family: Inter, sans-serif;
                 font-size: 11px;
                 color: var(--figma-color-text);
+                z-index: 1;
             }
             
             .text-input::placeholder {
@@ -178,7 +187,7 @@ export function getStyles(): TemplateResult[] {
                 outline-offset: -1px;
                 outline: 1px solid var(--figma-color-border);
                 margin-top: 4px;
-                z-index: 1;
+                z-index: 2;
                 background-color: var(--figma-color-bg);
             }
 
@@ -213,6 +222,37 @@ export function getStyles(): TemplateResult[] {
             
             .select-input:focus {
                 outline: none;
+            }
+            
+            .select-link-property {
+                position: absolute;
+                bottom: -1px;
+                right: 0;
+                min-width: 23px;
+                max-width: 23px;
+                height: 100%;
+                border: none;
+                opacity: 0;
+                z-index: 0;
+            }
+
+            .select-link-property:focus-within {
+                outline: none;
+                left: 23px;
+                max-width: 100%;
+                /*height: 1px;*/
+            }
+
+            .bool-input-container {
+                display: flex;
+                flex-grow: 1;
+                width: 100%;
+                align-items: center;
+                z-index: 1;
+            }
+
+            .bool-input {
+                margin-right: 6px;
             }
             
             .button {
@@ -290,6 +330,35 @@ export function getStyles(): TemplateResult[] {
             
             .tab-selected {
                 background-color: var(--figma-color-bg-tertiary);
+            }
+            
+            .bound-property-pill-container {
+                display: flex;
+                flex-grow: 1;
+            }
+            
+            .bound-property-pill {
+                height: 100%;
+                font-weight: 400;
+                box-sizing: border-box;
+                margin: 0;
+                border: 1px solid transparent;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                padding: 4px 8px 4px 2px;
+                background-color: var(--figma-color-bg-component-tertiary);
+                user-select: none;
+            }
+            
+            .bound-icon {
+                height: unset;
+                width: 22px;
+                fill: var(--figma-color-icon-component);
+            }
+            
+            .unlink-icon:hover {
+                background-color: var(--figma-color-bg-hover);
             }
         </style>
     `];

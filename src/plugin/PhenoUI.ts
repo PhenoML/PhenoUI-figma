@@ -6,8 +6,15 @@ import {
     showLayerScreen,
     showStrapiLoginScreen
 } from "./screens";
-import {UINode, exportToFlutter, findNode, figmaTypeToWidget, getTypeSpec} from "./tools/export/export";
-import {ForbiddenError, Strapi, StrapiEndpoints} from "./Strapi";
+import {
+    UINode,
+    exportToFlutter,
+    findNode,
+    figmaTypeToWidget,
+    getTypeSpec,
+    findComponentOrInstance
+} from "./tools/export/export";
+import {ForbiddenError, PropertyBinding, Strapi, StrapiEndpoints} from "./Strapi";
 import {getLocalData, getMetadata, setLocalData, updateMetadata} from "./metadata";
 import {
     ExportData,
@@ -19,7 +26,7 @@ import {
     SetTabData, CategoryData, StrapiEndpointUrlData, SetLocalData
 } from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
-import {getUserData} from "./tools/export/userdata";
+import {getComponentProperty, getUserData} from "./tools/export/userdata";
 
 export class PhenoUI {
     api: PluginAPI;
@@ -93,6 +100,7 @@ export class PhenoUI {
 
     handleSelectionChange(selection: readonly UINode[], useDefaultCache: boolean = false): void {
         this.printTypes(selection);
+
         if (selection.length > 1) {
             // multiple objects selected
             showErrorScreen(
@@ -139,7 +147,7 @@ export class PhenoUI {
         }
     }
 
-    getMetadata(data: GetMetadataData): string | number | boolean | null {
+    getMetadata(data: GetMetadataData): string | number | boolean | PropertyBinding | null {
         const node = data.id === null ? this.api.root : findNode(this.api, data.id);
         if (node) {
             return getMetadata(node, data.key);
@@ -272,6 +280,34 @@ export class PhenoUI {
 
             if (typeData && typeData.userData) {
                 typeData.userData = getUserData(node, type, typeData.userData);
+
+                const component = findComponentOrInstance(node);
+                if (component !== null) {
+                    for (const userType of Object.keys(typeData.userData)) {
+                        const typeInfo = typeData.userData[userType];
+                        if (typeof typeInfo.value === 'object' && !Array.isArray(typeInfo.value) && typeInfo.value !== null) {
+                            const binding = typeInfo.value as PropertyBinding;
+                            const propValue = getComponentProperty(component, binding.id);
+                            binding.value = propValue?.value;
+                        } else if (
+                            (typeInfo.type === 'string' || typeInfo.type === 'boolean') &&
+                            (component.type === 'COMPONENT' || component.type === 'COMPONENT_SET') &&
+                            component !== node
+                        ) {
+                            const compProps = component.componentPropertyDefinitions;
+                            const properties = [];
+                            const propType = typeInfo.type === 'string' ? 'TEXT' : 'BOOLEAN';
+                            if (propType) {
+                                for (const key of Object.keys(compProps)) {
+                                    if (compProps[key].type === propType) {
+                                        properties.push(key);
+                                    }
+                                }
+                                typeInfo.properties = properties;
+                            }
+                        }
+                    }
+                }
             }
 
             showLayerScreen(this.bus, {

@@ -106,6 +106,5 @@ export async function uploadToStrapi(bus: MessageBus, name: string, payload: any
             spec: payload,
         }
     }
-    console.log(data);
     await bus.execute('uploadToStrapi', { collection, payload: data });
 }

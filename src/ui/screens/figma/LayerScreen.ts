@@ -2,7 +2,7 @@ import {Screen} from "../Screen";
 import {html, nothing, TemplateResult} from "lit-html";
 import {MessageBus} from "../../../shared/MessageBus";
 import {LayerMetadata} from "../../../shared/Metadata";
-import {booleanInput, numberInput, selectInput, textInput} from "../../widgets/input";
+import {booleanInput, boundedPropertyInput, numberInput, selectInput, textInput} from "../../widgets/input";
 import {flutter} from "../../widgets/icons";
 import {button} from "../../widgets/button";
 import {UserType} from "../../../plugin/Strapi";
@@ -97,43 +97,76 @@ export class LayerScreen extends Screen {
 
     _getUserField(bus: MessageBus, layerID: string, widgetType: string, name: string, data: UserType): TemplateResult {
         const key = `${widgetType}_${name}`;
-        const onUpdate = (_id: string, value: string | number | boolean) => bus.execute('updateMetadata', {
-            id: layerID,
-            key,
-            value
-        });
+        const onUpdate = async (_id: string, value: string | number | boolean) => {
+            await bus.execute('updateMetadata', {
+                id: layerID,
+                key,
+                value
+            });
+            if (data.value !== null && typeof data.value === 'object' && !Array.isArray(data.value)) {
+                await bus.execute('updateLayerView', undefined);
+            }
+        };
 
-        const onUpdateComponentProperty = async (_id: string, value: string | number | boolean) => bus.execute('updateComponentProperty', {
-            id: layerID,
-            key: (data as any).key,
-            value
-        });
+        const onUpdateComponentProperty = async (_id: string, value: string | number | boolean) => {
+            await bus.execute('updateComponentProperty', {
+                id: layerID,
+                key: (data as any).key,
+                value
+            });
+        };
+
+        const onUpdatePropertyBinding = async (_id: string, value: string) => {
+            await bus.execute('updateMetadata', {
+                id: layerID,
+                key,
+                value: {
+                    id: value,
+                }
+            });
+            await bus.execute('updateLayerView', undefined);
+        };
 
         switch (data.type) {
-            case 'string':
-                return textInput({
+            case 'string': {
+                const inputData = {
                     id: key,
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
                     placeholder: data.default as string || data.description,
                     value: data.value,
+                    properties: data.properties,
                     onUpdate,
-                });
+                    onUpdatePropertyBinding,
+                };
+                if (data.value !== null && typeof data.value === 'object' && !Array.isArray(data.value)) {
+                    return boundedPropertyInput(inputData);
+                }
+                return textInput(inputData);
+            }
+
+            case 'boolean': {
+                const inputData = {
+                    id: key,
+                    label: data.description,
+                    icon: name.charAt(0).toUpperCase(),
+                    placeholder: data.description,
+                    value: data.value ?? data.default ?? undefined,
+                    properties: data.properties,
+                    onUpdate,
+                    onUpdatePropertyBinding,
+                }
+                if (data.value !== null && typeof data.value === 'object' && !Array.isArray(data.value)) {
+                    return boundedPropertyInput(inputData);
+                }
+                return booleanInput(inputData);
+            }
 
             case 'number':
                 return numberInput({
                     id: key,
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
-                    value: data.value ?? data.default ?? undefined,
-                    onUpdate,
-                });
-
-            case 'boolean':
-                return booleanInput({
-                    id: key,
-                    label: data.description,
-                    placeholder: data.description,
                     value: data.value ?? data.default ?? undefined,
                     onUpdate,
                 });
@@ -162,6 +195,7 @@ export class LayerScreen extends Screen {
                     return booleanInput({
                         id: key,
                         label: data.description,
+                        icon: name.charAt(0).toUpperCase(),
                         placeholder: data.description,
                         value: data.value,
                         onUpdate: onUpdateComponentProperty,

@@ -1,5 +1,7 @@
 import {html, TemplateResult} from "lit-html";
 import {live} from "lit-html/directives/live.js";
+import {linkProperty, unlinkProperty} from './icons';
+import {PropertyBinding} from '../../plugin/Strapi';
 
 type AutocompleteState = {
     debounce: boolean,
@@ -15,8 +17,10 @@ type InputData = {
     label: string,
     icon?: TemplateResult | string,
     placeholder?: string,
-    value?: string | number | boolean,
+    value?: string | number | boolean | PropertyBinding,
+    properties?: string[],
     onUpdate?: (id: string, value: string | number | boolean) => void,
+    onUpdatePropertyBinding?: (id: string, value: string) => void,
     provider?: AutocompleteProvider,
 }
 
@@ -72,6 +76,30 @@ function autocompleteSelection(el: HTMLElement, state: AutocompleteState) {
     }
 }
 
+function _makeLinkProperty(data: InputData): TemplateResult | null {
+    if (data.properties && data.properties.length > 0) {
+        return html`
+            <div class="input-icon">
+                ${linkProperty}
+            </div>
+            <select
+                    id="${data.id}"
+                    class="select-link-property"
+                    @change="${function (this: HTMLInputElement, _e: Event) {
+                        if (this.value && data.onUpdatePropertyBinding) {
+                            data.onUpdatePropertyBinding(data.id, this.value);
+                        }
+                    }}"
+            >
+                <option value=""></option>
+                ${data.properties.map(p => html`<option id="${p}" value="${p}">${p.split(/#(?!.*#)/)[0]}</option>`)}
+            </select>
+        `;
+    }
+
+    return null;
+}
+
 function _input(type: string, data: InputData) {
     const state: AutocompleteState = {
         debounce: false,
@@ -106,22 +134,24 @@ function _input(type: string, data: InputData) {
                 id="${data.id}"
                 class="text-input"
                 type="${type}"
+                aria-label = "${data.label}, ${data.placeholder}"
                 placeholder="${data.placeholder}"
                 .value="${live(data.value || '')}"
                 @focus="${handleFocus}"
                 @blur="${data.provider ? handleFocus : null}"
                 @input="${data.provider ? handleInput : null}"
-                @change="${(e: Event) => {
+                @change="${function (this: HTMLInputElement, _e: Event) {
                     if (data.onUpdate) {
-                        data.onUpdate(data.id, (e.target as HTMLInputElement).value);
+                        data.onUpdate(data.id, this.value);
                     }
                 }}"
-                @keypress="${(e: KeyboardEvent) => {
+                @keypress="${function (this: HTMLInputElement, e: KeyboardEvent) {
                     if (e.target && e.code === 'Enter') {
-                        (e.target as HTMLInputElement).blur();
+                        this.blur();
                     }
                 }}"
             / >
+            ${_makeLinkProperty(data)}
             <div class="autocomplete-container" style="display:none;">
                 <div class="autocomplete-item" @mousedown="${handleMouseDown}">text</div>
                 <div class="autocomplete-item" @mousedown="${handleMouseDown}">text</div>
@@ -142,6 +172,30 @@ export function textInput(data: InputData): TemplateResult {
 
 export function numberInput(data: InputData): TemplateResult {
     return _input('number', data);
+}
+
+export function boundedPropertyInput(data: InputData): TemplateResult {
+    return html`
+        <div class="input-container" title="${data.placeholder}" aria-label="${data.placeholder}">
+            ${data.icon ? html`<div class="input-icon">${data.icon}</div>` : html`<div class="text-container">${data.label}</div>`}
+            <div class="bound-property-pill-container">
+                <div class="bound-property-pill">
+                    <div class="input-icon bound-icon">${linkProperty}</div>
+                    ${(data.value as any).id.split(/#(?!.*#)/)[0]}
+                </div>
+            </div>
+            <div 
+                    class="input-icon unlink-icon"
+                    @click="${function (this: HTMLElement, _e: MouseEvent) {
+                        if (data.onUpdate) {
+                            data.onUpdate(data.id, (data.value as any)?.value ?? null);
+                        }
+                    }}"
+            >
+                ${unlinkProperty}
+            </div>
+        </div>
+    `;
 }
 
 export function selectInput(data: DropdownData): TemplateResult {
@@ -171,7 +225,8 @@ export function selectInput(data: DropdownData): TemplateResult {
 export function booleanInput(data: InputData): TemplateResult {
     return html`
         <div class="input-container" title="${data.placeholder}" aria-label="${data.placeholder}">
-            <div class="input-icon">
+            ${data.icon ? html`<div class="input-icon">${data.icon}</div>` : html`<div class="text-container">${data.label}</div>`}
+            <div class="bool-input-container">
                 <input
                     id="${data.id}"
                     class="bool-input"
@@ -183,8 +238,9 @@ export function booleanInput(data: InputData): TemplateResult {
                         }
                     }}"
                 / >
+                <label>${data.label}</label>
             </div>
-            <label>${data.label}</label>
+            ${_makeLinkProperty(data)}
         </div>
     `;
 }

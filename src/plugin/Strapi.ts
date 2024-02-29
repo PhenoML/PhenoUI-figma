@@ -17,12 +17,22 @@ export enum StrapiEndpoints {
     files = '/api/upload/files',
 }
 
+export type PropertyBinding = {
+    id: string,
+    value?: string | boolean,
+}
+
 export type UserType = {
     description: string,
 } & ({
-    type: 'string' | 'number' | 'boolean',
-    default?: string | number | boolean,
-    value?: string | number | boolean,
+    type: 'string' | 'boolean',
+    default?: string | boolean,
+    value?: string | boolean | PropertyBinding,
+    properties?: string[],
+} | {
+    type: 'number',
+    default?: number,
+    value?: number,
 } | {
     type: 'select',
     default?: string,

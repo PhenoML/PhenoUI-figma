@@ -1,8 +1,8 @@
-import {UserDataSpec} from "../../Strapi";
+import {PropertyBinding, UserDataSpec} from "../../Strapi";
 import {getMetadata} from "../../metadata";
 import {UINode} from "./export";
 
-function _getComponentProperty(node: UINode, key: string) {
+export function getComponentProperty(node: UINode, key: string) {
     if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
         const k = node.componentPropertyDefinitions[key] ? key : key.split(/#(?!.*#)/)[0];
         if (node.componentPropertyDefinitions[k]) {
@@ -61,14 +61,14 @@ export function getUserData(node: UINode, type: string, userData: UserDataSpec) 
                 break;
 
             case 'componentProperty':
-                Object.assign(data, _getComponentProperty(node, data.key));
+                Object.assign(data, getComponentProperty(node, data.key));
                 if (data.valueType === 'VARIANT') {
                     data.options = _getVariantOptions(node, data.key);
                 }
                 break;
 
             default:
-                data.value = value;
+                data.value = value as string | boolean | PropertyBinding;
                 break;
         }
     }
