@@ -2193,7 +2193,7 @@ function getMetadata(node, key) {
   try {
     return JSON.parse(node.getPluginData(key));
   } catch (e) {
-    console.log(e);
+    console.error(e);
     updateMetadata(node, key, "");
     return "";
   }
@@ -2297,7 +2297,7 @@ async function execute(cache, strapi, node, instruction) {
 }
 
 // src/plugin/tools/export/userdata.ts
-function _getComponentProperty(node, key) {
+function getComponentProperty(node, key) {
   if (node.type === "COMPONENT" || node.type === "COMPONENT_SET") {
     const k = node.componentPropertyDefinitions[key] ? key : key.split(/#(?!.*#)/)[0];
     if (node.componentPropertyDefinitions[k]) {
@@ -2352,7 +2352,7 @@ function getUserData(node, type, userData) {
         data.value = parseFloat(value);
         break;
       case "componentProperty":
-        Object.assign(data, _getComponentProperty(node, data.key));
+        Object.assign(data, getComponentProperty(node, data.key));
         if (data.valueType === "VARIANT") {
           data.options = _getVariantOptions(node, data.key);
         }
@@ -2371,6 +2371,20 @@ function findNode(api, id) {
     return api.root;
   }
   return api.getNodeById(id);
+}
+function findComponentOrInstance(node) {
+  if (node.type === "COMPONENT") {
+    if (node.parent && node.parent.type === "COMPONENT_SET") {
+      return node.parent;
+    }
+    return node;
+  } else if (node.type === "INSTANCE" || node.type === "COMPONENT_SET") {
+    return node;
+  }
+  if (node.parent) {
+    return findComponentOrInstance(node.parent);
+  }
+  return null;
 }
 function figmaTypeToWidget(node) {
   switch (node.type) {
@@ -2590,12 +2604,8 @@ function _overrideSource(spec, source) {
 }
 async function exportNode(cache, strapi, node) {
   try {
-    console.log(node);
     const type = getMetadata(node, "com.phenoui.layer.widget_override" /* widgetOverride */) || figmaTypeToWidget(node);
     const spec = await getTypeSpec(type, node, strapi, cache);
-    if (node.type === "INSTANCE") {
-      console.log("INSTANCE", type, spec);
-    }
     if (!spec) {
       return null;
     }
@@ -3082,6 +3092,29 @@ var PhenoUI = class {
       let typeData = await getTypeSpec(type, node, this.strapi, void 0, useDefaultCache);
       if (typeData && typeData.userData) {
         typeData.userData = getUserData(node, type, typeData.userData);
+        const component = findComponentOrInstance(node);
+        if (component !== null) {
+          for (const userType of Object.keys(typeData.userData)) {
+            const typeInfo = typeData.userData[userType];
+            if (typeof typeInfo.value === "object" && !Array.isArray(typeInfo.value) && typeInfo.value !== null) {
+              const binding = typeInfo.value;
+              const propValue = getComponentProperty(component, binding.id);
+              binding.value = propValue == null ? void 0 : propValue.value;
+            } else if ((typeInfo.type === "string" || typeInfo.type === "boolean") && (component.type === "COMPONENT" || component.type === "COMPONENT_SET") && component !== node) {
+              const compProps = component.componentPropertyDefinitions;
+              const properties = [];
+              const propType = typeInfo.type === "string" ? "TEXT" : "BOOLEAN";
+              if (propType) {
+                for (const key of Object.keys(compProps)) {
+                  if (compProps[key].type === propType) {
+                    properties.push(key);
+                  }
+                }
+                typeInfo.properties = properties;
+              }
+            }
+          }
+        }
       }
       showLayerScreen(this.bus, {
         layer: {
