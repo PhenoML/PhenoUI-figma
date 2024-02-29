@@ -26021,6 +26021,29 @@ function getStyles() {
                 color: var(--figma-color-text);
                 font-family: Inter, sans-serif;
                 font-size: 11px;
+                overflow-x: hidden;
+                overflow-y: auto
+            }
+            
+            body {
+                scrollbar-gutter: both-edges;
+            }
+
+            ::-webkit-scrollbar {
+                height: 12px;
+                width: 8px;
+                background: transparent;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--figma-color-icon-onwarning-secondary);
+                /*-webkit-border-radius: 1ex;*/
+                border-radius: 1ex;
+                border: 1px solid var(--figma-color-border-disabled-strong);
+            }
+
+            ::-webkit-scrollbar-corner{
+                display: none;
             }
             
             main {
