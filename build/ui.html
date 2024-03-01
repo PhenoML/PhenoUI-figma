@@ -25622,7 +25622,7 @@ async function uploadToStrapi(bus, name2, payload) {
 
 // src/ui/tools/export/github.ts
 async function commitToGithub(bus, name2, payload, github2) {
-  var _a3, _b, _c;
+  var _a3, _b;
   if (!await github2.isLoggedIn) {
     console.log("not logged in");
     return;
@@ -25630,11 +25630,11 @@ async function commitToGithub(bus, name2, payload, github2) {
   const [type, folder] = (() => {
     switch (payload.type) {
       case "figma-component":
-        return ["Widget", "widgets"];
+        return ["WIDGET", "widgets"];
       case "figma-image":
-        return ["Image", null];
+        return ["IMAGE", null];
       default:
-        return ["Screen", "screens"];
+        return ["SCREEN", "screens"];
     }
   })();
   const files = [];
@@ -25664,7 +25664,7 @@ async function commitToGithub(bus, name2, payload, github2) {
       content: JSON.stringify(payload, null, 2)
     });
   }
-  const message = `[${(_c = github2._user) == null ? void 0 : _c.login.toUpperCase()}] ${type}: ${name2}`;
+  const message = `[${type.toUpperCase()}] ${name2}`;
   while (true) {
     try {
       await github2.commitFiles(files, message);
