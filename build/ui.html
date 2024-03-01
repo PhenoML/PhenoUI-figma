@@ -25558,7 +25558,7 @@ async function _uploadImagesToStrapi(bus, images) {
     }
     const filename = `${image.__info.name}.${image.format}`;
     const existing = await _strapiImageExists(bus, filename, jwt);
-    if (uploadMethod && existing) {
+    if (uploadMethod == "link" && existing) {
       image.data = new URL(existing.url, server).href;
       continue;
     }
@@ -25595,42 +25595,62 @@ async function uploadToStrapi(bus, name2, payload) {
   const slug = `${categoryUid.toLowerCase().replace(/ /g, "-")}-${name2.toLowerCase().replace(/ /g, "-")}`;
   const images = extractImages(payload);
   await _uploadImagesToStrapi(bus, images);
-  let data2;
-  if (payload.type === "figma-component") {
-    data2 = {
-      name: name2,
-      category,
-      slug,
-      defaultVariant: payload.defaultVariant,
-      variants: payload.variants
-    };
-    if ("__userData" in payload) {
-      data2["arguments"] = payload.__userData;
+  if (payload.type !== "figma-image") {
+    let data2;
+    if (payload.type === "figma-component") {
+      data2 = {
+        name: name2,
+        category,
+        slug,
+        defaultVariant: payload.defaultVariant,
+        variants: payload.variants
+      };
+      if ("__userData" in payload) {
+        data2["arguments"] = payload.__userData;
+      }
+    } else {
+      data2 = {
+        name: name2,
+        category,
+        slug,
+        spec: payload
+      };
     }
-  } else {
-    data2 = {
-      name: name2,
-      category,
-      slug,
-      spec: payload
-    };
+    await bus.execute("uploadToStrapi", { collection, payload: data2 });
   }
-  await bus.execute("uploadToStrapi", { collection, payload: data2 });
 }
 
 // src/ui/tools/export/github.ts
 async function commitToGithub(bus, name2, payload, github2) {
-  var _a3;
+  var _a3, _b, _c;
   if (!await github2.isLoggedIn) {
     console.log("not logged in");
     return;
   }
-  const [type, folder] = payload.type === "figma-component" ? ["Widget", "widgets"] : ["Screen", "screens"];
+  const [type, folder] = (() => {
+    switch (payload.type) {
+      case "figma-component":
+        return ["Widget", "widgets"];
+      case "figma-image":
+        return ["Image", null];
+      default:
+        return ["Screen", "screens"];
+    }
+  })();
   const files = [];
   const images = extractImages(payload);
   for (const image of images) {
-    const filename = `${image.name}.${image.format}`;
+    const uploadMethod = (_b = (_a3 = image.__userData.method) != null ? _a3 : image.uploadMethod) != null ? _b : "embed";
+    if (uploadMethod === "embed") {
+      continue;
+    }
+    const filename = `${image.__info.name}.${image.format}`;
     const path = `assets/images/${filename}`;
+    const exists = await github2.fileExists(path);
+    if (uploadMethod === "link" && exists) {
+      image.data = path;
+      continue;
+    }
     files.push({
       path,
       content: image.data,
@@ -25638,12 +25658,23 @@ async function commitToGithub(bus, name2, payload, github2) {
     });
     image.data = path;
   }
-  files.push({
-    path: `${folder}/${name2}.json`,
-    content: JSON.stringify(payload, null, 2)
-  });
-  const message = `[${(_a3 = github2._user) == null ? void 0 : _a3.login.toUpperCase()}] ${type}: ${name2}`;
-  await github2.commitFiles(files, message);
+  if (folder) {
+    files.push({
+      path: `${folder}/${name2}.json`,
+      content: JSON.stringify(payload, null, 2)
+    });
+  }
+  const message = `[${(_c = github2._user) == null ? void 0 : _c.login.toUpperCase()}] ${type}: ${name2}`;
+  while (true) {
+    try {
+      await github2.commitFiles(files, message);
+      break;
+    } catch (e4) {
+      if (e4.status === 422) {
+        await new Promise((resolve) => setTimeout(resolve, 1e4));
+      }
+    }
+  }
 }
 
 // src/ui/tools/export/export.ts
@@ -30939,6 +30970,31 @@ async function bufferToBase64(buffer) {
   return base64url.slice(base64url.indexOf(",") + 1);
 }
 var Github = class {
+  constructor(bus) {
+    this._branchCommitSha = null;
+    this._branchCommitShaTimeout = null;
+    this.bus = bus;
+    this.loginPromise = this._tryLogin();
+  }
+  get branchCommitSha() {
+    if (this._branchCommitSha) {
+      return Promise.resolve(this._branchCommitSha);
+    }
+    return this._getBranch().then((branch) => {
+      this.branchCommitSha = branch.commit.sha;
+      return this._branchCommitSha;
+    });
+  }
+  set branchCommitSha(sha) {
+    if (this._branchCommitShaTimeout) {
+      window.clearTimeout(this._branchCommitShaTimeout);
+    }
+    this._branchCommitSha = sha;
+    this._branchCommitShaTimeout = window.setTimeout(() => {
+      this._branchCommitSha = null;
+      this._branchCommitShaTimeout = null;
+    }, 1e3 * 60 * 2);
+  }
   get user() {
     return this.loginPromise.then(() => this._user);
   }
@@ -30947,10 +31003,6 @@ var Github = class {
   }
   get isLoggedIn() {
     return this.loginPromise;
-  }
-  constructor(bus) {
-    this.bus = bus;
-    this.loginPromise = this._tryLogin();
   }
   async login(authToken) {
     this.loginPromise = this._tryLogin(authToken);
@@ -30963,12 +31015,29 @@ var Github = class {
     await this._setAuthToken(this.bus, "");
     this.loginPromise = Promise.resolve(false);
   }
+  async fileExists(path) {
+    if (!await this.isLoggedIn) {
+      return false;
+    }
+    try {
+      const branch = await this._getBranch();
+      await this.octokit.rest.repos.getContent({
+        owner: this._repo.owner.login,
+        repo: this._repo.name,
+        path,
+        ref: `heads/${branch.name}`
+      });
+      return true;
+    } catch (e4) {
+      return false;
+    }
+  }
   async commitFiles(files, message) {
     if (!await this.isLoggedIn) {
       return;
     }
-    const branch = await this._getBranch();
-    const commit = await this._getCommit(branch.commit.sha);
+    const sha = await this.branchCommitSha;
+    const commit = await this._getCommit(sha);
     const blobs = await Promise.all(files.map(async (file) => {
       const content2 = ArrayBuffer.isView(file.content) ? await bufferToBase64(file.content) : file.content;
       const blob = this._checkResponse(await this.octokit.rest.git.createBlob({
@@ -31003,9 +31072,10 @@ var Github = class {
     this._checkResponse(await this.octokit.rest.git.updateRef({
       owner: this._repo.owner.login,
       repo: this._repo.name,
-      ref: `heads/${branch.name}`,
+      ref: `heads/${this._user.login}`,
       sha: newCommit.data.sha
     }));
+    this.branchCommitSha = newCommit.data.sha;
   }
   async createPullRequest(title, body) {
     if (!await this.isLoggedIn || !this.octokit) {
