@@ -12,11 +12,11 @@ export async function commitToGithub(bus: MessageBus, name: string, payload: any
     const [type, folder] = (() => {
         switch (payload.type) {
             case 'figma-component':
-                return ['Widget', 'widgets'];
+                return ['WIDGET', 'widgets'];
             case 'figma-image':
-                return ['Image', null];
+                return ['IMAGE', null];
             default:
-                return ['Screen', 'screens'];
+                return ['SCREEN', 'screens'];
         }
     })();
 
@@ -54,7 +54,7 @@ export async function commitToGithub(bus: MessageBus, name: string, payload: any
         });
     }
 
-    const message = `[${github._user?.login.toUpperCase()}] ${type}: ${name}`;
+    const message = `[${type.toUpperCase()}] ${name}`;
 
     while (true) {
         try {
