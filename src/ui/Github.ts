@@ -32,6 +32,29 @@ export class Github {
     _user?: RestEndpointMethodTypes['users']['getAuthenticated']['response']['data'];
     _repo?: RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data'][0];
 
+    _branchCommitSha: string | null = null;
+    _branchCommitShaTimeout: number | null = null;
+    get branchCommitSha(): Promise<string> {
+        if (this._branchCommitSha) {
+            return Promise.resolve(this._branchCommitSha);
+        }
+        return this._getBranch().then((branch) => {
+            this.branchCommitSha = branch.commit.sha;
+            return this._branchCommitSha as string;
+        });
+    }
+
+    set branchCommitSha(sha: string) {
+        if (this._branchCommitShaTimeout) {
+            window.clearTimeout(this._branchCommitShaTimeout);
+        }
+        this._branchCommitSha = sha;
+        this._branchCommitShaTimeout = window.setTimeout(() => {
+            this._branchCommitSha = null;
+            this._branchCommitShaTimeout = null;
+        }, 1000 * 60 * 2); // 2 minutes
+    }
+
     get user(): Promise<RestEndpointMethodTypes['users']['getAuthenticated']['response']['data'] | undefined> {
         return this.loginPromise.then(() => this._user);
     }
@@ -62,13 +85,32 @@ export class Github {
         this.loginPromise = Promise.resolve(false);
     }
 
+    async fileExists(path: string): Promise<boolean> {
+        if (!await this.isLoggedIn) {
+            return false;
+        }
+
+        try {
+            const branch = await this._getBranch();
+            await this.octokit!.rest.repos.getContent({
+                owner: this._repo!.owner.login,
+                repo: this._repo!.name,
+                path,
+                ref: `heads/${branch.name}`,
+            });
+            return true;
+        } catch (e: unknown) {
+            return false;
+        }
+    }
+
     async commitFiles(files: GithubFile[], message: string): Promise<void> {
         if (!await this.isLoggedIn) {
             return;
         }
 
-        const branch = await this._getBranch();
-        const commit = await this._getCommit(branch.commit.sha);
+        const sha = await this.branchCommitSha;
+        const commit = await this._getCommit(sha);
 
         const blobs = await Promise.all(files.map(async (file) => {
             const content = ArrayBuffer.isView(file.content) ? await bufferToBase64(file.content) : file.content;
@@ -107,9 +149,11 @@ export class Github {
         this._checkResponse(await this.octokit!.rest.git.updateRef({
             owner: this._repo!.owner.login,
             repo: this._repo!.name,
-            ref: `heads/${branch.name}`,
+            ref: `heads/${this._user!.login}`,
             sha: newCommit.data.sha,
         }));
+
+        this.branchCommitSha = newCommit.data.sha;
     }
 
     async createPullRequest(title: string, body?: string): Promise<boolean> {
