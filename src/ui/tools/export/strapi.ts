@@ -42,7 +42,7 @@ async function _uploadImagesToStrapi(bus: MessageBus, images: any[]) {
         const filename = `${image.__info.name}.${image.format}`;
         const existing = await _strapiImageExists(bus, filename, jwt);
         // if the method is set to link and the image exists, set the link as the data and skip uploading
-        if (uploadMethod && existing) {
+        if (uploadMethod == 'link' && existing) {
             image.data = new URL(existing.url, server).href;
             continue;
         }
@@ -86,25 +86,27 @@ export async function uploadToStrapi(bus: MessageBus, name: string, payload: any
     const images = extractImages(payload);
     await _uploadImagesToStrapi(bus, images);
 
-    let data: any;
-    if (payload.type === 'figma-component') {
-        data = {
-            name,
-            category,
-            slug,
-            defaultVariant: payload.defaultVariant,
-            variants: payload.variants,
+    if (payload.type !== 'figma-image') {
+        let data: any;
+        if (payload.type === 'figma-component') {
+            data = {
+                name,
+                category,
+                slug,
+                defaultVariant: payload.defaultVariant,
+                variants: payload.variants,
+            }
+            if ('__userData' in payload) {
+                data['arguments'] = payload.__userData;
+            }
+        } else {
+            data = {
+                name,
+                category,
+                slug,
+                spec: payload,
+            }
         }
-        if ('__userData' in payload) {
-            data['arguments'] = payload.__userData;
-        }
-    } else {
-        data = {
-            name,
-            category,
-            slug,
-            spec: payload,
-        }
+        await bus.execute('uploadToStrapi', {collection, payload: data});
     }
-    await bus.execute('uploadToStrapi', { collection, payload: data });
 }
