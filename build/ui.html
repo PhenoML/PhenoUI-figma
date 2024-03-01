@@ -31020,12 +31020,11 @@ var Github = class {
       return false;
     }
     try {
-      const branch = await this._getBranch();
       await this.octokit.rest.repos.getContent({
         owner: this._repo.owner.login,
         repo: this._repo.name,
         path,
-        ref: `heads/${branch.name}`
+        ref: `heads/${this._user.login}`
       });
       return true;
     } catch (e4) {
@@ -31081,9 +31080,8 @@ var Github = class {
     if (!await this.isLoggedIn || !this.octokit) {
       return false;
     }
-    const baseBranch = await this._getBranch();
     const branchName = `${this._user.login}-${Date.now()}`;
-    await this._createBranch(branchName, baseBranch.commit.sha);
+    await this._createBranch(branchName, await this.branchCommitSha);
     const branch = await this._getBranch(branchName);
     this._checkResponse(await this.octokit.rest.pulls.create({
       owner: this._repo.owner.login,
