@@ -91,12 +91,11 @@ export class Github {
         }
 
         try {
-            const branch = await this._getBranch();
             await this.octokit!.rest.repos.getContent({
                 owner: this._repo!.owner.login,
                 repo: this._repo!.name,
                 path,
-                ref: `heads/${branch.name}`,
+                ref: `heads/${this._user!.login}`,
             });
             return true;
         } catch (e: unknown) {
@@ -161,13 +160,11 @@ export class Github {
             return false;
         }
 
-        const baseBranch = await this._getBranch();
-
         // create a branch name from the use login name and current UNIX timestamp
         const branchName = `${this._user!.login}-${Date.now()}`;
 
         // create a branch based on the user's branch to base this PR off of
-        await this._createBranch(branchName, baseBranch.commit.sha);
+        await this._createBranch(branchName, await this.branchCommitSha);
         const branch = await this._getBranch(branchName);
 
         this._checkResponse(await this.octokit!.rest.pulls.create({
