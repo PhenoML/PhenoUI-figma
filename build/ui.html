@@ -25278,6 +25278,7 @@ var unlinkProperty = x`
 async function autocompleteFocus(el, event, state, provider) {
   const parent2 = el.parentElement;
   const container = parent2.querySelector(".autocomplete-container");
+  console.log(event);
   if (event.type === "focus") {
     state.input = el;
     state.container = container;
@@ -25306,6 +25307,7 @@ async function autocompleteInput(el, state, provider) {
     }
     state.debounce = false;
     if (state.queuedChange) {
+      state.queuedChange = false;
       await autocompleteInput(el, state, provider);
     }
   } else {
