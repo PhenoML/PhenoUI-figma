@@ -31,6 +31,7 @@ type DropdownData = {
 async function autocompleteFocus(el: HTMLInputElement, event: FocusEvent, state: AutocompleteState, provider: AutocompleteProvider) {
     const parent = el.parentElement as HTMLElement;
     const container = parent.querySelector('.autocomplete-container') as HTMLElement;
+    console.log(event);
     if (event.type === 'focus') {
         state.input = el;
         state.container = container;
@@ -62,6 +63,7 @@ async function autocompleteInput(el: HTMLInputElement, state: AutocompleteState,
         state.debounce = false;
 
         if (state.queuedChange) {
+            state.queuedChange = false;
             await autocompleteInput(el, state, provider);
         }
     } else {
