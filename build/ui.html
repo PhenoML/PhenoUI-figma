@@ -25273,12 +25273,21 @@ var unlinkProperty = x`
         <path d="M4 0v3h1V0H4zm9.103.896c-1.162-1.161-3.045-1.161-4.207 0l-2.75 2.75.707.708 2.75-2.75c.771-.772 2.022-.772 2.793 0 .771.77.771 2.021 0 2.792l-2.75 2.75.707.708 2.75-2.75c1.162-1.162 1.162-3.046 0-4.208zM.896 13.103c-1.162-1.161-1.162-3.045 0-4.207l2.75-2.75.707.708-2.75 2.75c-.771.77-.771 2.021 0 2.792.771.772 2.022.772 2.793 0l2.75-2.75.707.707-2.75 2.75c-1.162 1.162-3.045 1.162-4.207 0zM14 10h-3V9h3v1zm-4 1v3H9v-3h1zM3 4H0v1h3V4z" />
     </svg>
 `;
+var plusSign = x`
+    <svg class="svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 12 12">
+        <path fill-rule="nonzero" stroke="none" d="M5 5V0h1v5h5v1H6v5H5V6H0V5h5z" />
+    </svg>
+`;
+var minusSign = x`
+    <svg class="svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 12 6">
+        <path fill-rule="evenodd" stroke="none" d="M11 3H0V2h11v1z" />
+    </svg>
+`;
 
 // src/ui/widgets/input.ts
 async function autocompleteFocus(el, event, state, provider) {
   const parent2 = el.parentElement;
   const container = parent2.querySelector(".autocomplete-container");
-  console.log(event);
   if (event.type === "focus") {
     state.input = el;
     state.container = container;
@@ -25366,7 +25375,7 @@ function _input(type, data2) {
   }
   return x`
         <div class="input-container" title="${data2.label}" aria-label="${data2.label}">
-            ${data2.icon ? x`<div class="input-icon">${data2.icon}</div>` : x`<div class="text-container">${data2.label}</div>`}
+            ${data2.icon ? x`<div class="input-icon">${data2.icon}</div>` : null}
             <input
                 id="${data2.id}"
                 class="text-input"
@@ -25406,6 +25415,74 @@ function textInput(data2) {
 }
 function numberInput(data2) {
   return _input("number", data2);
+}
+function groupInput(data2) {
+  const props = data2.value.properties;
+  return x`
+        <div class="group-input-container">
+            <div class="group-property-container" title="${data2.label}" aria-label="${data2.label}">
+                <div class="group-property-container">
+                    <div class="group-icon">${data2.icon}</div>
+                    <span class="group-title">${data2.name}</span>
+                </div>
+                <div 
+                    class="icon-button"
+                    @click="${function(_e) {
+    if (data2.onUpdate) {
+      props.push({ type: "string", description: "", value: "" });
+      data2.onUpdate(data2.id, { type: "group", properties: props });
+    }
+  }}"
+                >
+                    ${plusSign}
+                </div>
+            </div>
+                
+            ${props.map((p2) => x`
+                <div class="group-property-container" title="${p2.description}" aria-label="${p2.description}">
+                    ${textInput({
+    id: `key:${p2.description}`,
+    label: "Key",
+    icon: "K",
+    placeholder: "key",
+    value: p2.description,
+    onUpdate: (_2, value2) => {
+      if (data2.onUpdate) {
+        p2.description = value2;
+        data2.onUpdate(data2.id, { type: "group", properties: props });
+      }
+    }
+  })}
+                    ${(() => {
+    return textInput({
+      id: `value:${p2.description}`,
+      label: "Value",
+      icon: "V",
+      placeholder: "value",
+      value: p2.value || p2.default,
+      onUpdate: (_2, value2) => {
+        if (data2.onUpdate) {
+          p2.value = value2;
+          data2.onUpdate(data2.id, { type: "group", properties: props });
+        }
+      }
+    });
+  })()}
+                    <div
+                        class="icon-button"
+                        @click="${function(_e) {
+    if (data2.onUpdate) {
+      props.splice(props.indexOf(p2), 1);
+      data2.onUpdate(data2.id, { type: "group", properties: props });
+    }
+  }}"
+                    >
+                        ${minusSign}
+                    </div>
+                </div>
+            `)}
+        </div>
+    `;
 }
 function boundedPropertyInput(data2) {
   return x`
@@ -25803,11 +25880,21 @@ var LayerScreen = class extends Screen {
         }
       });
       for (const key2 of keys) {
-        rows.push(x`
-                    <div class="row">
-                        ${this._getUserField(bus, data2.layer.id, layerType, key2, userData[key2])}
-                    </div>
-                `);
+        if (userData[key2].type === "group") {
+          rows.push(x`
+                        <div class="group-container">
+                            <div class="row-full">
+                                ${this._getUserField(bus, data2.layer.id, layerType, key2, userData[key2])}
+                            </div>
+                        </div>
+                    `);
+        } else {
+          rows.push(x`
+                        <div class="row">
+                            ${this._getUserField(bus, data2.layer.id, layerType, key2, userData[key2])}
+                        </div>
+                    `);
+        }
       }
       return rows;
     }
@@ -25838,6 +25925,7 @@ var LayerScreen = class extends Screen {
         id: layerID,
         key: key2,
         value: {
+          type: "binding",
           id: value2
         }
       });
@@ -25892,6 +25980,16 @@ var LayerScreen = class extends Screen {
           value: data2.value || data2.default || void 0,
           options: data2.options,
           onUpdate
+        });
+      case "group":
+        return groupInput({
+          id: key2,
+          name: name2,
+          label: data2.description,
+          icon: "{;}",
+          value: data2.value || { type: "group", properties: data2.default || [] },
+          onUpdate,
+          onUpdatePropertyBinding
         });
       case "componentProperty":
         if (data2.valueType === "TEXT") {
@@ -26146,7 +26244,7 @@ function getStyles() {
             }
             
             .row {
-                height: 32px;
+                min-height: 32px;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
@@ -26154,7 +26252,7 @@ function getStyles() {
             }
             
             .row-full {
-                height: 32px;
+                min-height: 32px;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
@@ -26187,6 +26285,7 @@ function getStyles() {
             }
             
             .input-container {
+                min-height: 32px;
                 position: relative;
                 border: 1px solid transparent;
                 display: flex;
@@ -26318,6 +26417,74 @@ function getStyles() {
 
             .bool-input {
                 margin-right: 6px;
+            }
+            
+            .group-container {
+                border-top: 1px solid var(--figma-color-border);
+            }
+            
+            .group-container + :not(.group-container) {
+                border-top: 1px solid var(--figma-color-border);
+            }
+            
+            .group-input-container {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .group-icon {
+                width: 14px;
+                height: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                fill: var(--figma-color-text-secondary);
+                color: var(--figma-color-text-secondary);
+                font-weight: 200;
+                letter-spacing: 1.5px;
+
+                > svg {
+                    max-width: 14px;
+                    max-height: 14px;
+                }
+            }
+            
+            .group-title {
+                font-weight: 600;
+                margin-left: 6px;
+            }
+            
+            .group-property-container {
+                min-height: 32px;
+                position: relative;
+                border: 1px solid transparent;
+                display: flex;
+                flex-grow: 1;
+                align-items: center;
+            }
+            
+            .icon-button {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                min-height: 32px;
+                max-width: 32px;
+                max-height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                fill: var(--figma-color-icon-secondary);
+                background-color: transparent;
+                > svg {
+                    width: 12px;
+                    height: 12px;
+                }
+            }
+            
+            .icon-button:hover {
+                fill: var(--figma-color-icon-secondary-hover);
+                background-color: var(--figma-color-bg-hover);
             }
             
             .button {

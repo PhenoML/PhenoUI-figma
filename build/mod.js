@@ -3097,6 +3097,18 @@ var PhenoUI = class {
           for (const userType of Object.keys(typeData.userData)) {
             const typeInfo = typeData.userData[userType];
             if (typeof typeInfo.value === "object" && !Array.isArray(typeInfo.value) && typeInfo.value !== null) {
+              switch (typeInfo.value.type) {
+                case "binding":
+                  const binding2 = typeInfo.value;
+                  const propValue2 = getComponentProperty(component, binding2.id);
+                  binding2.value = propValue2 == null ? void 0 : propValue2.value;
+                  break;
+                case "group":
+                  break;
+                default:
+                  typeInfo.value = JSON.stringify(typeInfo.value);
+                  break;
+              }
               const binding = typeInfo.value;
               const propValue = getComponentProperty(component, binding.id);
               binding.value = propValue == null ? void 0 : propValue.value;
