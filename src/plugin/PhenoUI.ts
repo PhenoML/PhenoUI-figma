@@ -14,7 +14,7 @@ import {
     getTypeSpec,
     findComponentOrInstance
 } from "./tools/export/export";
-import {ForbiddenError, PropertyBinding, Strapi, StrapiEndpoints} from "./Strapi";
+import {ForbiddenError, PropertyBinding, Strapi, StrapiEndpoints, UserDataValue} from "./Strapi";
 import {getLocalData, getMetadata, setLocalData, updateMetadata} from "./metadata";
 import {
     ExportData,
@@ -147,7 +147,7 @@ export class PhenoUI {
         }
     }
 
-    getMetadata(data: GetMetadataData): string | number | boolean | PropertyBinding | null {
+    getMetadata(data: GetMetadataData): UserDataValue | null {
         const node = data.id === null ? this.api.root : findNode(this.api, data.id);
         if (node) {
             return getMetadata(node, data.key);
@@ -286,6 +286,25 @@ export class PhenoUI {
                     for (const userType of Object.keys(typeData.userData)) {
                         const typeInfo = typeData.userData[userType];
                         if (typeof typeInfo.value === 'object' && !Array.isArray(typeInfo.value) && typeInfo.value !== null) {
+                            // hack to update old binding values to include type
+                            // if (!('type' in typeInfo.value)) {
+                            //     (typeInfo.value as any).type = 'binding';
+                            // }
+
+                            switch (typeInfo.value.type) {
+                                case 'binding':
+                                    const binding = typeInfo.value as PropertyBinding;
+                                    const propValue = getComponentProperty(component, binding.id);
+                                    binding.value = propValue?.value;
+                                    break;
+
+                                case 'group':
+                                    break;
+
+                                default:
+                                    typeInfo.value = JSON.stringify(typeInfo.value);
+                                    break;
+                            }
                             const binding = typeInfo.value as PropertyBinding;
                             const propValue = getComponentProperty(component, binding.id);
                             binding.value = propValue?.value;

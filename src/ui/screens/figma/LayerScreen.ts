@@ -2,10 +2,10 @@ import {Screen} from "../Screen";
 import {html, nothing, TemplateResult} from "lit-html";
 import {MessageBus} from "../../../shared/MessageBus";
 import {LayerMetadata} from "../../../shared/Metadata";
-import {booleanInput, boundedPropertyInput, numberInput, selectInput, textInput} from "../../widgets/input";
+import {booleanInput, boundedPropertyInput, groupInput, numberInput, selectInput, textInput} from "../../widgets/input";
 import {flutter} from "../../widgets/icons";
 import {button} from "../../widgets/button";
-import {UserType} from "../../../plugin/Strapi";
+import {PropertyBinding, UserDataGroup, UserDataValue, UserType} from "../../../plugin/Strapi";
 import {getHeader} from '../../widgets/header';
 import {AvailableTabs} from "../../../shared/AvailableTabs";
 import {LayerData} from "../../tools/layer";
@@ -84,11 +84,21 @@ export class LayerScreen extends Screen {
             });
             // keys.forEach(k => console.log(k));
             for (const key of keys) {
-                rows.push(html`
-                    <div class="row">
-                        ${this._getUserField(bus, data.layer.id, layerType, key, userData[key])}
-                    </div>
-                `);
+                if (userData[key].type === 'group') {
+                    rows.push(html`
+                        <div class="group-container">
+                            <div class="row-full">
+                                ${this._getUserField(bus, data.layer.id, layerType, key, userData[key])}
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    rows.push(html`
+                        <div class="row">
+                            ${this._getUserField(bus, data.layer.id, layerType, key, userData[key])}
+                        </div>
+                    `);
+                }
             }
             return rows;
         }
@@ -97,7 +107,7 @@ export class LayerScreen extends Screen {
 
     _getUserField(bus: MessageBus, layerID: string, widgetType: string, name: string, data: UserType): TemplateResult {
         const key = `${widgetType}_${name}`;
-        const onUpdate = async (_id: string, value: string | number | boolean) => {
+        const onUpdate = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>) => {
             await bus.execute('updateMetadata', {
                 id: layerID,
                 key,
@@ -108,7 +118,7 @@ export class LayerScreen extends Screen {
             }
         };
 
-        const onUpdateComponentProperty = async (_id: string, value: string | number | boolean) => {
+        const onUpdateComponentProperty = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>) => {
             await bus.execute('updateComponentProperty', {
                 id: layerID,
                 key: (data as any).key,
@@ -121,6 +131,7 @@ export class LayerScreen extends Screen {
                 id: layerID,
                 key,
                 value: {
+                    type: 'binding',
                     id: value,
                 }
             });
@@ -179,6 +190,17 @@ export class LayerScreen extends Screen {
                     value: data.value || data.default || undefined,
                     options: data.options,
                     onUpdate,
+                });
+
+            case 'group':
+                return groupInput({
+                    id: key,
+                    name: name,
+                    label: data.description,
+                    icon: '{;}',
+                    value: data.value || { type: 'group', properties: data.default || [] },
+                    onUpdate,
+                    onUpdatePropertyBinding,
                 });
 
             case 'componentProperty':

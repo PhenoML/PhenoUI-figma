@@ -1,7 +1,7 @@
 import {html, TemplateResult} from "lit-html";
 import {live} from "lit-html/directives/live.js";
-import {linkProperty, unlinkProperty} from './icons';
-import {PropertyBinding} from '../../plugin/Strapi';
+import {linkProperty, minusSign, plusSign, unlinkProperty} from './icons';
+import {PropertyBinding, UserDataGroup, UserDataValue} from '../../plugin/Strapi';
 
 type AutocompleteState = {
     debounce: boolean,
@@ -14,12 +14,13 @@ type AutocompleteProvider = (value: string) => Promise<string[]>;
 
 type InputData = {
     id: string,
+    name?: string,
     label: string,
     icon?: TemplateResult | string,
     placeholder?: string,
-    value?: string | number | boolean | PropertyBinding,
+    value?: UserDataValue,
     properties?: string[],
-    onUpdate?: (id: string, value: string | number | boolean) => void,
+    onUpdate?: (id: string, value: Exclude<UserDataValue, PropertyBinding>) => void,
     onUpdatePropertyBinding?: (id: string, value: string) => void,
     provider?: AutocompleteProvider,
 }
@@ -31,7 +32,6 @@ type DropdownData = {
 async function autocompleteFocus(el: HTMLInputElement, event: FocusEvent, state: AutocompleteState, provider: AutocompleteProvider) {
     const parent = el.parentElement as HTMLElement;
     const container = parent.querySelector('.autocomplete-container') as HTMLElement;
-    console.log(event);
     if (event.type === 'focus') {
         state.input = el;
         state.container = container;
@@ -131,7 +131,7 @@ function _input(type: string, data: InputData) {
 
     return html`
         <div class="input-container" title="${data.label}" aria-label="${data.label}">
-            ${data.icon ? html`<div class="input-icon">${data.icon}</div>` : html`<div class="text-container">${data.label}</div>`}
+            ${data.icon ? html`<div class="input-icon">${data.icon}</div>` : null}
             <input
                 id="${data.id}"
                 class="text-input"
@@ -174,6 +174,76 @@ export function textInput(data: InputData): TemplateResult {
 
 export function numberInput(data: InputData): TemplateResult {
     return _input('number', data);
+}
+
+export function groupInput(data: InputData): TemplateResult {
+    const props = (data.value as UserDataGroup).properties;
+    return html`
+        <div class="group-input-container">
+            <div class="group-property-container" title="${data.label}" aria-label="${data.label}">
+                <div class="group-property-container">
+                    <div class="group-icon">${data.icon}</div>
+                    <span class="group-title">${data.name}</span>
+                </div>
+                <div 
+                    class="icon-button"
+                    @click="${function (this: HTMLElement, _e: MouseEvent) {
+                        if (data.onUpdate) {
+                            props.push({ type:'string', description: '', value: '' });
+                            data.onUpdate(data.id, { type: 'group', properties: props });
+                        }
+                    }}"
+                >
+                    ${plusSign}
+                </div>
+            </div>
+                
+            ${props.map(p => html`
+                <div class="group-property-container" title="${p.description}" aria-label="${p.description}">
+                    ${textInput({
+                        id: `key:${p.description}`,
+                        label: 'Key',
+                        icon: 'K',
+                        placeholder: 'key',
+                        value: p.description,
+                        onUpdate: (_, value: Exclude<UserDataValue, PropertyBinding>) => {
+                            if (data.onUpdate) {
+                                p.description = value as string;
+                                data.onUpdate(data.id, { type: 'group', properties: props });
+                            }
+                        },
+                    
+                    })}
+                    ${(() => {
+                        return textInput({
+                            id: `value:${p.description}`,
+                            label: 'Value',
+                            icon: 'V',
+                            placeholder: 'value',
+                            value: p.value || p.default as UserDataValue,
+                            onUpdate: (_, value: Exclude<UserDataValue, PropertyBinding>) => {
+                                if (data.onUpdate) {
+                                    p.value = value as string;
+                                    data.onUpdate(data.id, { type: 'group', properties: props });
+                                }
+                            },
+                        })
+                    })()}
+                    <div
+                        class="icon-button"
+                        @click="${function (this: HTMLElement, _e: MouseEvent) {
+                            if (data.onUpdate) {
+                                props.splice(props.indexOf(p), 1);
+                                data.onUpdate(data.id, { type: 'group', properties: props });
+                            }
+                        }}"
+                    >
+                        ${minusSign}
+                    </div>
+                </div>
+            `)}
+        </div>
+    `;
 }
 
 export function boundedPropertyInput(data: InputData): TemplateResult {

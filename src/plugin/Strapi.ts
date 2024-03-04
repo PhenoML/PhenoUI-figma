@@ -17,9 +17,19 @@ export enum StrapiEndpoints {
     files = '/api/upload/files',
 }
 
+type UserDataObject = {
+    type: 'binding' | 'group',
+}
+
 export type PropertyBinding = {
+    type: 'binding',
     id: string,
     value?: string | boolean,
+}
+
+export type UserDataGroup = {
+    type: 'group',
+    properties: UserType[],
 }
 
 export type UserType = {
@@ -52,7 +62,13 @@ export type UserType = {
         value: string,
         label: string,
     }>,
+} | {
+    type: 'group',
+    default?: UserType[],
+    value?: UserDataGroup,
 })
+
+export type UserDataValue = Exclude<UserType['value'], undefined>;
 
 export type UserDataSpec = {
     [key: string]: UserType,

@@ -1,14 +1,14 @@
 import {UINode} from "./tools/export/export";
-import {PropertyBinding} from './Strapi';
+import {PropertyBinding, UserDataValue} from './Strapi';
 
-export function updateMetadata(node: UINode, key: string, value: string | number | boolean | PropertyBinding) {
+export function updateMetadata(node: UINode, key: string, value: UserDataValue) {
     if (!node.getPluginData(key)) {
         node.setRelaunchData({ open: ''});
     }
     node.setPluginData(key, JSON.stringify(value));
 }
 
-export function getMetadata(node: UINode, key: string): string | number | boolean | PropertyBinding {
+export function getMetadata(node: UINode, key: string): UserDataValue {
     try {
         return JSON.parse(node.getPluginData(key));
     } catch (e) {

@@ -104,7 +104,7 @@ export function getStyles(): TemplateResult[] {
             }
             
             .row {
-                height: 32px;
+                min-height: 32px;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
@@ -112,7 +112,7 @@ export function getStyles(): TemplateResult[] {
             }
             
             .row-full {
-                height: 32px;
+                min-height: 32px;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
@@ -145,6 +145,7 @@ export function getStyles(): TemplateResult[] {
             }
             
             .input-container {
+                min-height: 32px;
                 position: relative;
                 border: 1px solid transparent;
                 display: flex;
@@ -276,6 +277,74 @@ export function getStyles(): TemplateResult[] {
 
             .bool-input {
                 margin-right: 6px;
+            }
+            
+            .group-container {
+                border-top: 1px solid var(--figma-color-border);
+            }
+            
+            .group-container + :not(.group-container) {
+                border-top: 1px solid var(--figma-color-border);
+            }
+            
+            .group-input-container {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .group-icon {
+                width: 14px;
+                height: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                fill: var(--figma-color-text-secondary);
+                color: var(--figma-color-text-secondary);
+                font-weight: 200;
+                letter-spacing: 1.5px;
+
+                > svg {
+                    max-width: 14px;
+                    max-height: 14px;
+                }
+            }
+            
+            .group-title {
+                font-weight: 600;
+                margin-left: 6px;
+            }
+            
+            .group-property-container {
+                min-height: 32px;
+                position: relative;
+                border: 1px solid transparent;
+                display: flex;
+                flex-grow: 1;
+                align-items: center;
+            }
+            
+            .icon-button {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                min-height: 32px;
+                max-width: 32px;
+                max-height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                fill: var(--figma-color-icon-secondary);
+                background-color: transparent;
+                > svg {
+                    width: 12px;
+                    height: 12px;
+                }
+            }
+            
+            .icon-button:hover {
+                fill: var(--figma-color-icon-secondary-hover);
+                background-color: var(--figma-color-bg-hover);
             }
             
             .button {
