@@ -219,6 +219,12 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
         result[key] = withValues[key].value;
         if (result[key] === '' || result[key] === null || result[key] === undefined) {
             result[key] = withValues[key].default;
+            if (withValues[key].type === 'group') {
+                result[key] = {
+                    type: 'group',
+                    properties: result[key] || [],
+                }
+            }
         }
     }
     return result;
