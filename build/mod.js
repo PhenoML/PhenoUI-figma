@@ -2540,6 +2540,12 @@ function _getUserDataExport(node, type, userData) {
     result[key] = withValues[key].value;
     if (result[key] === "" || result[key] === null || result[key] === void 0) {
       result[key] = withValues[key].default;
+      if (withValues[key].type === "group") {
+        result[key] = {
+          type: "group",
+          properties: result[key] || []
+        };
+      }
     }
   }
   return result;
