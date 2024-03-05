@@ -38,6 +38,8 @@ export function extractImages(payload: any): any[] {
         for (const child of payload.children) {
             images.push(...extractImages(child));
         }
+    } else if ('child' in payload) {
+        images.push(...extractImages(payload.child));
     }
 
     if ('variants' in payload) {
