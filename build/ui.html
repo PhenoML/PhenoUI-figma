@@ -25777,6 +25777,8 @@ function extractImages(payload) {
     for (const child of payload.children) {
       images.push(...extractImages(child));
     }
+  } else if ("child" in payload) {
+    images.push(...extractImages(payload.child));
   }
   if ("variants" in payload) {
     for (const key2 of Object.keys(payload.variants)) {
