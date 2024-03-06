@@ -113,9 +113,10 @@ export class LayerScreen extends Screen {
                 key,
                 value
             });
-            if (data.value !== null && typeof data.value === 'object' && !Array.isArray(data.value)) {
+            // ugh... this should probably be handled differently
+            // if (data.value !== null && typeof data.value === 'object' && !Array.isArray(data.value)) {
                 await bus.execute('updateLayerView', undefined);
-            }
+            // }
         };
 
         const onUpdateComponentProperty = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>) => {
