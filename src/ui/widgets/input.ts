@@ -183,7 +183,7 @@ export function groupInput(data: InputData): TemplateResult {
             <div class="group-property-container" title="${data.label}" aria-label="${data.label}">
                 <div class="group-property-container">
                     <div class="group-icon">${data.icon}</div>
-                    <span class="group-title">${data.name}</span>
+                    <span class="group-title">${data.name!.charAt(0).toUpperCase()}${data.name?.slice(1)}</span>
                 </div>
                 <div 
                     class="icon-button"
