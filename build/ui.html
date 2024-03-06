@@ -25417,13 +25417,14 @@ function numberInput(data2) {
   return _input("number", data2);
 }
 function groupInput(data2) {
+  var _a3;
   const props = data2.value.properties;
   return x`
         <div class="group-input-container">
             <div class="group-property-container" title="${data2.label}" aria-label="${data2.label}">
                 <div class="group-property-container">
                     <div class="group-icon">${data2.icon}</div>
-                    <span class="group-title">${data2.name}</span>
+                    <span class="group-title">${data2.name.charAt(0).toUpperCase()}${(_a3 = data2.name) == null ? void 0 : _a3.slice(1)}</span>
                 </div>
                 <div 
                     class="icon-button"
@@ -25911,9 +25912,7 @@ var LayerScreen = class extends Screen {
         key: key2,
         value: value2
       });
-      if (data2.value !== null && typeof data2.value === "object" && !Array.isArray(data2.value)) {
-        await bus.execute("updateLayerView", void 0);
-      }
+      await bus.execute("updateLayerView", void 0);
     };
     const onUpdateComponentProperty = async (_id, value2) => {
       await bus.execute("updateComponentProperty", {
