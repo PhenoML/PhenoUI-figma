@@ -2270,6 +2270,10 @@ var builtInMethods = {
     const bytes = await node.exportAsync({ format: "PNG", useAbsoluteBounds: true, constraint: { type: "SCALE", value: 3 } });
     return figma.base64Encode(bytes);
   },
+  exportJPEG: async (node) => {
+    const bytes = await node.exportAsync({ format: "JPG", useAbsoluteBounds: true, constraint: { type: "SCALE", value: 3 } });
+    return figma.base64Encode(bytes);
+  },
   nativeType: figmaTypeToWidget
 };
 async function execute(cache, strapi, node, instruction) {
