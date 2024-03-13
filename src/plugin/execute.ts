@@ -17,6 +17,10 @@ const builtInMethods: { [key: string]: Function } = {
         const bytes = await node.exportAsync({ format: 'PNG', useAbsoluteBounds: true, constraint: { type: 'SCALE', value: 3 } });
         return figma.base64Encode(bytes);
     },
+    exportJPEG: async (node: SceneNode) => {
+        const bytes = await node.exportAsync({ format: 'JPG', useAbsoluteBounds: true, constraint: { type: 'SCALE', value: 3 } });
+        return figma.base64Encode(bytes);
+    },
     nativeType: figmaTypeToWidget,  
 }
 
