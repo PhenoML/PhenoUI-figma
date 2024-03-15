@@ -243,7 +243,7 @@ export class LayerScreen extends Screen {
 
             default:
                 return html`
-                    <div class="error-description">ERROR: Unknown type [${(data as any).type}]</div>
+                    <div class="error-description">ERROR: Unknown type [${data.type} # ${data.valueType}]</div>
                 `
         }
     }
