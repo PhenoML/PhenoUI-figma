@@ -25874,7 +25874,11 @@ var LayerScreen = class extends Screen {
       keys.sort((a3, b2) => {
         const aV = userData[a3];
         const bV = userData[b2];
-        if (aV.type === "componentProperty" && bV.type !== "componentProperty") {
+        if (aV.type === "group") {
+          return 1;
+        } else if (bV.type === "group") {
+          return -1;
+        } else if (aV.type === "componentProperty" && bV.type !== "componentProperty") {
           return 1;
         } else if (aV.type !== "componentProperty" && bV.type === "componentProperty") {
           return -1;
