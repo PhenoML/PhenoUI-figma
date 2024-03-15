@@ -1,5 +1,6 @@
 import {Strapi, TypeSpec} from "./Strapi";
 import {
+    exportNode,
     fetchValue,
     figmaTypeToWidget,
     MappingAction,
@@ -43,6 +44,9 @@ const builtInMethods: { [key: string]: Function } = {
             variants[node.children[i].name] = _overrideSource(baseSpec.mappings, `children[${i}]`);
         }
         return processSpec(context.cache, context.strapi, node, variants);
+    },
+    nodeAsType: async (context: ExecutionContext, node: UINode, type: string) => {
+            return await exportNode(context.cache, context.strapi, node, type);
     }
 }
 

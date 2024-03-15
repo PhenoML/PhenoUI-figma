@@ -270,9 +270,9 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
     return typeData;
 }
 
-export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
+export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode, overrideType?: string) {
     try {
-        const type = getMetadata(node, LayerMetadata.widgetOverride) as string || figmaTypeToWidget(node);
+        const type = overrideType || getMetadata(node, LayerMetadata.widgetOverride) as string || figmaTypeToWidget(node);
         const spec = await getTypeSpec(type, node, strapi, cache);
         if (!spec) {
             return null;
