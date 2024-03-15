@@ -152,12 +152,12 @@ export class Strapi {
 
     async getTypeSpec(type: string, cache?: Map<string, any>, useDefaultCache: boolean = false): Promise<TypeSpec | null> {
         if (cache && cache.has(type)) {
-            return cache.get(type);
+            return Object.assign({}, cache.get(type));
         }
 
         if (useDefaultCache) {
             if (this.defaultCache.has(type)) {
-                return this.defaultCache.get(type);
+                return Object.assign({}, this.defaultCache.get(type));
             }
             return null;
         }
@@ -197,7 +197,7 @@ export class Strapi {
             if (cache) {
                 cache.set(type, spec);
             }
-            return spec;
+            return Object.assign({}, spec);
         }
 
         return null;
