@@ -5,7 +5,7 @@ import {LayerMetadata} from "../../../shared/Metadata";
 import {booleanInput, boundedPropertyInput, groupInput, numberInput, selectInput, textInput} from "../../widgets/input";
 import {flutter} from "../../widgets/icons";
 import {button} from "../../widgets/button";
-import {PropertyBinding, UserDataGroup, UserDataValue, UserType} from "../../../plugin/Strapi";
+import {PropertyBinding, UserDataValue, UserType} from "../../../plugin/Strapi";
 import {getHeader} from '../../widgets/header';
 import {AvailableTabs} from "../../../shared/AvailableTabs";
 import {LayerData} from "../../tools/layer";
@@ -13,6 +13,7 @@ import {exportLayer, ExportLayerMode} from "../../tools/export/export";
 
 export class LayerScreen extends Screen {
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
+        console.log(data);
         const template = html`
             ${getHeader(data.layer.name, AvailableTabs.figma, bus)}
             <section>
@@ -44,6 +45,7 @@ export class LayerScreen extends Screen {
                 </div>
                 ${this.getCustomDataFields(bus, data)}
             </section>
+            ${data.layer.exportable && data.layer.widgetDefault == 'Frame' ? this.resizeButtons(bus, data.layer.id) : undefined}
             <section>
                 <div class="row-full">
                     <div class="container">
@@ -239,6 +241,57 @@ export class LayerScreen extends Screen {
                 return html`
                     <div class="error-description">ERROR: Unknown type [${(data as any).type}]</div>
                 `
+        }
+    }
+
+    resizeButtons(bus: MessageBus, id : string): TemplateResult {
+        return html`
+            <section>
+                <div class="row">
+                    <div class="text-container bold">Resize</div>
+                </div>
+                <div class="row">
+                    ${selectInput({
+                        id,
+                        label: 'Resize Frame',
+                        icon: 'R',
+                        value: undefined,
+                        options: [
+                            { value: '', label: '' },
+                            { value: 'iPhone', label: 'iPhone' },
+                            { value: 'iPhonePlus', label: 'iPhone Plus' },
+                            { value: 'iPad', label: 'iPad' },
+                            { value: 'iPadPro', label: 'iPad Pro' },
+                            { value: 'iPadMini', label: 'iPad Mini' },
+                            { value: 'iPadLS', label: 'iPad Landscape' },
+                            { value: 'iPadProLS', label: 'iPad Pro Landscape' },
+                            { value: 'iPadMiniLS', label: 'iPad Mini Landscape' },
+                        ],
+                        onUpdate: async (id, value) => await this.resizeFrame(bus, id, value as string),
+                    })}
+                </div>
+            </section>
+        `;
+    }
+
+    async resizeFrame(bus: MessageBus, id: string, key: string): Promise<void> {
+        const sizeMap: any = {
+            iPhone: { width: 393, height: 852 },
+            iPhonePlus: { width: 430, height: 932 },
+            iPad: { width: 834, height: 1194 },
+            iPadPro: { width: 1024, height: 1366 },
+            iPadMini: { width: 744, height: 1133 },
+            iPadLS: { width: 1194, height: 834 },
+            iPadProLS: { width: 1366, height: 1024 },
+            iPadMiniLS: { width: 1133, height: 744 },
+        };
+        if (key && key in sizeMap) {
+            await bus.execute('resizeLayer', {
+                id,
+                width: sizeMap[key].width,
+                height: sizeMap[key].height,
+
+            });
         }
     }
 }

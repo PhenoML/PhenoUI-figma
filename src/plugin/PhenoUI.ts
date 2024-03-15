@@ -23,7 +23,11 @@ import {
     UpdateMetadataData,
     UploadData,
     GetMetadataData,
-    SetTabData, CategoryData, StrapiEndpointUrlData, SetLocalData
+    SetTabData,
+    CategoryData,
+    StrapiEndpointUrlData,
+    SetLocalData,
+    ResizeLayerData,
 } from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
 import {getComponentProperty, getUserData} from "./tools/export/userdata";
@@ -267,6 +271,16 @@ export class PhenoUI {
             }
 
             return [];
+        }
+    }
+
+    async resizeLayer(data: ResizeLayerData) {
+        const node = findNode(this.api, data.id) as FrameNode;
+        if (node) {
+            node.resize(data.width, data.height);
+        } else {
+            // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
+            console.warn(`Node with id [${data.id}] could not be found to resize it`);
         }
     }
 

@@ -78,6 +78,12 @@ export type SetLocalData = {
     value: string | number | boolean,
 }
 
+export type ResizeLayerData = {
+    id: string,
+    width: number,
+    height: number,
+}
+
 /** FUNCTIONS **/
 export type FunctionParams = {
     updateScreen: ScreenData,
@@ -99,6 +105,7 @@ export type FunctionParams = {
     setTab: SetTabData,
     strapiLogout: undefined,
     isGithubLoggedIn: undefined,
+    resizeLayer: ResizeLayerData,
 }
 
 export type FunctionName = keyof FunctionParams;
