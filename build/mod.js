@@ -3094,6 +3094,14 @@ var PhenoUI = class {
       return [];
     }
   }
+  async resizeLayer(data) {
+    const node = findNode(this.api, data.id);
+    if (node) {
+      node.resize(data.width, data.height);
+    } else {
+      console.warn(`Node with id [${data.id}] could not be found to resize it`);
+    }
+  }
   async _callLayerScreenUpdate(node, useDefaultCache = false) {
     const defaultType = figmaTypeToWidget(node);
     const customType = getMetadata(node, "com.phenoui.layer.widget_override" /* widgetOverride */);

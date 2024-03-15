@@ -25817,6 +25817,7 @@ async function exportLayer(manager, bus, id, name2, mode, from) {
 // src/ui/screens/figma/LayerScreen.ts
 var LayerScreen = class extends Screen {
   updateTemplate(data2, bus) {
+    console.log(data2);
     const template = x`
             ${getHeader(data2.layer.name, 0 /* figma */, bus)}
             <section>
@@ -25848,6 +25849,7 @@ var LayerScreen = class extends Screen {
                 </div>
                 ${this.getCustomDataFields(bus, data2)}
             </section>
+            ${data2.layer.exportable && data2.layer.widgetDefault == "Frame" ? this.resizeButtons(bus, data2.layer.id) : void 0}
             <section>
                 <div class="row-full">
                     <div class="container">
@@ -26025,6 +26027,54 @@ var LayerScreen = class extends Screen {
         return x`
                     <div class="error-description">ERROR: Unknown type [${data2.type}]</div>
                 `;
+    }
+  }
+  resizeButtons(bus, id) {
+    return x`
+            <section>
+                <div class="row">
+                    <div class="text-container bold">Resize</div>
+                </div>
+                <div class="row">
+                    ${selectInput({
+      id,
+      label: "Resize Frame",
+      icon: "R",
+      value: void 0,
+      options: [
+        { value: "", label: "" },
+        { value: "iPhone", label: "iPhone" },
+        { value: "iPhonePlus", label: "iPhone Plus" },
+        { value: "iPad", label: "iPad" },
+        { value: "iPadPro", label: "iPad Pro" },
+        { value: "iPadMini", label: "iPad Mini" },
+        { value: "iPadLS", label: "iPad Landscape" },
+        { value: "iPadProLS", label: "iPad Pro Landscape" },
+        { value: "iPadMiniLS", label: "iPad Mini Landscape" }
+      ],
+      onUpdate: async (id2, value2) => await this.resizeFrame(bus, id2, value2)
+    })}
+                </div>
+            </section>
+        `;
+  }
+  async resizeFrame(bus, id, key2) {
+    const sizeMap = {
+      iPhone: { width: 393, height: 852 },
+      iPhonePlus: { width: 430, height: 932 },
+      iPad: { width: 834, height: 1194 },
+      iPadPro: { width: 1024, height: 1366 },
+      iPadMini: { width: 744, height: 1133 },
+      iPadLS: { width: 1194, height: 834 },
+      iPadProLS: { width: 1366, height: 1024 },
+      iPadMiniLS: { width: 1133, height: 744 }
+    };
+    if (key2 && key2 in sizeMap) {
+      await bus.execute("resizeLayer", {
+        id,
+        width: sizeMap[key2].width,
+        height: sizeMap[key2].height
+      });
     }
   }
 };
