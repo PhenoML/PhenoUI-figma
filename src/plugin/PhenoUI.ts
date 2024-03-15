@@ -319,9 +319,6 @@ export class PhenoUI {
                                     typeInfo.value = JSON.stringify(typeInfo.value);
                                     break;
                             }
-                            const binding = typeInfo.value as PropertyBinding;
-                            const propValue = getComponentProperty(component, binding.id);
-                            binding.value = propValue?.value;
                         } else if (
                             (typeInfo.type === 'string' || typeInfo.type === 'boolean') &&
                             (component.type === 'COMPONENT' || component.type === 'COMPONENT_SET') &&
