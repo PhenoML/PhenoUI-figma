@@ -1,27 +1,49 @@
-import {Strapi} from "./Strapi";
-import {fetchValue, figmaTypeToWidget, MappingString, resolvePath, UINode} from "./tools/export/export";
+import {Strapi, TypeSpec} from "./Strapi";
+import {
+    fetchValue,
+    figmaTypeToWidget,
+    MappingAction,
+    MappingEntry,
+    MappingSpec,
+    MappingString, processSpec,
+    resolvePath,
+    UINode
+} from "./tools/export/export";
 
 const funcRegex = /([^(]+)\((.*)\)\s*$/;
 const splitArgsRegex = /,(?![^()[\]]+[)\]])/;
 
+type ExecutionContext = {
+    node: UINode,
+    cache: Map<string, any>,
+    strapi: Strapi,
+}
+
 const builtInMethods: { [key: string]: Function } = {
-    hello: (subject: string) => {
+    hello: (context: ExecutionContext, subject: string) => {
         const r = `Hello ${subject}!`
         console.log(r);
         return r;
     },
-    exportSVG: async (node: SceneNode) => {
+    exportSVG: async (context: ExecutionContext, node: SceneNode) => {
         return await node.exportAsync({ format: 'SVG_STRING', useAbsoluteBounds: true });
     },
-    exportPNG: async (node: SceneNode) => {
+    exportPNG: async (context: ExecutionContext, node: SceneNode) => {
         const bytes = await node.exportAsync({ format: 'PNG', useAbsoluteBounds: true, constraint: { type: 'SCALE', value: 3 } });
         return figma.base64Encode(bytes);
     },
-    exportJPEG: async (node: SceneNode) => {
+    exportJPEG: async (context: ExecutionContext, node: SceneNode) => {
         const bytes = await node.exportAsync({ format: 'JPG', useAbsoluteBounds: true, constraint: { type: 'SCALE', value: 3 } });
         return figma.base64Encode(bytes);
     },
-    nativeType: figmaTypeToWidget,  
+    nativeType: (context: ExecutionContext, node: any) => figmaTypeToWidget(node),
+    getVariants: async (context: ExecutionContext, node: FrameNode, baseSpec: TypeSpec) => {
+        const variants: any = {};
+        for (let i = 0, n = node.children.length; i < n; ++i) {
+            variants[node.children[i].name] = _overrideSource(baseSpec.mappings, `children[${i}]`);
+        }
+        return processSpec(context.cache, context.strapi, node, variants);
+    }
 }
 
 export async function execute(cache: Map<string, any>, strapi: Strapi, node: UINode, instruction: string): Promise<any> {
@@ -37,7 +59,12 @@ export async function execute(cache: Map<string, any>, strapi: Strapi, node: UIN
         }
 
         if (funcPath in builtInMethods) {
-            return await builtInMethods[funcPath](...args);
+            const context: ExecutionContext = {
+                node,
+                cache,
+                strapi,
+            }
+            return await builtInMethods[funcPath](context, ...args);
         } else {
             const funcComps = funcPath.split('.');
             const solved = resolvePath(node, funcComps);
@@ -47,4 +74,29 @@ export async function execute(cache: Map<string, any>, strapi: Strapi, node: UIN
         }
     }
     return null;
+}
+
+function _overrideSource(spec: MappingSpec, source: string): MappingSpec {
+    if (Array.isArray(spec)) {
+        const result = [];
+        for (const entry of spec) {
+            if (typeof entry as any === 'string') {
+                result.push(`${MappingAction.source}${source}${MappingAction.source}${entry}`);
+            } else {
+                result.push(_overrideSource(entry as MappingSpec, source));
+            }
+        }
+        return result as MappingSpec;
+    }
+
+    const result: any = {};
+    for (const key of Object.keys(spec)) {
+        const entry: MappingEntry = spec[key];
+        if (typeof entry as any === 'string') {
+            result[key] = `${MappingAction.source}${source}${MappingAction.source}${entry}`;
+        } else {
+            result[key] = _overrideSource(entry as MappingSpec, source);
+        }
+    }
+    return result;
 }

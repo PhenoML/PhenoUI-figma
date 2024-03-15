@@ -4,7 +4,7 @@ import {getMetadata} from "../../metadata";
 import {execute} from "../../execute";
 import {getUserData} from "./userdata";
 
-enum MappingAction {
+export enum MappingAction {
     literal = '!',
     valuePath = '#',
     nodePath = '$',
@@ -18,9 +18,9 @@ export type MappingString = `${MappingAction}${string}`;
 type MappingSpecObj = {
     [key: string]: MappingString | MappingSpec | MappingString[] | MappingSpec[] | number | boolean | null;
 }
-type MappingEntry = MappingSpecObj[keyof MappingSpecObj];
+export type MappingEntry = MappingSpecObj[keyof MappingSpecObj];
 type MappingSpecArr = MappingEntry[];
-type MappingSpec = MappingSpecObj | MappingSpecArr;
+export type MappingSpec = MappingSpecObj | MappingSpecArr;
 
 export type UINode = DocumentNode | SceneNode;
 
@@ -139,10 +139,10 @@ export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: 
 
         case MappingAction.inherit:
             const spec = await strapi.getTypeSpec(path, cache);
-            if (!spec) {
-                return null;
+            if (!spec || rawNodes) {
+                return spec;
             }
-            return await _processSpec(cache, strapi, node, spec.mappings);
+            return await processSpec(cache, strapi, node, spec.mappings);
 
         case MappingAction.execute:
             return await execute(cache, strapi, node, path);
@@ -150,8 +150,7 @@ export async function fetchValue(cache: Map<string, any>, strapi: Strapi, node: 
         case MappingAction.source:
             const components = path.split(MappingAction.source);
             const source: any = resolvePath(node, components[0].split('.')).value;
-            const r = await fetchValue(cache, strapi, source, components[1] as MappingString);
-            return r;
+            return await fetchValue(cache, strapi, source, components[1] as MappingString);
 
         default:
             throw `ERROR parsing - Unrecognized mapping operator [${operator}] for mapping ${mapping}`;
@@ -162,7 +161,7 @@ function _isObject(val: any): boolean {
     return typeof val === 'object' && !Array.isArray(val) && val !== null;
 }
 
-async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINode, spec: MappingSpec): Promise<any> {
+export async function processSpec(cache: Map<string, any>, strapi: Strapi, node: UINode, spec: MappingSpec): Promise<any> {
     if (Array.isArray(spec)) {
         const result = [];
         for (const entry of spec) {
@@ -171,7 +170,7 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
             } else if (typeof entry as any === 'number' || entry === null || entry === true || entry === false) {
                 result.push(entry);
             } else {
-                result.push(await _processSpec(cache, strapi, node, entry as MappingSpec));
+                result.push(await processSpec(cache, strapi, node, entry as MappingSpec));
             }
         }
         return result;
@@ -197,7 +196,7 @@ async function _processSpec(cache: Map<string, any>, strapi: Strapi, node: UINod
         } else if (typeof entry as any === 'number' || entry === null || entry === true || entry === false) {
             val = entry;
         } else {
-            val = await _processSpec(cache, strapi, node, entry as MappingSpec);
+            val = await processSpec(cache, strapi, node, entry as MappingSpec);
         }
 
         if (_isObject(val) && _isObject(base[prop])) {
@@ -232,67 +231,43 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
 
 export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, cache?: Map<string, any>, useDefaultCache: boolean = false): Promise<TypeSpec | null> {
     let typeData = await strapi.getTypeSpec(type, cache, useDefaultCache);
-    if (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET') {
-        const properties = node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' ? node.componentPropertyDefinitions : node.componentProperties;
-        const typeDataComponent = {
-            mappings: {} as MappingSpec,
-            userData: {} as UserDataSpec,
+    if (!typeData && (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET')) {
+        let componentType: string;
+        switch (node.type) {
+            case 'COMPONENT':
+                componentType = 'FigmaComponent';
+                break;
+
+            case 'COMPONENT_SET':
+                componentType = 'FigmaComponentSet';
+                break;
+
+            default:
+                componentType = 'FigmaComponentInstance';
+                break;
         }
 
-        if (Object.keys(properties).length) {
-            for (let key in properties) {
-                key = properties[key].type === 'VARIANT' ? `${key}#variant` : key;
-                const [description, propertyId] = key.split(/#(?!.*#)/);
-                // @ts-ignore
-                typeDataComponent.userData[key] = {
-                    description,
-                    type: 'componentProperty',
-                    key,
-                    propertyId,
+        typeData = await strapi.getTypeSpec(componentType, cache, useDefaultCache);
+
+        if (typeData) {
+            const properties = node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' ? node.componentPropertyDefinitions : node.componentProperties;
+            if (Object.keys(properties).length) {
+                const componentProps: UserDataSpec = {};
+                for (let key in properties) {
+                    key = properties[key].type === 'VARIANT' ? `${key}#variant` : key;
+                    const [description, propertyId] = key.split(/#(?!.*#)/);
+                    componentProps[key] = {
+                        description,
+                        type: 'componentProperty',
+                        key,
+                        propertyId,
+                    }
                 }
+                typeData.userData = Object.assign({}, typeData.userData, componentProps);
             }
-        }
-
-        if (node.type === 'INSTANCE') {
-            typeDataComponent.mappings = {
-                type: "!figma-component-instance",
-                widgetType: `!${type}`,
-                dimensions: "@_dimensions",
-                parentLayout: "@_parentLayout",
-            }
-        }
-
-        typeData = {
-            mappings: Object.assign(typeDataComponent.mappings, typeData?.mappings),
-            userData: Object.assign(typeDataComponent.userData, typeData?.userData),
         }
     }
     return typeData;
-}
-
-function _overrideSource(spec: MappingSpec, source: string): MappingSpec {
-    if (Array.isArray(spec)) {
-        const result = [];
-        for (const entry of spec) {
-            if (typeof entry as any === 'string') {
-                result.push(`${MappingAction.source}${source}${MappingAction.source}${entry}`);
-            } else {
-                result.push(_overrideSource(entry as MappingSpec, source));
-            }
-        }
-        return result as MappingSpec;
-    }
-
-    const result: any = {};
-    for (const key of Object.keys(spec)) {
-        const entry: MappingEntry = spec[key];
-        if (typeof entry as any === 'string') {
-            result[key] = `${MappingAction.source}${source}${MappingAction.source}${entry}`;
-        } else {
-            result[key] = _overrideSource(entry as MappingSpec, source);
-        }
-    }
-    return result;
 }
 
 export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode) {
@@ -303,49 +278,14 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
             return null;
         }
 
-        // if the node is a component, add frame mappings spec to the `component` field
-        if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-            const frameSpec = await getTypeSpec('Frame', { type: 'FRAME' } as any, strapi, cache);
-            if (frameSpec) {
-                switch (node.type) {
-                    case 'COMPONENT':
-                        spec.mappings = Object.assign(spec.mappings, {
-                            type: '!figma-component',
-                            componentType: `!${type}`,
-                            defaultVariant: '!default',
-                            variants: {
-                                default: frameSpec.mappings
-                            },
-                        });
-                        break;
-
-                    case 'COMPONENT_SET':
-                        Object.assign(frameSpec.mappings, {
-                            variantProperties: '#variantProperties',
-                        });
-                        const variants: any = {};
-                        for (let i = 0, n = node.children.length; i < n; ++i) {
-                            variants[node.children[i].name] = _overrideSource(frameSpec.mappings, `children[${i}]`);
-                        }
-                        spec.mappings = Object.assign(spec.mappings, {
-                            type: '!figma-component',
-                            componentType: `!${type}`,
-                            defaultVariant: '#defaultVariant.name',
-                            variants,
-                        });
-                        break;
-                }
-            }
-        }
-
-        let result = await _processSpec(cache, strapi, node, spec.mappings);
+        let result = await processSpec(cache, strapi, node, spec.mappings);
         // if the result is an array, merge all the objects in order
         if (Array.isArray(result)) {
             result = Object.assign({}, ...result);
         }
 
         const infoSpec = await getTypeSpec('__info', { type: 'FRAME' } as any, strapi, cache) as TypeSpec;
-        result['__info'] = await _processSpec(cache, strapi, node, infoSpec.mappings);
+        result['__info'] = await processSpec(cache, strapi, node, infoSpec.mappings);
 
         const userData = _getUserDataExport(node, type, spec.userData);
         if (userData) {
