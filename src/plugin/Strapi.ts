@@ -4,6 +4,7 @@ import {getLocalData, setLocalData} from "./metadata";
 import {MessageBus} from "../shared/MessageBus";
 // @ts-ignore
 import qs from 'qs';
+import {MappingAction} from './tools/export/export';
 
 
 export enum StrapiEndpoints {
@@ -53,7 +54,7 @@ export type UserType = {
     }>,
 } | {
     type: 'componentProperty',
-    valueType: ComponentPropertyType,
+    valueType?: ComponentPropertyType,
     default?: never,
     value?: string | number | boolean,
     key: string,
@@ -175,6 +176,24 @@ export class Strapi {
             throw new DataError(`Ambiguous results for type [${type}], expected 1, got ${data.length}`);
         } else if (data.length === 1) {
             const spec = data[0].attributes;
+
+            if (Array.isArray(spec.mappings)) {
+                spec.mappings = spec.mappings.map((t: any) => {
+                    if (typeof t === 'string') {
+                        const operator = t.substring(0, 1);
+                        const path = t.substring(1);
+                        if (operator === MappingAction.inherit) {
+                            return this.getTypeSpec(path, cache, useDefaultCache).then(s => s?.mappings);
+                        } else {
+                            throw new DataError(`Unknown operator [${operator}] in mapping [${t}]`);
+                        }
+                    }
+                    return Promise.resolve(t);
+                });
+                spec.mappings = await Promise.all(spec.mappings);
+                spec.mappings = Object.assign({}, ...spec.mappings);
+            }
+
             if (cache) {
                 cache.set(type, spec);
             }
