@@ -54,6 +54,8 @@ function _getVariantOptions(node: UINode, key: string) {
 export function getUserData(node: UINode, type: string, userData: UserDataSpec) {
     for (const key of Object.keys(userData)) {
         const value = getMetadata(node, `${type}_${key}`);
+        // make a copy of the object to avoid overwriting the original one
+        userData[key] = Object.assign({}, userData[key]);
         const data = userData[key];
         switch (data.type) {
             case 'number':

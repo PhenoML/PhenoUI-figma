@@ -200,7 +200,7 @@ export async function processSpec(cache: Map<string, any>, strapi: Strapi, node:
         }
 
         if (_isObject(val) && _isObject(base[prop])) {
-            base[prop] = Object.assign(base[prop], val);
+            base[prop] = Object.assign({}, base[prop], val);
         } else {
             base[prop] = val;
         }
