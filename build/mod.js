@@ -2281,6 +2281,9 @@ var builtInMethods = {
       variants[node.children[i].name] = _overrideSource(baseSpec.mappings, `children[${i}]`);
     }
     return processSpec(context.cache, context.strapi, node, variants);
+  },
+  nodeAsType: async (context, node, type) => {
+    return await exportNode(context.cache, context.strapi, node, type);
   }
 };
 async function execute(cache, strapi, node, instruction) {
@@ -2385,6 +2388,7 @@ function _getVariantOptions(node, key) {
 function getUserData(node, type, userData) {
   for (const key of Object.keys(userData)) {
     const value = getMetadata(node, `${type}_${key}`);
+    userData[key] = Object.assign({}, userData[key]);
     const data = userData[key];
     switch (data.type) {
       case "number":
@@ -2561,7 +2565,7 @@ async function processSpec(cache, strapi, node, spec) {
       val = await processSpec(cache, strapi, node, entry);
     }
     if (_isObject(val) && _isObject(base[prop])) {
-      base[prop] = Object.assign(base[prop], val);
+      base[prop] = Object.assign({}, base[prop], val);
     } else {
       base[prop] = val;
     }
@@ -2624,9 +2628,9 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
   }
   return typeData;
 }
-async function exportNode(cache, strapi, node) {
+async function exportNode(cache, strapi, node, overrideType) {
   try {
-    const type = getMetadata(node, "com.phenoui.layer.widget_override" /* widgetOverride */) || figmaTypeToWidget(node);
+    const type = overrideType || getMetadata(node, "com.phenoui.layer.widget_override" /* widgetOverride */) || figmaTypeToWidget(node);
     const spec = await getTypeSpec(type, node, strapi, cache);
     if (!spec) {
       return null;
@@ -2728,11 +2732,11 @@ var Strapi = class {
   }
   async getTypeSpec(type, cache, useDefaultCache = false) {
     if (cache && cache.has(type)) {
-      return cache.get(type);
+      return Object.assign({}, cache.get(type));
     }
     if (useDefaultCache) {
       if (this.defaultCache.has(type)) {
-        return this.defaultCache.get(type);
+        return Object.assign({}, this.defaultCache.get(type));
       }
       return null;
     }
@@ -2768,7 +2772,7 @@ var Strapi = class {
       if (cache) {
         cache.set(type, spec);
       }
-      return spec;
+      return Object.assign({}, spec);
     }
     return null;
   }
@@ -3113,9 +3117,9 @@ var PhenoUI = class {
             if (typeof typeInfo.value === "object" && !Array.isArray(typeInfo.value) && typeInfo.value !== null) {
               switch (typeInfo.value.type) {
                 case "binding":
-                  const binding2 = typeInfo.value;
-                  const propValue2 = getComponentProperty(component, binding2.id);
-                  binding2.value = propValue2 == null ? void 0 : propValue2.value;
+                  const binding = typeInfo.value;
+                  const propValue = getComponentProperty(component, binding.id);
+                  binding.value = propValue == null ? void 0 : propValue.value;
                   break;
                 case "group":
                   break;
@@ -3123,9 +3127,6 @@ var PhenoUI = class {
                   typeInfo.value = JSON.stringify(typeInfo.value);
                   break;
               }
-              const binding = typeInfo.value;
-              const propValue = getComponentProperty(component, binding.id);
-              binding.value = propValue == null ? void 0 : propValue.value;
             } else if ((typeInfo.type === "string" || typeInfo.type === "boolean") && (component.type === "COMPONENT" || component.type === "COMPONENT_SET") && component !== node) {
               const compProps = component.componentPropertyDefinitions;
               const properties = [];
