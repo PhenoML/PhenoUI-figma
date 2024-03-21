@@ -8,7 +8,13 @@ export abstract class Screen {
         this._manager = manager;
     }
 
-    renderComplete(_parent: HTMLElement) {}
+    renderComplete(_parent: HTMLElement) {
+        const main = _parent.querySelector('main');
+        if (main) {
+            const style = getComputedStyle(main);
+            this._manager.bus.execute('resizeUi', { height: main.scrollHeight + 8 });
+        }
+    }
 
     template?: TemplateResult[];
     abstract updateTemplate(data: any, bus: MessageBus): TemplateResult[] | Promise<TemplateResult[]>;

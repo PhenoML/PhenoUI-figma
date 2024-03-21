@@ -39,7 +39,7 @@ export function getStyles(): TemplateResult[] {
             
             main {
                 width: 100%;
-                height: 100%;
+                /*height: 100%;*/
                 display: flex;
                 flex-direction: column;
                 align-items: stretch;
@@ -71,6 +71,10 @@ export function getStyles(): TemplateResult[] {
             /*}*/
             
             .centered {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
                 flex-grow: 1;
                 display: flex;
                 flex-direction: column;

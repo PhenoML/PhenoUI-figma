@@ -84,6 +84,11 @@ export type ResizeLayerData = {
     height: number,
 }
 
+export type ResizeUiData = {
+    width?: number,
+    height?: number,
+}
+
 /** FUNCTIONS **/
 export type FunctionParams = {
     updateScreen: ScreenData,
@@ -106,6 +111,7 @@ export type FunctionParams = {
     strapiLogout: undefined,
     isGithubLoggedIn: undefined,
     resizeLayer: ResizeLayerData,
+    resizeUi: ResizeUiData,
 }
 
 export type FunctionName = keyof FunctionParams;

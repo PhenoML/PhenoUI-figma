@@ -28,6 +28,7 @@ import {
     StrapiEndpointUrlData,
     SetLocalData,
     ResizeLayerData,
+    ResizeUiData,
 } from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
 import {getComponentProperty, getUserData} from "./tools/export/userdata";
@@ -284,6 +285,18 @@ export class PhenoUI {
         }
     }
 
+    async resizeUi(data: ResizeLayerData) {
+    async resizeUi(data: ResizeUiData) {
+        const minWidth = 240;
+        const maxWidth = 480;
+        const minHeight = 400;
+        const maxHeight = 640;
+
+        const width = Math.min(maxWidth, Math.max(minWidth, data.width || 0));
+        const height = Math.min(maxHeight, Math.max(minHeight, data.height || 0));
+
+        this.api.ui.resize(width, height);
+    }
     async _callLayerScreenUpdate(node: UINode, useDefaultCache: boolean = false): Promise<void> {
         const defaultType = figmaTypeToWidget(node);
         const customType = getMetadata(node, LayerMetadata.widgetOverride) as string;
