@@ -28,6 +28,7 @@ import {
     StrapiEndpointUrlData,
     SetLocalData,
     ResizeLayerData,
+    ReplaceContentsWithSvgData,
     ResizeUiData,
 } from "../shared/MessageBusTypes";
 import {AvailableTabs} from "../shared/AvailableTabs";
@@ -258,7 +259,7 @@ export class PhenoUI {
     }
 
     async getTypeList(data: TypeListData): Promise<string[]> {
-        if (!this.isLoggedIn()) {
+        if (!await this.isLoggedIn()) {
             return [];
         }
 
@@ -285,7 +286,25 @@ export class PhenoUI {
         }
     }
 
-    async resizeUi(data: ResizeLayerData) {
+    async replaceContentsWithSvg(data: ReplaceContentsWithSvgData) {
+        const node = findNode(this.api, data.id) as FrameNode;
+        if (node) {
+            const content = this.api.createNodeFromSvg(data.svg);
+            for (const child of node.children) {
+                child.remove();
+            }
+
+            for (const child of content.children) {
+                node.appendChild(child);
+            }
+
+            content.remove();
+        } else {
+            // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
+            console.warn(`Node with id [${data.id}] could not be found to replace its contents with svg`);
+        }
+    }
+
     async resizeUi(data: ResizeUiData) {
         const minWidth = 240;
         const maxWidth = 480;
@@ -297,6 +316,18 @@ export class PhenoUI {
 
         this.api.ui.resize(width, height);
     }
+
+    async getLayerSize(id: string): Promise<{width: number, height: number}> {
+        const node = findNode(this.api, id) as FrameNode;
+        if (node) {
+            return {width: node.width, height: node.height};
+        } else {
+            // just ignore... this could happen because the message passing is async and so the node could be deleted before we get this message
+            console.warn(`Node with id [${id}] could not be found to get its size`);
+            return {width: 0, height: 0};
+        }
+    }
+
     async _callLayerScreenUpdate(node: UINode, useDefaultCache: boolean = false): Promise<void> {
         const defaultType = figmaTypeToWidget(node);
         const customType = getMetadata(node, LayerMetadata.widgetOverride) as string;

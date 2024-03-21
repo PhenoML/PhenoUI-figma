@@ -88,6 +88,10 @@ export function getStyles(): TemplateResult[] {
                 padding: 0 8px;
             }
             
+            .padding-top-8 {
+                padding-top: 8px;
+            }
+            
             .logo {
                 width: 160px;
                 height: auto;
@@ -397,6 +401,60 @@ export function getStyles(): TemplateResult[] {
                     max-width: 100%;
                     max-height: 100%;
                 }
+            }
+            
+            .lottie-player {
+                min-height: 32px;
+                position: relative;
+                border: 1px solid transparent;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+
+            .lottie-player:hover {
+                outline-offset: -1px;
+                outline: 1px solid var(--figma-color-border);
+            }
+
+            .lottie-player:focus-within {
+                outline-offset: -2px;
+                outline: 2px solid var(--figma-color-border-selected);
+            }
+
+            .lottie-animation {
+                width: 100px;
+                height: 100px;
+
+                > svg {
+                    max-width: 100%;
+                    max-height: 100%;
+                }
+            }
+            
+            .lottie-controls {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: center;
+                height: 32px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            
+            .lottie-play-bar {
+                flex-grow: 1;
+                height: 100%;
+                background-color: var(--figma-color-bg-tertiary);
+            }
+            
+            .lottie-play-progress {
+                height: 100%;
+                background-color: var(--figma-color-bg-secondary);
             }
             
             .tab-container {

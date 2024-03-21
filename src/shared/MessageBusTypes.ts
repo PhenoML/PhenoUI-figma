@@ -84,6 +84,11 @@ export type ResizeLayerData = {
     height: number,
 }
 
+export type ReplaceContentsWithSvgData = {
+    id: string,
+    svg: string,
+}
+
 export type ResizeUiData = {
     width?: number,
     height?: number,
@@ -111,7 +116,9 @@ export type FunctionParams = {
     strapiLogout: undefined,
     isGithubLoggedIn: undefined,
     resizeLayer: ResizeLayerData,
+    replaceContentsWithSvg: ReplaceContentsWithSvgData,
     resizeUi: ResizeUiData,
+    getLayerSize: string,
 }
 
 export type FunctionName = keyof FunctionParams;

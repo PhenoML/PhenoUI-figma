@@ -35,6 +35,7 @@ export type UserDataGroup = {
 
 export type UserType = {
     description: string,
+    linkedTo?: string,
 } & ({
     type: 'string' | 'boolean',
     default?: string | boolean,
@@ -67,6 +68,10 @@ export type UserType = {
     type: 'group',
     default?: UserType[],
     value?: UserDataGroup,
+} | {
+    type: 'lottie',
+    default: string | null,
+    value: string | null,
 })
 
 export type UserDataValue = Exclude<UserType['value'], undefined>;
@@ -159,7 +164,7 @@ export class Strapi {
             if (this.defaultCache.has(type)) {
                 return Object.assign({}, this.defaultCache.get(type));
             }
-            return null;
+            // return null;
         }
 
         const query = qs.stringify({
@@ -197,6 +202,7 @@ export class Strapi {
             if (cache) {
                 cache.set(type, spec);
             }
+            this.defaultCache.set(type, spec);
             return Object.assign({}, spec);
         }
 

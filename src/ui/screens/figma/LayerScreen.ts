@@ -10,6 +10,9 @@ import {getHeader} from '../../widgets/header';
 import {AvailableTabs} from "../../../shared/AvailableTabs";
 import {LayerData} from "../../tools/layer";
 import {exportLayer, ExportLayerMode} from "../../tools/export/export";
+import lottie from 'lottie-web';
+import animation from '../../svg/loading_animation.json';
+import {lottieInput} from '../../widgets/lottie';
 
 export class LayerScreen extends Screen {
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
@@ -98,6 +101,8 @@ export class LayerScreen extends Screen {
                             </div>
                         </div>
                     `);
+                } else if (userData[key].type === 'lottie') {
+                    rows.push(this._getUserField(bus, data.layer.id, layerType, key, userData[key]));
                 } else {
                     rows.push(html`
                         <div class="row">
@@ -239,11 +244,19 @@ export class LayerScreen extends Screen {
                         onUpdate: onUpdateComponentProperty,
                     });
                 }
-                // fall through
+                return html`<div class="error-description">ERROR: Unknown component [${data.type}] valueType [${data.valueType}]</div>`;
+
+            case 'lottie':
+                return lottieInput(bus, {
+                    id: layerID,
+                    description: data.description,
+                    value: data.value,
+                    onUpdate,
+                });
 
             default:
                 return html`
-                    <div class="error-description">ERROR: Unknown type [${data.type} # ${data.valueType}]</div>
+                    <div class="error-description">ERROR: Unknown type [${(data as any).type}]</div>
                 `
         }
     }
