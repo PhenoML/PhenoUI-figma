@@ -54,3 +54,21 @@ export const minusSign = html`
         <path fill-rule="evenodd" stroke="none" d="M11 3H0V2h11v1z" />
     </svg>
 `;
+
+export const playButton = html`
+    <svg width="100%" height="100%" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 2.692v11.618l11.618-5.837-11.618-5.781zM4 4.308l8.382 4.17-8.382 4.211v-8.381z" />
+    </svg>
+`;
+
+export const pauseButton = html`
+    <svg width="100%" height="100%" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 15h4v-13h-4v13zM4 3h2v11h-2v-11zM10 2v13h4v-13h-4zM13 14h-2v-11h2v11z" />
+    </svg>
+`;
+
+export const placeButton = html`
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 16 16">
+        <path fill-opacity="1" fill-rule="evenodd" stroke="none" d="M1.646 13.646 4.293 11H2v-1h4v4H5v-2.293l-2.646 2.647-.708-.707zm12.708 0L11.707 11H14v-1h-4v4h1v-2.293l2.646 2.647.708-.707zM1.646 2.354 4.293 5H2v1h4V2H5v2.293L2.354 1.646l-.708.708zm12.708 0L11.707 5H14v1h-4V2h1v2.293l2.646-2.647.708.708z" />
+    </svg>
+`;
