@@ -389,14 +389,14 @@ var require_get_intrinsic = __commonJS({
     var getEvalledConstructor = function(expressionSyntax) {
       try {
         return $Function('"use strict"; return (' + expressionSyntax + ").constructor;")();
-      } catch (e4) {
+      } catch (e5) {
       }
     };
     var $gOPD = Object.getOwnPropertyDescriptor;
     if ($gOPD) {
       try {
         $gOPD({}, "");
-      } catch (e4) {
+      } catch (e5) {
         $gOPD = null;
       }
     }
@@ -494,8 +494,8 @@ var require_get_intrinsic = __commonJS({
     if (getProto) {
       try {
         null.error;
-      } catch (e4) {
-        errorProto = getProto(getProto(e4));
+      } catch (e5) {
+        errorProto = getProto(getProto(e5));
         INTRINSICS["%Error.prototype%"] = errorProto;
       }
     }
@@ -696,7 +696,7 @@ var require_has_property_descriptors = __commonJS({
         try {
           $defineProperty({}, "a", { value: 1 });
           return true;
-        } catch (e4) {
+        } catch (e5) {
           return false;
         }
       }
@@ -708,7 +708,7 @@ var require_has_property_descriptors = __commonJS({
       }
       try {
         return $defineProperty([], "length", { value: 1 }).length !== 1;
-      } catch (e4) {
+      } catch (e5) {
         return true;
       }
     };
@@ -725,7 +725,7 @@ var require_gopd = __commonJS({
     if ($gOPD) {
       try {
         $gOPD([], "length");
-      } catch (e4) {
+      } catch (e5) {
         $gOPD = null;
       }
     }
@@ -743,7 +743,7 @@ var require_define_data_property = __commonJS({
     if ($defineProperty) {
       try {
         $defineProperty({}, "a", { value: 1 });
-      } catch (e4) {
+      } catch (e5) {
         $defineProperty = false;
       }
     }
@@ -847,7 +847,7 @@ var require_call_bind = __commonJS({
     if ($defineProperty) {
       try {
         $defineProperty({}, "a", { value: 1 });
-      } catch (e4) {
+      } catch (e5) {
         $defineProperty = null;
       }
     }
@@ -1176,7 +1176,7 @@ var require_object_inspect = __commonJS({
       try {
         symToString.call(obj);
         return true;
-      } catch (e4) {
+      } catch (e5) {
       }
       return false;
     }
@@ -1187,7 +1187,7 @@ var require_object_inspect = __commonJS({
       try {
         bigIntValueOf.call(obj);
         return true;
-      } catch (e4) {
+      } catch (e5) {
       }
       return false;
     }
@@ -1233,7 +1233,7 @@ var require_object_inspect = __commonJS({
           return true;
         }
         return x2 instanceof Map;
-      } catch (e4) {
+      } catch (e5) {
       }
       return false;
     }
@@ -1249,7 +1249,7 @@ var require_object_inspect = __commonJS({
           return true;
         }
         return x2 instanceof WeakMap;
-      } catch (e4) {
+      } catch (e5) {
       }
       return false;
     }
@@ -1260,7 +1260,7 @@ var require_object_inspect = __commonJS({
       try {
         weakRefDeref.call(x2);
         return true;
-      } catch (e4) {
+      } catch (e5) {
       }
       return false;
     }
@@ -1276,7 +1276,7 @@ var require_object_inspect = __commonJS({
           return true;
         }
         return x2 instanceof Set;
-      } catch (e4) {
+      } catch (e5) {
       }
       return false;
     }
@@ -1292,7 +1292,7 @@ var require_object_inspect = __commonJS({
           return true;
         }
         return x2 instanceof WeakSet;
-      } catch (e4) {
+      } catch (e5) {
       }
       return false;
     }
@@ -1647,7 +1647,7 @@ var require_utils = __commonJS({
       }
       try {
         return decodeURIComponent(strWithoutPlus);
-      } catch (e4) {
+      } catch (e5) {
         return strWithoutPlus;
       }
     };
@@ -2725,7 +2725,7 @@ var require_lottie = __commonJS({
         }
         function setupWorker() {
           if (!workerInstance) {
-            workerInstance = createWorker(function workerStart(e4) {
+            workerInstance = createWorker(function workerStart(e5) {
               function dataFunctionManager() {
                 function completeLayers(layers, comps) {
                   var layerData;
@@ -3238,38 +3238,38 @@ var require_lottie = __commonJS({
                   };
                 }();
               }
-              if (e4.data.type === "loadAnimation") {
-                _workerSelf.assetLoader.load(e4.data.path, e4.data.fullPath, function(data2) {
+              if (e5.data.type === "loadAnimation") {
+                _workerSelf.assetLoader.load(e5.data.path, e5.data.fullPath, function(data2) {
                   _workerSelf.dataManager.completeData(data2);
                   _workerSelf.postMessage({
-                    id: e4.data.id,
+                    id: e5.data.id,
                     payload: data2,
                     status: "success"
                   });
                 }, function() {
                   _workerSelf.postMessage({
-                    id: e4.data.id,
+                    id: e5.data.id,
                     status: "error"
                   });
                 });
-              } else if (e4.data.type === "complete") {
-                var animation = e4.data.animation;
+              } else if (e5.data.type === "complete") {
+                var animation = e5.data.animation;
                 _workerSelf.dataManager.completeData(animation);
                 _workerSelf.postMessage({
-                  id: e4.data.id,
+                  id: e5.data.id,
                   payload: animation,
                   status: "success"
                 });
-              } else if (e4.data.type === "loadData") {
-                _workerSelf.assetLoader.load(e4.data.path, e4.data.fullPath, function(data2) {
+              } else if (e5.data.type === "loadData") {
+                _workerSelf.assetLoader.load(e5.data.path, e5.data.fullPath, function(data2) {
                   _workerSelf.postMessage({
-                    id: e4.data.id,
+                    id: e5.data.id,
                     payload: data2,
                     status: "success"
                   });
                 }, function() {
                   _workerSelf.postMessage({
-                    id: e4.data.id,
+                    id: e5.data.id,
                     status: "error"
                   });
                 });
@@ -5317,21 +5317,21 @@ var require_lottie = __commonJS({
         var i4;
         var len = data2.k.length;
         var s2;
-        var e4;
+        var e5;
         var to;
         var ti;
         for (i4 = 0; i4 < len - 1; i4 += 1) {
           if (data2.k[i4].to && data2.k[i4].s && data2.k[i4 + 1] && data2.k[i4 + 1].s) {
             s2 = data2.k[i4].s;
-            e4 = data2.k[i4 + 1].s;
+            e5 = data2.k[i4 + 1].s;
             to = data2.k[i4].to;
             ti = data2.k[i4].ti;
-            if (s2.length === 2 && !(s2[0] === e4[0] && s2[1] === e4[1]) && bez.pointOnLine2D(s2[0], s2[1], e4[0], e4[1], s2[0] + to[0], s2[1] + to[1]) && bez.pointOnLine2D(s2[0], s2[1], e4[0], e4[1], e4[0] + ti[0], e4[1] + ti[1]) || s2.length === 3 && !(s2[0] === e4[0] && s2[1] === e4[1] && s2[2] === e4[2]) && bez.pointOnLine3D(s2[0], s2[1], s2[2], e4[0], e4[1], e4[2], s2[0] + to[0], s2[1] + to[1], s2[2] + to[2]) && bez.pointOnLine3D(s2[0], s2[1], s2[2], e4[0], e4[1], e4[2], e4[0] + ti[0], e4[1] + ti[1], e4[2] + ti[2])) {
+            if (s2.length === 2 && !(s2[0] === e5[0] && s2[1] === e5[1]) && bez.pointOnLine2D(s2[0], s2[1], e5[0], e5[1], s2[0] + to[0], s2[1] + to[1]) && bez.pointOnLine2D(s2[0], s2[1], e5[0], e5[1], e5[0] + ti[0], e5[1] + ti[1]) || s2.length === 3 && !(s2[0] === e5[0] && s2[1] === e5[1] && s2[2] === e5[2]) && bez.pointOnLine3D(s2[0], s2[1], s2[2], e5[0], e5[1], e5[2], s2[0] + to[0], s2[1] + to[1], s2[2] + to[2]) && bez.pointOnLine3D(s2[0], s2[1], s2[2], e5[0], e5[1], e5[2], e5[0] + ti[0], e5[1] + ti[1], e5[2] + ti[2])) {
               data2.k[i4].to = null;
               data2.k[i4].ti = null;
             }
-            if (s2[0] === e4[0] && s2[1] === e4[1] && to[0] === 0 && to[1] === 0 && ti[0] === 0 && ti[1] === 0) {
-              if (s2.length === 2 || s2[2] === e4[2] && to[2] === 0 && ti[2] === 0) {
+            if (s2[0] === e5[0] && s2[1] === e5[1] && to[0] === 0 && to[1] === 0 && ti[0] === 0 && ti[1] === 0) {
+              if (s2.length === 2 || s2[2] === e5[2] && to[2] === 0 && ti[2] === 0) {
                 data2.k[i4].to = null;
                 data2.k[i4].ti = null;
               }
@@ -6167,12 +6167,12 @@ var require_lottie = __commonJS({
           }
           return this._t(sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1);
         }
-        function setTransform(a3, b2, c2, d2, e4, f3, g2, h2, i4, j2, k2, l3, m3, n3, o3, p2) {
+        function setTransform(a3, b2, c2, d2, e5, f3, g2, h2, i4, j2, k2, l3, m3, n3, o4, p2) {
           this.props[0] = a3;
           this.props[1] = b2;
           this.props[2] = c2;
           this.props[3] = d2;
-          this.props[4] = e4;
+          this.props[4] = e5;
           this.props[5] = f3;
           this.props[6] = g2;
           this.props[7] = h2;
@@ -6182,7 +6182,7 @@ var require_lottie = __commonJS({
           this.props[11] = l3;
           this.props[12] = m3;
           this.props[13] = n3;
-          this.props[14] = o3;
+          this.props[14] = o4;
           this.props[15] = p2;
           return this;
         }
@@ -6294,14 +6294,14 @@ var require_lottie = __commonJS({
           var b2 = -this.props[1] / determinant;
           var c2 = -this.props[4] / determinant;
           var d2 = this.props[0] / determinant;
-          var e4 = (this.props[4] * this.props[13] - this.props[5] * this.props[12]) / determinant;
+          var e5 = (this.props[4] * this.props[13] - this.props[5] * this.props[12]) / determinant;
           var f3 = -(this.props[0] * this.props[13] - this.props[1] * this.props[12]) / determinant;
           var inverseMatrix = new Matrix();
           inverseMatrix.props[0] = a3;
           inverseMatrix.props[1] = b2;
           inverseMatrix.props[4] = c2;
           inverseMatrix.props[5] = d2;
-          inverseMatrix.props[12] = e4;
+          inverseMatrix.props[12] = e5;
           inverseMatrix.props[13] = f3;
           return inverseMatrix;
         }
@@ -6641,17 +6641,17 @@ var require_lottie = __commonJS({
       TrimModifier.prototype.addShapeToModifier = function(shapeData) {
         shapeData.pathsData = [];
       };
-      TrimModifier.prototype.calculateShapeEdges = function(s2, e4, shapeLength, addedLength, totalModifierLength) {
+      TrimModifier.prototype.calculateShapeEdges = function(s2, e5, shapeLength, addedLength, totalModifierLength) {
         var segments = [];
-        if (e4 <= 1) {
+        if (e5 <= 1) {
           segments.push({
             s: s2,
-            e: e4
+            e: e5
           });
         } else if (s2 >= 1) {
           segments.push({
             s: s2 - 1,
-            e: e4 - 1
+            e: e5 - 1
           });
         } else {
           segments.push({
@@ -6660,7 +6660,7 @@ var require_lottie = __commonJS({
           });
           segments.push({
             s: 0,
-            e: e4 - 1
+            e: e5 - 1
           });
         }
         var shapeSegments = [];
@@ -6701,38 +6701,38 @@ var require_lottie = __commonJS({
       };
       TrimModifier.prototype.processShapes = function(_isFirstFrame) {
         var s2;
-        var e4;
+        var e5;
         if (this._mdf || _isFirstFrame) {
-          var o3 = this.o.v % 360 / 360;
-          if (o3 < 0) {
-            o3 += 1;
+          var o4 = this.o.v % 360 / 360;
+          if (o4 < 0) {
+            o4 += 1;
           }
           if (this.s.v > 1) {
-            s2 = 1 + o3;
+            s2 = 1 + o4;
           } else if (this.s.v < 0) {
-            s2 = 0 + o3;
+            s2 = 0 + o4;
           } else {
-            s2 = this.s.v + o3;
+            s2 = this.s.v + o4;
           }
           if (this.e.v > 1) {
-            e4 = 1 + o3;
+            e5 = 1 + o4;
           } else if (this.e.v < 0) {
-            e4 = 0 + o3;
+            e5 = 0 + o4;
           } else {
-            e4 = this.e.v + o3;
+            e5 = this.e.v + o4;
           }
-          if (s2 > e4) {
+          if (s2 > e5) {
             var _s = s2;
-            s2 = e4;
-            e4 = _s;
+            s2 = e5;
+            e5 = _s;
           }
           s2 = Math.round(s2 * 1e4) * 1e-4;
-          e4 = Math.round(e4 * 1e4) * 1e-4;
+          e5 = Math.round(e5 * 1e4) * 1e-4;
           this.sValue = s2;
-          this.eValue = e4;
+          this.eValue = e5;
         } else {
           s2 = this.sValue;
-          e4 = this.eValue;
+          e5 = this.eValue;
         }
         var shapePaths;
         var i4;
@@ -6743,7 +6743,7 @@ var require_lottie = __commonJS({
         var pathData;
         var totalShapeLength;
         var totalModifierLength = 0;
-        if (e4 === s2) {
+        if (e5 === s2) {
           for (i4 = 0; i4 < len; i4 += 1) {
             this.shapes[i4].localShapeCollection.releaseShapes();
             this.shapes[i4].shape._mdf = true;
@@ -6752,7 +6752,7 @@ var require_lottie = __commonJS({
               this.shapes[i4].pathsData.length = 0;
             }
           }
-        } else if (!(e4 === 1 && s2 === 0 || e4 === 0 && s2 === 1)) {
+        } else if (!(e5 === 1 && s2 === 0 || e5 === 0 && s2 === 1)) {
           var segments = [];
           var shapeData;
           var localShapeCollection;
@@ -6781,7 +6781,7 @@ var require_lottie = __commonJS({
             }
           }
           var shapeS = s2;
-          var shapeE = e4;
+          var shapeE = e5;
           var addedLength = 0;
           var edges;
           for (i4 = len - 1; i4 >= 0; i4 -= 1) {
@@ -6790,7 +6790,7 @@ var require_lottie = __commonJS({
               localShapeCollection = shapeData.localShapeCollection;
               localShapeCollection.releaseShapes();
               if (this.m === 2 && len > 1) {
-                edges = this.calculateShapeEdges(s2, e4, shapeData.totalShapeLength, addedLength, totalModifierLength);
+                edges = this.calculateShapeEdges(s2, e5, shapeData.totalShapeLength, addedLength, totalModifierLength);
                 addedLength += shapeData.totalShapeLength;
               } else {
                 edges = [[shapeS, shapeE]];
@@ -7692,9 +7692,9 @@ var require_lottie = __commonJS({
         var min = bez2.points[0][comp2];
         var max = bez2.points[bez2.points.length - 1][comp2];
         if (min > max) {
-          var e4 = max;
+          var e5 = max;
           max = min;
-          min = e4;
+          min = e5;
         }
         var f3 = quadRoots(3 * bez2.a[comp2], 2 * bez2.b[comp2], bez2.c[comp2]);
         for (var i4 = 0; i4 < f3.length; i4 += 1) {
@@ -7919,16 +7919,16 @@ var require_lottie = __commonJS({
         var p2b;
         var p2a;
         var p3;
-        var e4;
-        e4 = linearOffset(segment.points[0], segment.points[1], amount);
-        p0 = e4[0];
-        p1a = e4[1];
-        e4 = linearOffset(segment.points[1], segment.points[2], amount);
-        p1b = e4[0];
-        p2b = e4[1];
-        e4 = linearOffset(segment.points[2], segment.points[3], amount);
-        p2a = e4[0];
-        p3 = e4[1];
+        var e5;
+        e5 = linearOffset(segment.points[0], segment.points[1], amount);
+        p0 = e5[0];
+        p1a = e5[1];
+        e5 = linearOffset(segment.points[1], segment.points[2], amount);
+        p1b = e5[0];
+        p2b = e5[1];
+        e5 = linearOffset(segment.points[2], segment.points[3], amount);
+        p2a = e5[0];
+        p3 = e5[1];
         var p1 = lineIntersection(p0, p1a, p1b, p2b);
         if (p1 === null)
           p1 = p1a;
@@ -7989,16 +7989,16 @@ var require_lottie = __commonJS({
         return [outa, outb];
       }
       function pruneIntersections(segments) {
-        var e4;
+        var e5;
         for (var i4 = 1; i4 < segments.length; i4 += 1) {
-          e4 = pruneSegmentIntersection(segments[i4 - 1], segments[i4]);
-          segments[i4 - 1] = e4[0];
-          segments[i4] = e4[1];
+          e5 = pruneSegmentIntersection(segments[i4 - 1], segments[i4]);
+          segments[i4 - 1] = e5[0];
+          segments[i4] = e5[1];
         }
         if (segments.length > 1) {
-          e4 = pruneSegmentIntersection(segments[segments.length - 1], segments[0]);
-          segments[segments.length - 1] = e4[0];
-          segments[0] = e4[1];
+          e5 = pruneSegmentIntersection(segments[segments.length - 1], segments[0]);
+          segments[segments.length - 1] = e5[0];
+          segments[0] = e5[1];
         }
         return segments;
       }
@@ -10733,8 +10733,8 @@ var require_lottie = __commonJS({
         this.shapesData = null;
         this.itemsData = null;
       };
-      function LetterProps(o3, sw, sc, fc, m3, p2) {
-        this.o = o3;
+      function LetterProps(o4, sw, sc, fc, m3, p2) {
+        this.o = o4;
         this.sw = sw;
         this.sc = sc;
         this.fc = fc;
@@ -10749,7 +10749,7 @@ var require_lottie = __commonJS({
           p: true
         };
       }
-      LetterProps.prototype.update = function(o3, sw, sc, fc, m3, p2) {
+      LetterProps.prototype.update = function(o4, sw, sc, fc, m3, p2) {
         this._mdf.o = false;
         this._mdf.sw = false;
         this._mdf.sc = false;
@@ -10757,8 +10757,8 @@ var require_lottie = __commonJS({
         this._mdf.m = false;
         this._mdf.p = false;
         var updated = false;
-        if (this.o !== o3) {
-          this.o = o3;
+        if (this.o !== o4) {
+          this.o = o4;
           this._mdf.o = true;
           updated = true;
         }
@@ -11289,27 +11289,27 @@ var require_lottie = __commonJS({
             var easer = BezierFactory.getBezierEasing(x1, y1, x2, y2).get;
             var mult = 0;
             var s2 = this.finalS;
-            var e4 = this.finalE;
+            var e5 = this.finalE;
             var type = this.data.sh;
             if (type === 2) {
-              if (e4 === s2) {
-                mult = ind >= e4 ? 1 : 0;
+              if (e5 === s2) {
+                mult = ind >= e5 ? 1 : 0;
               } else {
-                mult = max(0, min(0.5 / (e4 - s2) + (ind - s2) / (e4 - s2), 1));
+                mult = max(0, min(0.5 / (e5 - s2) + (ind - s2) / (e5 - s2), 1));
               }
               mult = easer(mult);
             } else if (type === 3) {
-              if (e4 === s2) {
-                mult = ind >= e4 ? 0 : 1;
+              if (e5 === s2) {
+                mult = ind >= e5 ? 0 : 1;
               } else {
-                mult = 1 - max(0, min(0.5 / (e4 - s2) + (ind - s2) / (e4 - s2), 1));
+                mult = 1 - max(0, min(0.5 / (e5 - s2) + (ind - s2) / (e5 - s2), 1));
               }
               mult = easer(mult);
             } else if (type === 4) {
-              if (e4 === s2) {
+              if (e5 === s2) {
                 mult = 0;
               } else {
-                mult = max(0, min(0.5 / (e4 - s2) + (ind - s2) / (e4 - s2), 1));
+                mult = max(0, min(0.5 / (e5 - s2) + (ind - s2) / (e5 - s2), 1));
                 if (mult < 0.5) {
                   mult *= 2;
                 } else {
@@ -11318,30 +11318,30 @@ var require_lottie = __commonJS({
               }
               mult = easer(mult);
             } else if (type === 5) {
-              if (e4 === s2) {
+              if (e5 === s2) {
                 mult = 0;
               } else {
-                var tot = e4 - s2;
-                ind = min(max(0, ind + 0.5 - s2), e4 - s2);
+                var tot = e5 - s2;
+                ind = min(max(0, ind + 0.5 - s2), e5 - s2);
                 var x3 = -tot / 2 + ind;
                 var a3 = tot / 2;
                 mult = Math.sqrt(1 - x3 * x3 / (a3 * a3));
               }
               mult = easer(mult);
             } else if (type === 6) {
-              if (e4 === s2) {
+              if (e5 === s2) {
                 mult = 0;
               } else {
-                ind = min(max(0, ind + 0.5 - s2), e4 - s2);
-                mult = (1 + Math.cos(Math.PI + Math.PI * 2 * ind / (e4 - s2))) / 2;
+                ind = min(max(0, ind + 0.5 - s2), e5 - s2);
+                mult = (1 + Math.cos(Math.PI + Math.PI * 2 * ind / (e5 - s2))) / 2;
               }
               mult = easer(mult);
             } else {
               if (ind >= floor(s2)) {
                 if (ind - s2 < 0) {
-                  mult = max(0, min(min(e4, 1) - (s2 - ind), 1));
+                  mult = max(0, min(min(e5, 1) - (s2 - ind), 1));
                 } else {
-                  mult = max(0, min(e4 - ind, 1));
+                  mult = max(0, min(e5 - ind, 1));
                 }
               }
               mult = easer(mult);
@@ -11371,16 +11371,16 @@ var require_lottie = __commonJS({
               this.e.v = this._currentTextLength;
             }
             var divisor = this.data.r === 2 ? 1 : 100 / this.data.totalChars;
-            var o3 = this.o.v / divisor;
-            var s2 = this.s.v / divisor + o3;
-            var e4 = this.e.v / divisor + o3;
-            if (s2 > e4) {
+            var o4 = this.o.v / divisor;
+            var s2 = this.s.v / divisor + o4;
+            var e5 = this.e.v / divisor + o4;
+            if (s2 > e5) {
               var _s = s2;
-              s2 = e4;
-              e4 = _s;
+              s2 = e5;
+              e5 = _s;
             }
             this.finalS = s2;
-            this.finalE = e4;
+            this.finalE = e5;
           }
         };
         extendPrototype([DynamicPropertyContainer], TextSelectorPropFactory);
@@ -15572,7 +15572,7 @@ var require_lottie = __commonJS({
             for (prop in obj) {
               try {
                 result.push(flatten(obj[prop], depth - 1));
-              } catch (e4) {
+              } catch (e5) {
               }
             }
           }
@@ -15593,7 +15593,7 @@ var require_lottie = __commonJS({
             var out = new Uint8Array(width2);
             (global2.crypto || global2.msCrypto).getRandomValues(out);
             return tostring(out);
-          } catch (e4) {
+          } catch (e5) {
             var browser = global2.navigator, plugins = browser && browser.plugins;
             return [+/* @__PURE__ */ new Date(), global2, plugins, global2.screen, tostring(pool)];
           }
@@ -18192,10 +18192,10 @@ var require_lottie = __commonJS({
               var dasharrayValue;
               if (this.filterManager.effectElements[7].p.v !== 0 || this.filterManager.effectElements[8].p.v !== 100) {
                 var s2 = Math.min(this.filterManager.effectElements[7].p.v, this.filterManager.effectElements[8].p.v) * 0.01;
-                var e4 = Math.max(this.filterManager.effectElements[7].p.v, this.filterManager.effectElements[8].p.v) * 0.01;
+                var e5 = Math.max(this.filterManager.effectElements[7].p.v, this.filterManager.effectElements[8].p.v) * 0.01;
                 var l3 = path.getTotalLength();
                 dasharrayValue = "0 0 0 " + l3 * s2 + " ";
-                var lineLength = l3 * (e4 - s2);
+                var lineLength = l3 * (e5 - s2);
                 var segment = 1 + this.filterManager.effectElements[4].p.v * 2 * this.filterManager.effectElements[9].p.v * 0.01;
                 var units = Math.floor(lineLength / segment);
                 var j2;
@@ -19460,7 +19460,7 @@ var require_dist_node3 = __commonJS({
     var import_request4 = (init_dist_web3(), __toCommonJS(dist_web_exports2));
     function _buildMessageForResponseErrors(data2) {
       return `Request failed due to following response errors:
-` + data2.errors.map((e4) => ` - ${e4.message}`).join("\n");
+` + data2.errors.map((e5) => ` - ${e5.message}`).join("\n");
     }
     var GraphqlResponseError = class extends Error {
       constructor(request2, headers, response) {
@@ -19922,7 +19922,7 @@ var require_light = __commonJS({
           }
         }
         async trigger(name2, ...args) {
-          var e4, promises;
+          var e5, promises;
           try {
             if (name2 !== "debug") {
               this.trigger("debug", `Event triggered: ${name2}`, args);
@@ -19934,7 +19934,7 @@ var require_light = __commonJS({
               return listener.status !== "none";
             });
             promises = this._events[name2].map(async (listener) => {
-              var e5, returned;
+              var e6, returned;
               if (listener.status === "none") {
                 return;
               }
@@ -19949,9 +19949,9 @@ var require_light = __commonJS({
                   return returned;
                 }
               } catch (error) {
-                e5 = error;
+                e6 = error;
                 {
-                  this.trigger("error", e5);
+                  this.trigger("error", e6);
                 }
                 return null;
               }
@@ -19960,9 +19960,9 @@ var require_light = __commonJS({
               return x2 != null;
             });
           } catch (error) {
-            e4 = error;
+            e5 = error;
             {
-              this.trigger("error", e4);
+              this.trigger("error", e5);
             }
             return null;
           }
@@ -20568,7 +20568,7 @@ var require_light = __commonJS({
             var base;
             clearInterval(this.interval);
             return typeof (base = this.interval = setInterval(async () => {
-              var e4, k2, ref, results, time2, v2;
+              var e5, k2, ref, results, time2, v2;
               time2 = Date.now();
               ref = this.instances;
               results = [];
@@ -20581,8 +20581,8 @@ var require_light = __commonJS({
                     results.push(void 0);
                   }
                 } catch (error) {
-                  e4 = error;
-                  results.push(v2.Events.trigger("error", e4));
+                  e5 = error;
+                  results.push(v2.Events.trigger("error", e5));
                 }
               }
               return results;
@@ -20774,7 +20774,7 @@ var require_light = __commonJS({
             }
           }
           async _free(index2, job, options, eventInfo) {
-            var e4, running;
+            var e5, running;
             try {
               ({ running } = await this._store.__free__(index2, options.weight));
               this.Events.trigger("debug", `Freed ${options.id}`, eventInfo);
@@ -20782,8 +20782,8 @@ var require_light = __commonJS({
                 return this.Events.trigger("idle");
               }
             } catch (error1) {
-              e4 = error1;
-              return this.Events.trigger("error", e4);
+              e5 = error1;
+              return this.Events.trigger("error", e5);
             }
           }
           _run(index2, job, wait2) {
@@ -20844,8 +20844,8 @@ var require_light = __commonJS({
               } else {
                 return this.Promise.resolve(total);
               }
-            }).catch((e4) => {
-              return this.Events.trigger("error", e4);
+            }).catch((e5) => {
+              return this.Events.trigger("error", e5);
             });
           }
           _dropAllQueued(message) {
@@ -21924,49 +21924,49 @@ var init_dist_web8 = __esm({
 // node_modules/universal-github-app-jwt/dist-web/index.bundled.js
 var index_bundled_exports = {};
 __export(index_bundled_exports, {
-  githubAppJwt: () => o2
+  githubAppJwt: () => o3
 });
-function t4(t5, n3, r3, e4, i4, a3, o3) {
+function t4(t5, n3, r3, e5, i4, a3, o4) {
   try {
-    var u4 = t5[a3](o3), c2 = u4.value;
+    var u4 = t5[a3](o4), c2 = u4.value;
   } catch (t6) {
     return void r3(t6);
   }
-  u4.done ? n3(c2) : Promise.resolve(c2).then(e4, i4);
+  u4.done ? n3(c2) : Promise.resolve(c2).then(e5, i4);
 }
 function n2(n3) {
   return function() {
-    var r3 = this, e4 = arguments;
+    var r3 = this, e5 = arguments;
     return new Promise(function(i4, a3) {
-      var o3 = n3.apply(r3, e4);
+      var o4 = n3.apply(r3, e5);
       function u4(n4) {
-        t4(o3, i4, a3, u4, c2, "next", n4);
+        t4(o4, i4, a3, u4, c2, "next", n4);
       }
       function c2(n4) {
-        t4(o3, i4, a3, u4, c2, "throw", n4);
+        t4(o4, i4, a3, u4, c2, "throw", n4);
       }
       u4(void 0);
     });
   };
 }
 function r2(t5) {
-  for (var n3 = new ArrayBuffer(t5.length), r3 = new Uint8Array(n3), e4 = 0, i4 = t5.length; e4 < i4; e4++)
-    r3[e4] = t5.charCodeAt(e4);
+  for (var n3 = new ArrayBuffer(t5.length), r3 = new Uint8Array(n3), e5 = 0, i4 = t5.length; e5 < i4; e5++)
+    r3[e5] = t5.charCodeAt(e5);
   return n3;
 }
-function e3(t5) {
+function e4(t5) {
   return t5.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 function i3(t5) {
-  return e3(btoa(JSON.stringify(t5)));
+  return e4(btoa(JSON.stringify(t5)));
 }
-function o2(t5) {
+function o3(t5) {
   return u3.apply(this, arguments);
 }
 function u3() {
   return (u3 = n2(function* (t5) {
-    var { id: n3, privateKey: r3, now: e4 = Math.floor(Date.now() / 1e3) } = t5, i4 = e4 - 30, o3 = i4 + 600, u4 = { iat: i4, exp: o3, iss: n3 };
-    return { appId: n3, expiration: o3, token: yield a2({ privateKey: r3, payload: u4 }) };
+    var { id: n3, privateKey: r3, now: e5 = Math.floor(Date.now() / 1e3) } = t5, i4 = e5 - 30, o4 = i4 + 600, u4 = { iat: i4, exp: o4, iss: n3 };
+    return { appId: n3, expiration: o4, token: yield a2({ privateKey: r3, payload: u4 }) };
   })).apply(this, arguments);
 }
 var a2;
@@ -21977,12 +21977,12 @@ var init_index_bundled = __esm({
         var { privateKey: n3, payload: a3 } = t6;
         if (/BEGIN RSA PRIVATE KEY/.test(n3))
           throw new Error("[universal-github-app-jwt] Private Key is in PKCS#1 format, but only PKCS#8 is supported. See https://github.com/gr2m/universal-github-app-jwt#readme");
-        var o3, u4 = { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } }, c2 = (o3 = n3.trim().split("\n").slice(1, -1).join(""), r2(atob(o3))), p2 = yield crypto.subtle.importKey("pkcs8", c2, u4, false, ["sign"]), f3 = function(t7, n4) {
+        var o4, u4 = { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } }, c2 = (o4 = n3.trim().split("\n").slice(1, -1).join(""), r2(atob(o4))), p2 = yield crypto.subtle.importKey("pkcs8", c2, u4, false, ["sign"]), f3 = function(t7, n4) {
           return "".concat(i3(t7), ".").concat(i3(n4));
         }({ alg: "RS256", typ: "JWT" }, a3), l3 = r2(f3), s2 = function(t7) {
           for (var n4 = "", r3 = new Uint8Array(t7), i4 = r3.byteLength, a4 = 0; a4 < i4; a4++)
             n4 += String.fromCharCode(r3[a4]);
-          return e3(btoa(n4));
+          return e4(btoa(n4));
         }(yield crypto.subtle.sign(u4.name, p2, l3));
         return "".concat(f3, ".").concat(s2);
       });
@@ -24894,6 +24894,11 @@ var Screen = class {
     this._manager = manager;
   }
   renderComplete(_parent) {
+    const main2 = _parent.querySelector("main");
+    if (main2) {
+      const style = getComputedStyle(main2);
+      this._manager.bus.execute("resizeUi", { height: main2.scrollHeight + 8 });
+    }
   }
 };
 
@@ -24932,7 +24937,7 @@ function C(t5, i4) {
   return void 0 !== s ? s.createHTML(i4) : i4;
 }
 var P = (t5, i4) => {
-  const s2 = t5.length - 1, o3 = [];
+  const s2 = t5.length - 1, o4 = [];
   let r3, l3 = 2 === i4 ? "<svg>" : "", c2 = f;
   for (let i5 = 0; i5 < s2; i5++) {
     const s3 = t5[i5];
@@ -24940,9 +24945,9 @@ var P = (t5, i4) => {
     for (; y2 < s3.length && (c2.lastIndex = y2, u4 = c2.exec(s3), null !== u4); )
       y2 = c2.lastIndex, c2 === f ? "!--" === u4[1] ? c2 = v : void 0 !== u4[1] ? c2 = _ : void 0 !== u4[2] ? ($.test(u4[2]) && (r3 = RegExp("</" + u4[2], "g")), c2 = m) : void 0 !== u4[3] && (c2 = m) : c2 === m ? ">" === u4[0] ? (c2 = r3 != null ? r3 : f, d2 = -1) : void 0 === u4[1] ? d2 = -2 : (d2 = c2.lastIndex - u4[2].length, a3 = u4[1], c2 = void 0 === u4[3] ? m : '"' === u4[3] ? g : p) : c2 === g || c2 === p ? c2 = m : c2 === v || c2 === _ ? c2 = f : (c2 = m, r3 = void 0);
     const x2 = c2 === m && t5[i5 + 1].startsWith("/>") ? " " : "";
-    l3 += c2 === f ? s3 + n : d2 >= 0 ? (o3.push(a3), s3.slice(0, d2) + e + s3.slice(d2) + h + x2) : s3 + h + (-2 === d2 ? i5 : x2);
+    l3 += c2 === f ? s3 + n : d2 >= 0 ? (o4.push(a3), s3.slice(0, d2) + e + s3.slice(d2) + h + x2) : s3 + h + (-2 === d2 ? i5 : x2);
   }
-  return [C(t5, l3 + (t5[s2] || "<?>") + (2 === i4 ? "</svg>" : "")), o3];
+  return [C(t5, l3 + (t5[s2] || "<?>") + (2 === i4 ? "</svg>" : "")), o4];
 };
 var V = class _V {
   constructor({ strings: t5, _$litType$: s2 }, n3) {
@@ -24959,8 +24964,8 @@ var V = class _V {
         if (r3.hasAttributes())
           for (const t6 of r3.getAttributeNames())
             if (t6.endsWith(e)) {
-              const i4 = v2[a3++], s3 = r3.getAttribute(t6).split(h), e4 = /([.?@])?(.*)/.exec(i4);
-              d2.push({ type: 1, index: c2, name: e4[2], strings: s3, ctor: "." === e4[1] ? k : "?" === e4[1] ? H : "@" === e4[1] ? I : R }), r3.removeAttribute(t6);
+              const i4 = v2[a3++], s3 = r3.getAttribute(t6).split(h), e5 = /([.?@])?(.*)/.exec(i4);
+              d2.push({ type: 1, index: c2, name: e5[2], strings: s3, ctor: "." === e5[1] ? k : "?" === e5[1] ? H : "@" === e5[1] ? I : R }), r3.removeAttribute(t6);
             } else
               t6.startsWith(h) && (d2.push({ type: 6, index: c2 }), r3.removeAttribute(t6));
         if ($.test(r3.tagName)) {
@@ -24988,13 +24993,13 @@ var V = class _V {
     return s2.innerHTML = t5, s2;
   }
 };
-function N(t5, i4, s2 = t5, e4) {
+function N(t5, i4, s2 = t5, e5) {
   var _a3, _b, _c;
   if (i4 === w)
     return i4;
-  let h2 = void 0 !== e4 ? (_a3 = s2._$Co) == null ? void 0 : _a3[e4] : s2._$Cl;
-  const o3 = c(i4) ? void 0 : i4._$litDirective$;
-  return (h2 == null ? void 0 : h2.constructor) !== o3 && ((_b = h2 == null ? void 0 : h2._$AO) == null ? void 0 : _b.call(h2, false), void 0 === o3 ? h2 = void 0 : (h2 = new o3(t5), h2._$AT(t5, s2, e4)), void 0 !== e4 ? ((_c = s2._$Co) != null ? _c : s2._$Co = [])[e4] = h2 : s2._$Cl = h2), void 0 !== h2 && (i4 = N(t5, h2._$AS(t5, i4.values), h2, e4)), i4;
+  let h2 = void 0 !== e5 ? (_a3 = s2._$Co) == null ? void 0 : _a3[e5] : s2._$Cl;
+  const o4 = c(i4) ? void 0 : i4._$litDirective$;
+  return (h2 == null ? void 0 : h2.constructor) !== o4 && ((_b = h2 == null ? void 0 : h2._$AO) == null ? void 0 : _b.call(h2, false), void 0 === o4 ? h2 = void 0 : (h2 = new o4(t5), h2._$AT(t5, s2, e5)), void 0 !== e5 ? ((_c = s2._$Co) != null ? _c : s2._$Co = [])[e5] = h2 : s2._$Cl = h2), void 0 !== h2 && (i4 = N(t5, h2._$AS(t5, i4.values), h2, e5)), i4;
 }
 var S = class {
   constructor(t5, i4) {
@@ -25008,17 +25013,17 @@ var S = class {
   }
   u(t5) {
     var _a3;
-    const { el: { content: i4 }, parts: s2 } = this._$AD, e4 = ((_a3 = t5 == null ? void 0 : t5.creationScope) != null ? _a3 : r).importNode(i4, true);
-    E.currentNode = e4;
-    let h2 = E.nextNode(), o3 = 0, n3 = 0, l3 = s2[0];
+    const { el: { content: i4 }, parts: s2 } = this._$AD, e5 = ((_a3 = t5 == null ? void 0 : t5.creationScope) != null ? _a3 : r).importNode(i4, true);
+    E.currentNode = e5;
+    let h2 = E.nextNode(), o4 = 0, n3 = 0, l3 = s2[0];
     for (; void 0 !== l3; ) {
-      if (o3 === l3.index) {
+      if (o4 === l3.index) {
         let i5;
         2 === l3.type ? i5 = new M(h2, h2.nextSibling, this, t5) : 1 === l3.type ? i5 = new l3.ctor(h2, l3.name, l3.strings, this, t5) : 6 === l3.type && (i5 = new L(h2, this, t5)), this._$AV.push(i5), l3 = s2[++n3];
       }
-      o3 !== (l3 == null ? void 0 : l3.index) && (h2 = E.nextNode(), o3++);
+      o4 !== (l3 == null ? void 0 : l3.index) && (h2 = E.nextNode(), o4++);
     }
-    return E.currentNode = r, e4;
+    return E.currentNode = r, e5;
   }
   p(t5) {
     let i4 = 0;
@@ -25031,9 +25036,9 @@ var M = class _M {
     var _a3, _b;
     return (_b = (_a3 = this._$AM) == null ? void 0 : _a3._$AU) != null ? _b : this._$Cv;
   }
-  constructor(t5, i4, s2, e4) {
+  constructor(t5, i4, s2, e5) {
     var _a3;
-    this.type = 2, this._$AH = T, this._$AN = void 0, this._$AA = t5, this._$AB = i4, this._$AM = s2, this.options = e4, this._$Cv = (_a3 = e4 == null ? void 0 : e4.isConnected) != null ? _a3 : true;
+    this.type = 2, this._$AH = T, this._$AN = void 0, this._$AA = t5, this._$AB = i4, this._$AM = s2, this.options = e5, this._$Cv = (_a3 = e5 == null ? void 0 : e5.isConnected) != null ? _a3 : true;
   }
   get parentNode() {
     let t5 = this._$AA.parentNode;
@@ -25060,11 +25065,11 @@ var M = class _M {
   }
   g(t5) {
     var _a3;
-    const { values: i4, _$litType$: s2 } = t5, e4 = "number" == typeof s2 ? this._$AC(t5) : (void 0 === s2.el && (s2.el = V.createElement(C(s2.h, s2.h[0]), this.options)), s2);
-    if (((_a3 = this._$AH) == null ? void 0 : _a3._$AD) === e4)
+    const { values: i4, _$litType$: s2 } = t5, e5 = "number" == typeof s2 ? this._$AC(t5) : (void 0 === s2.el && (s2.el = V.createElement(C(s2.h, s2.h[0]), this.options)), s2);
+    if (((_a3 = this._$AH) == null ? void 0 : _a3._$AD) === e5)
       this._$AH.p(i4);
     else {
-      const t6 = new S(e4, this), s3 = t6.u(this.options);
+      const t6 = new S(e5, this), s3 = t6.u(this.options);
       t6.p(i4), this.$(s3), this._$AH = t6;
     }
   }
@@ -25075,10 +25080,10 @@ var M = class _M {
   T(t5) {
     a(this._$AH) || (this._$AH = [], this._$AR());
     const i4 = this._$AH;
-    let s2, e4 = 0;
+    let s2, e5 = 0;
     for (const h2 of t5)
-      e4 === i4.length ? i4.push(s2 = new _M(this.k(l()), this.k(l()), this, this.options)) : s2 = i4[e4], s2._$AI(h2), e4++;
-    e4 < i4.length && (this._$AR(s2 && s2._$AB.nextSibling, e4), i4.length = e4);
+      e5 === i4.length ? i4.push(s2 = new _M(this.k(l()), this.k(l()), this, this.options)) : s2 = i4[e5], s2._$AI(h2), e5++;
+    e5 < i4.length && (this._$AR(s2 && s2._$AB.nextSibling, e5), i4.length = e5);
   }
   _$AR(t5 = this._$AA.nextSibling, i4) {
     var _a3;
@@ -25099,21 +25104,21 @@ var R = class {
   get _$AU() {
     return this._$AM._$AU;
   }
-  constructor(t5, i4, s2, e4, h2) {
-    this.type = 1, this._$AH = T, this._$AN = void 0, this.element = t5, this.name = i4, this._$AM = e4, this.options = h2, s2.length > 2 || "" !== s2[0] || "" !== s2[1] ? (this._$AH = Array(s2.length - 1).fill(new String()), this.strings = s2) : this._$AH = T;
+  constructor(t5, i4, s2, e5, h2) {
+    this.type = 1, this._$AH = T, this._$AN = void 0, this.element = t5, this.name = i4, this._$AM = e5, this.options = h2, s2.length > 2 || "" !== s2[0] || "" !== s2[1] ? (this._$AH = Array(s2.length - 1).fill(new String()), this.strings = s2) : this._$AH = T;
   }
-  _$AI(t5, i4 = this, s2, e4) {
+  _$AI(t5, i4 = this, s2, e5) {
     const h2 = this.strings;
-    let o3 = false;
+    let o4 = false;
     if (void 0 === h2)
-      t5 = N(this, t5, i4, 0), o3 = !c(t5) || t5 !== this._$AH && t5 !== w, o3 && (this._$AH = t5);
+      t5 = N(this, t5, i4, 0), o4 = !c(t5) || t5 !== this._$AH && t5 !== w, o4 && (this._$AH = t5);
     else {
-      const e5 = t5;
+      const e6 = t5;
       let n3, r3;
       for (t5 = h2[0], n3 = 0; n3 < h2.length - 1; n3++)
-        r3 = N(this, e5[s2 + n3], i4, n3), r3 === w && (r3 = this._$AH[n3]), o3 || (o3 = !c(r3) || r3 !== this._$AH[n3]), r3 === T ? t5 = T : t5 !== T && (t5 += (r3 != null ? r3 : "") + h2[n3 + 1]), this._$AH[n3] = r3;
+        r3 = N(this, e6[s2 + n3], i4, n3), r3 === w && (r3 = this._$AH[n3]), o4 || (o4 = !c(r3) || r3 !== this._$AH[n3]), r3 === T ? t5 = T : t5 !== T && (t5 += (r3 != null ? r3 : "") + h2[n3 + 1]), this._$AH[n3] = r3;
     }
-    o3 && !e4 && this.O(t5);
+    o4 && !e5 && this.O(t5);
   }
   O(t5) {
     t5 === T ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t5 != null ? t5 : "");
@@ -25136,15 +25141,15 @@ var H = class extends R {
   }
 };
 var I = class extends R {
-  constructor(t5, i4, s2, e4, h2) {
-    super(t5, i4, s2, e4, h2), this.type = 5;
+  constructor(t5, i4, s2, e5, h2) {
+    super(t5, i4, s2, e5, h2), this.type = 5;
   }
   _$AI(t5, i4 = this) {
     var _a3;
     if ((t5 = (_a3 = N(this, t5, i4, 0)) != null ? _a3 : T) === w)
       return;
-    const s2 = this._$AH, e4 = t5 === T && s2 !== T || t5.capture !== s2.capture || t5.once !== s2.once || t5.passive !== s2.passive, h2 = t5 !== T && (s2 === T || e4);
-    e4 && this.element.removeEventListener(this.name, this, s2), h2 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+    const s2 = this._$AH, e5 = t5 === T && s2 !== T || t5.capture !== s2.capture || t5.once !== s2.once || t5.passive !== s2.passive, h2 = t5 !== T && (s2 === T || e5);
+    e5 && this.element.removeEventListener(this.name, this, s2), h2 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
   }
   handleEvent(t5) {
     var _a3, _b;
@@ -25168,11 +25173,11 @@ var _a;
 Z == null ? void 0 : Z(V, M), ((_a = t.litHtmlVersions) != null ? _a : t.litHtmlVersions = []).push("3.0.2");
 var j = (t5, i4, s2) => {
   var _a3, _b;
-  const e4 = (_a3 = s2 == null ? void 0 : s2.renderBefore) != null ? _a3 : i4;
-  let h2 = e4._$litPart$;
+  const e5 = (_a3 = s2 == null ? void 0 : s2.renderBefore) != null ? _a3 : i4;
+  let h2 = e5._$litPart$;
   if (void 0 === h2) {
     const t6 = (_b = s2 == null ? void 0 : s2.renderBefore) != null ? _b : null;
-    e4._$litPart$ = h2 = new M(i4.insertBefore(l(), t6), t6, void 0, s2 != null ? s2 : {});
+    e5._$litPart$ = h2 = new M(i4.insertBefore(l(), t6), t6, void 0, s2 != null ? s2 : {});
   }
   return h2._$AI(t5), h2;
 };
@@ -25184,29 +25189,29 @@ var MetadataDefaults = {
 
 // node_modules/lit-html/directive.js
 var t2 = { ATTRIBUTE: 1, CHILD: 2, PROPERTY: 3, BOOLEAN_ATTRIBUTE: 4, EVENT: 5, ELEMENT: 6 };
-var e2 = (t5) => (...e4) => ({ _$litDirective$: t5, values: e4 });
+var e2 = (t5) => (...e5) => ({ _$litDirective$: t5, values: e5 });
 var i2 = class {
   constructor(t5) {
   }
   get _$AU() {
     return this._$AM._$AU;
   }
-  _$AT(t5, e4, i4) {
-    this._$Ct = t5, this._$AM = e4, this._$Ci = i4;
+  _$AT(t5, e5, i4) {
+    this._$Ct = t5, this._$AM = e5, this._$Ci = i4;
   }
-  _$AS(t5, e4) {
-    return this.update(t5, e4);
+  _$AS(t5, e5) {
+    return this.update(t5, e5);
   }
-  update(t5, e4) {
-    return this.render(...e4);
+  update(t5, e5) {
+    return this.render(...e5);
   }
 };
 
 // node_modules/lit-html/directive-helpers.js
 var { D: t3 } = z;
-var f2 = (o3) => void 0 === o3.strings;
+var f2 = (o4) => void 0 === o4.strings;
 var u2 = {};
-var m2 = (o3, t5 = u2) => o3._$AH = t5;
+var m2 = (o4, t5 = u2) => o4._$AH = t5;
 
 // node_modules/lit-html/directives/live.js
 var l2 = e2(class extends i2 {
@@ -25222,14 +25227,14 @@ var l2 = e2(class extends i2 {
   update(i4, [t5]) {
     if (t5 === w || t5 === T)
       return t5;
-    const o3 = i4.element, l3 = i4.name;
+    const o4 = i4.element, l3 = i4.name;
     if (i4.type === t2.PROPERTY) {
-      if (t5 === o3[l3])
+      if (t5 === o4[l3])
         return w;
     } else if (i4.type === t2.BOOLEAN_ATTRIBUTE) {
-      if (!!t5 === o3.hasAttribute(l3))
+      if (!!t5 === o4.hasAttribute(l3))
         return w;
-    } else if (i4.type === t2.ATTRIBUTE && o3.getAttribute(l3) === t5 + "")
+    } else if (i4.type === t2.ATTRIBUTE && o4.getAttribute(l3) === t5 + "")
       return w;
     return m2(i4), t5;
   }
@@ -25283,6 +25288,21 @@ var minusSign = x`
         <path fill-rule="evenodd" stroke="none" d="M11 3H0V2h11v1z" />
     </svg>
 `;
+var playButton = x`
+    <svg width="100%" height="100%" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 2.692v11.618l11.618-5.837-11.618-5.781zM4 4.308l8.382 4.17-8.382 4.211v-8.381z" />
+    </svg>
+`;
+var pauseButton = x`
+    <svg width="100%" height="100%" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 15h4v-13h-4v13zM4 3h2v11h-2v-11zM10 2v13h4v-13h-4zM13 14h-2v-11h2v11z" />
+    </svg>
+`;
+var placeButton = x`
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 16 16">
+        <path fill-opacity="1" fill-rule="evenodd" stroke="none" d="M1.646 13.646 4.293 11H2v-1h4v4H5v-2.293l-2.646 2.647-.708-.707zm12.708 0L11.707 11H14v-1h-4v4h1v-2.293l2.646 2.647.708-.707zM1.646 2.354 4.293 5H2v1h4V2H5v2.293L2.354 1.646l-.708.708zm12.708 0L11.707 5H14v1h-4V2h1v2.293l2.646-2.647.708.708z" />
+    </svg>
+`;
 
 // src/ui/widgets/input.ts
 async function autocompleteFocus(el, event, state, provider) {
@@ -25293,7 +25313,7 @@ async function autocompleteFocus(el, event, state, provider) {
     state.container = container;
     container.style.display = "block";
     const itemElements = parent2.querySelectorAll(".autocomplete-item");
-    itemElements.forEach((e4) => e4.style.display = "none");
+    itemElements.forEach((e5) => e5.style.display = "none");
   } else {
     container.style.display = "none";
     state.input = void 0;
@@ -25356,21 +25376,21 @@ function _input(type, data2) {
     debounce: false,
     queuedChange: false
   };
-  async function handleFocus(e4) {
-    if (e4.type === "focus") {
+  async function handleFocus(e5) {
+    if (e5.type === "focus") {
       this.select();
     }
     if (data2.provider) {
-      await autocompleteFocus(this, e4, state, data2.provider);
+      await autocompleteFocus(this, e5, state, data2.provider);
     }
   }
   async function handleInput(_e) {
     await autocompleteInput(this, state, data2.provider);
   }
-  function handleMouseDown(e4) {
-    e4.stopPropagation();
-    e4.stopImmediatePropagation();
-    e4.preventDefault();
+  function handleMouseDown(e5) {
+    e5.stopPropagation();
+    e5.stopImmediatePropagation();
+    e5.preventDefault();
     autocompleteSelection(this, state);
   }
   return x`
@@ -25391,8 +25411,8 @@ function _input(type, data2) {
       data2.onUpdate(data2.id, this.value);
     }
   }}"
-                @keypress="${function(e4) {
-    if (e4.target && e4.code === "Enter") {
+                @keypress="${function(e5) {
+    if (e5.target && e5.code === "Enter") {
       this.blur();
     }
   }}"
@@ -25526,7 +25546,7 @@ function selectInput(data2) {
   }}"
             >
                 ${data2.options.map(
-    (o3) => x`<option id="${o3.value}-${data2.value}" value="${o3.value}" ?selected="${o3.value === data2.value}">${o3.label}</option>`
+    (o4) => x`<option id="${o4.value}-${data2.value}" value="${o4.value}" ?selected="${o4.value === data2.value}">${o4.label}</option>`
   )}
             </select>
         </div>
@@ -25749,8 +25769,8 @@ async function commitToGithub(bus, name2, payload, github2) {
     try {
       await github2.commitFiles(files, message);
       break;
-    } catch (e4) {
-      if (e4.status === 422) {
+    } catch (e5) {
+      if (e5.status === 422) {
         await new Promise((resolve) => setTimeout(resolve, 1e4));
       }
     }
@@ -25812,6 +25832,178 @@ async function exportLayer(manager, bus, id, name2, mode, from) {
     manager.renderScreen(from, manager.root);
     _exporting = false;
   }
+}
+
+// src/ui/widgets/lottie.ts
+var import_lottie_web = __toESM(require_lottie());
+
+// node_modules/lit-html/directives/unsafe-html.js
+var e3 = class extends i2 {
+  constructor(i4) {
+    if (super(i4), this.et = T, i4.type !== t2.CHILD)
+      throw Error(this.constructor.directiveName + "() can only be used in child bindings");
+  }
+  render(r3) {
+    if (r3 === T || null == r3)
+      return this.vt = void 0, this.et = r3;
+    if (r3 === w)
+      return r3;
+    if ("string" != typeof r3)
+      throw Error(this.constructor.directiveName + "() called with a non-string value");
+    if (r3 === this.et)
+      return this.vt;
+    this.et = r3;
+    const s2 = [r3];
+    return s2.raw = s2, this.vt = { _$litType$: this.constructor.resultType, strings: s2, values: [] };
+  }
+};
+e3.directiveName = "unsafeHTML", e3.resultType = 1;
+var o2 = e2(e3);
+
+// src/ui/widgets/lottie.ts
+function lottiePlayer(bus, data2) {
+  const container = document.createElement("div");
+  container.classList.add("lottie-animation");
+  const animationData2 = JSON.parse(data2.value);
+  const animation = import_lottie_web.default.loadAnimation({
+    container,
+    renderer: "svg",
+    loop: true,
+    autoplay: false,
+    animationData: animationData2
+  });
+  const progress = document.createElement("div");
+  progress.classList.add("lottie-play-progress");
+  animation.addEventListener("enterFrame", (e5) => {
+    progress.style.width = `${Math.round(animation.currentFrame / animation.totalFrames * 100)}%`;
+  });
+  const controlButton = document.createElement("div");
+  controlButton.classList.add("icon-button");
+  j(playButton, controlButton);
+  controlButton.addEventListener("click", () => {
+    if (animation.isPaused) {
+      animation.play();
+      j(pauseButton, controlButton);
+    } else {
+      animation.pause();
+      j(playButton, controlButton);
+    }
+  });
+  let barElement = null;
+  let mouseDown = false;
+  function getTargetFrame(el, evt) {
+    const rect = el.getBoundingClientRect();
+    const x2 = evt.clientX - rect.left;
+    const percent = Math.min(1, Math.max(0, x2 / rect.width));
+    return Math.floor(percent * (animation.totalFrames - 1));
+  }
+  function handleMouseDown(evt) {
+    mouseDown = true;
+    barElement = this;
+    animation.goToAndStop(getTargetFrame(barElement, evt), true);
+    j(playButton, controlButton);
+  }
+  function handleMouseUp() {
+    mouseDown = false;
+    barElement = null;
+  }
+  function handleMouseMove(evt) {
+    if (mouseDown && barElement) {
+      animation.goToAndStop(getTargetFrame(barElement, evt), true);
+      j(playButton, controlButton);
+    }
+  }
+  document.addEventListener("mouseup", handleMouseUp);
+  document.body.addEventListener("mouseleave", handleMouseUp);
+  document.addEventListener("mousemove", handleMouseMove);
+  return x`
+        <div class="lottie-player">
+            ${container}
+            <div class="lottie-controls">
+                ${controlButton}
+                <div 
+                    class="lottie-play-bar"
+                    @mousedown=${handleMouseDown}
+                >
+                    ${progress}
+                </div>
+                <div 
+                    class="icon-button"
+                    @click="${async function() {
+    const originalSvg = container.innerHTML;
+    const c2 = document.createElement("div");
+    j(x`${o2(originalSvg)}`, c2);
+    const layerSize = await bus.execute("getLayerSize", data2.id);
+    const svgEl = c2.children[0];
+    svgEl.setAttribute("width", `${layerSize.width}`);
+    svgEl.setAttribute("height", `${layerSize.height}`);
+    const svgStr = svgEl.outerHTML;
+    await bus.execute("replaceContentsWithSvg", {
+      id: data2.id,
+      svg: svgStr
+    });
+  }}"
+                >
+                    ${placeButton}
+                </div>
+            </div>
+        </div>
+    `;
+}
+function loadFile(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e5) => {
+      var _a3;
+      resolve((_a3 = e5.target) == null ? void 0 : _a3.result);
+    };
+    reader.readAsText(file);
+  });
+}
+function lottieInput(bus, data2) {
+  console.log("lottieInput", data2);
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = ".json";
+  fileInput.style.display = "none";
+  fileInput.addEventListener("change", async (e5) => {
+    var _a3;
+    const file = (_a3 = e5.target.files) == null ? void 0 : _a3[0];
+    if (file) {
+      const content2 = await loadFile(file);
+      if (content2) {
+        try {
+          const json = JSON.parse(content2);
+          import_lottie_web.default.loadAnimation(
+            {
+              container: document.createElement("div"),
+              renderer: "svg",
+              loop: true,
+              autoplay: false,
+              animationData: json
+            }
+          );
+          if (data2.onUpdate) {
+            data2.onUpdate(data2.id, content2);
+          }
+        } catch (_2) {
+          console.error("Invalid JSON loaded for lottie animation.");
+        }
+      }
+    }
+  });
+  return x`
+        ${data2.value ? x`<div class="row-full">${lottiePlayer(bus, data2)}</div>` : null}
+        <div class="row-full">
+            <div class="container padding-top-8">
+                ${button({
+    id: data2.id,
+    label: "Load",
+    onClick: (id) => fileInput.click()
+  })}
+            </div>
+        </div>
+    `;
 }
 
 // src/ui/screens/figma/LayerScreen.ts
@@ -25897,6 +26089,8 @@ var LayerScreen = class extends Screen {
                             </div>
                         </div>
                     `);
+        } else if (userData[key2].type === "lottie") {
+          rows.push(this._getUserField(bus, data2.layer.id, layerType, key2, userData[key2]));
         } else {
           rows.push(x`
                         <div class="row">
@@ -26027,9 +26221,17 @@ var LayerScreen = class extends Screen {
             onUpdate: onUpdateComponentProperty
           });
         }
+        return x`<div class="error-description">ERROR: Unknown component [${data2.type}] valueType [${data2.valueType}]</div>`;
+      case "lottie":
+        return lottieInput(bus, {
+          id: layerID,
+          description: data2.description,
+          value: data2.value,
+          onUpdate
+        });
       default:
         return x`
-                    <div class="error-description">ERROR: Unknown type [${data2.type} # ${data2.valueType}]</div>
+                    <div class="error-description">ERROR: Unknown type [${data2.type}]</div>
                 `;
     }
   }
@@ -26234,7 +26436,7 @@ function getStyles() {
             
             main {
                 width: 100%;
-                height: 100%;
+                /*height: 100%;*/
                 display: flex;
                 flex-direction: column;
                 align-items: stretch;
@@ -26266,6 +26468,10 @@ function getStyles() {
             /*}*/
             
             .centered {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
                 flex-grow: 1;
                 display: flex;
                 flex-direction: column;
@@ -26277,6 +26483,10 @@ function getStyles() {
                 display: flex;
                 flex-grow: 1;
                 padding: 0 8px;
+            }
+            
+            .padding-top-8 {
+                padding-top: 8px;
             }
             
             .logo {
@@ -26588,6 +26798,60 @@ function getStyles() {
                     max-width: 100%;
                     max-height: 100%;
                 }
+            }
+            
+            .lottie-player {
+                min-height: 32px;
+                position: relative;
+                border: 1px solid transparent;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+
+            .lottie-player:hover {
+                outline-offset: -1px;
+                outline: 1px solid var(--figma-color-border);
+            }
+
+            .lottie-player:focus-within {
+                outline-offset: -2px;
+                outline: 2px solid var(--figma-color-border-selected);
+            }
+
+            .lottie-animation {
+                width: 100px;
+                height: 100px;
+
+                > svg {
+                    max-width: 100%;
+                    max-height: 100%;
+                }
+            }
+            
+            .lottie-controls {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: center;
+                height: 32px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            
+            .lottie-play-bar {
+                flex-grow: 1;
+                height: 100%;
+                background-color: var(--figma-color-bg-tertiary);
+            }
+            
+            .lottie-play-progress {
+                height: 100%;
+                background-color: var(--figma-color-bg-secondary);
             }
             
             .tab-container {
@@ -27712,13 +27976,13 @@ var LoginScreen2 = class extends Screen {
             }
           });
         }
-      } catch (e4) {
+      } catch (e5) {
         this._manager.updateScreen({
           screen: 2 /* github_login */,
           credentials: {
             id: data2.credentials.id,
             layerName: data2.credentials.layerName,
-            error: e4.message
+            error: e5.message
           }
         });
       }
@@ -27728,7 +27992,7 @@ var LoginScreen2 = class extends Screen {
 };
 
 // src/ui/screens/LoadingScreen.ts
-var import_lottie_web = __toESM(require_lottie());
+var import_lottie_web2 = __toESM(require_lottie());
 
 // src/ui/svg/loading_animation.json
 var loading_animation_default = { v: "5.7.4", fr: 60, ip: 0, op: 80, w: 800, h: 600, nm: "Anim3", ddd: 0, assets: [], layers: [{ ddd: 0, ind: 1, ty: 4, nm: "circle3", sr: 1, ks: { o: { a: 0, k: 100, ix: 11 }, r: { a: 0, k: 0, ix: 10 }, p: { a: 0, k: [300.03, 299.995, 0], ix: 2, l: 2 }, a: { a: 0, k: [-39.97, 5e-3, 0], ix: 1, l: 2 }, s: { a: 0, k: [100, -100, 100], ix: 6, l: 2 } }, ao: 0, ef: [{ ty: 5, nm: "Elastic: Position - Transform", np: 5, mn: "Pseudo/MDS Elastic Controller", ix: 1, en: 1, ef: [{ ty: 0, nm: "Amplitude", mn: "Pseudo/MDS Elastic Controller-0001", ix: 1, v: { a: 0, k: 20, ix: 1 } }, { ty: 0, nm: "Frequency", mn: "Pseudo/MDS Elastic Controller-0002", ix: 2, v: { a: 0, k: 40, ix: 2 } }, { ty: 0, nm: "Decay", mn: "Pseudo/MDS Elastic Controller-0003", ix: 3, v: { a: 0, k: 60, ix: 3 } }] }, { ty: 5, nm: "Elastic: Scale - Transform", np: 5, mn: "Pseudo/MDS Elastic Controller", ix: 2, en: 1, ef: [{ ty: 0, nm: "Amplitude", mn: "Pseudo/MDS Elastic Controller-0001", ix: 1, v: { a: 0, k: 20, ix: 1 } }, { ty: 0, nm: "Frequency", mn: "Pseudo/MDS Elastic Controller-0002", ix: 2, v: { a: 0, k: 40, ix: 2 } }, { ty: 0, nm: "Decay", mn: "Pseudo/MDS Elastic Controller-0003", ix: 3, v: { a: 0, k: 60, ix: 3 } }] }], shapes: [{ ty: "gr", it: [{ ind: 0, ty: "sh", ix: 1, ks: { a: 0, k: { i: [[0, 22.091], [22.091, 0], [0, -22.091]], o: [[0, -22.091], [-22.091, 0], [0, 22.091]], v: [[80, 0], [40, -40], [0, 0]], c: false }, ix: 2 }, nm: "Path 1", mn: "ADBE Vector Shape - Group", hd: false }, { ty: "tm", s: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 6, s: [0] }, { t: 36, s: [99.9] }], ix: 1 }, e: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 0, s: [0.1] }, { t: 30, s: [100] }], ix: 2 }, o: { a: 0, k: 0, ix: 3 }, m: 1, ix: 2, nm: "Trim Paths 1", mn: "ADBE Vector Filter - Trim", hd: false }, { ty: "st", c: { a: 0, k: [1, 1, 1, 1], ix: 3 }, o: { a: 0, k: 100, ix: 4 }, w: { a: 1, k: [{ i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 0, s: [20] }, { i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 6, s: [30] }, { t: 36, s: [20] }], ix: 5 }, lc: 2, lj: 1, ml: 4, bm: 0, nm: "Stroke 1", mn: "ADBE Vector Graphic - Stroke", hd: false }, { ty: "tr", p: { a: 1, k: [{ i: { x: 0.667, y: 1 }, o: { x: 0.333, y: 0 }, t: 0, s: [80, -0.126], to: [0, -3.312], ti: [0, 0] }, { i: { x: 0.833, y: 0.829 }, o: { x: 0.333, y: 0 }, t: 10, s: [80, -20], to: [0, 0], ti: [0, -3.577] }, { i: { x: 0.833, y: 0.875 }, o: { x: 0.167, y: 0.136 }, t: 20, s: [80, -0.126], to: [0, 3.577], ti: [0, -0.475] }, { i: { x: 0.833, y: 0.853 }, o: { x: 0.167, y: 0.248 }, t: 21, s: [80, 1.464], to: [0, 0.475], ti: [0, -0.369] }, { i: { x: 0.833, y: 0.857 }, o: { x: 0.167, y: 0.193 }, t: 22, s: [80, 2.723], to: [0, 0.369], ti: [0, -0.273] }, { i: { x: 0.833, y: 0.863 }, o: { x: 0.167, y: 0.2 }, t: 23, s: [80, 3.677], to: [0, 0.273], ti: [0, -0.186] }, { i: { x: 0.833, y: 0.873 }, o: { x: 0.167, y: 0.213 }, t: 24, s: [80, 4.358], to: [0, 0.186], ti: [0, -0.111] }, { i: { x: 0.833, y: 0.897 }, o: { x: 0.167, y: 0.244 }, t: 25, s: [80, 4.795], to: [0, 0.111], ti: [0, -0.046] }, { i: { x: 0.833, y: 0.762 }, o: { x: 0.167, y: 0.438 }, t: 26, s: [80, 5.022], to: [0, 0.046], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.734 }, o: { x: 0.167, y: 0.129 }, t: 27, s: [80, 5.07], to: [0, -8e-3], ti: [0, 0.053] }, { i: { x: 0.833, y: 0.798 }, o: { x: 0.167, y: 0.121 }, t: 28, s: [80, 4.971], to: [0, -0.053], ti: [0, 0.087] }, { i: { x: 0.833, y: 0.815 }, o: { x: 0.167, y: 0.142 }, t: 29, s: [80, 4.755], to: [0, -0.087], ti: [0, 0.114] }, { i: { x: 0.833, y: 0.823 }, o: { x: 0.167, y: 0.152 }, t: 30, s: [80, 4.447], to: [0, -0.114], ti: [0, 0.132] }, { i: { x: 0.833, y: 0.828 }, o: { x: 0.167, y: 0.158 }, t: 31, s: [80, 4.073], to: [0, -0.132], ti: [0, 0.144] }, { i: { x: 0.833, y: 0.832 }, o: { x: 0.167, y: 0.162 }, t: 32, s: [80, 3.655], to: [0, -0.144], ti: [0, 0.149] }, { i: { x: 0.833, y: 0.834 }, o: { x: 0.167, y: 0.165 }, t: 33, s: [80, 3.212], to: [0, -0.149], ti: [0, 0.15] }, { i: { x: 0.833, y: 0.836 }, o: { x: 0.167, y: 0.168 }, t: 34, s: [80, 2.76], to: [0, -0.15], ti: [0, 0.146] }, { i: { x: 0.833, y: 0.838 }, o: { x: 0.167, y: 0.17 }, t: 35, s: [80, 2.313], to: [0, -0.146], ti: [0, 0.14] }, { i: { x: 0.833, y: 0.84 }, o: { x: 0.167, y: 0.172 }, t: 36, s: [80, 1.882], to: [0, -0.14], ti: [0, 0.13] }, { i: { x: 0.833, y: 0.841 }, o: { x: 0.167, y: 0.174 }, t: 37, s: [80, 1.476], to: [0, -0.13], ti: [0, 0.119] }, { i: { x: 0.833, y: 0.843 }, o: { x: 0.167, y: 0.175 }, t: 38, s: [80, 1.1], to: [0, -0.119], ti: [0, 0.107] }, { i: { x: 0.833, y: 0.844 }, o: { x: 0.167, y: 0.177 }, t: 39, s: [80, 0.76], to: [0, -0.107], ti: [0, 0.094] }, { i: { x: 0.833, y: 0.846 }, o: { x: 0.167, y: 0.179 }, t: 40, s: [80, 0.458], to: [0, -0.094], ti: [0, 0.081] }, { i: { x: 0.833, y: 0.847 }, o: { x: 0.167, y: 0.181 }, t: 41, s: [80, 0.195], to: [0, -0.081], ti: [0, 0.068] }, { i: { x: 0.833, y: 0.849 }, o: { x: 0.167, y: 0.184 }, t: 42, s: [80, -0.028], to: [0, -0.068], ti: [0, 0.056] }, { i: { x: 0.833, y: 0.852 }, o: { x: 0.167, y: 0.187 }, t: 43, s: [80, -0.214], to: [0, -0.056], ti: [0, 0.044] }, { i: { x: 0.833, y: 0.855 }, o: { x: 0.167, y: 0.191 }, t: 44, s: [80, -0.364], to: [0, -0.044], ti: [0, 0.034] }, { i: { x: 0.833, y: 0.86 }, o: { x: 0.167, y: 0.196 }, t: 45, s: [80, -0.48], to: [0, -0.034], ti: [0, 0.024] }, { i: { x: 0.833, y: 0.867 }, o: { x: 0.167, y: 0.206 }, t: 46, s: [80, -0.566], to: [0, -0.024], ti: [0, 0.016] }, { i: { x: 0.833, y: 0.883 }, o: { x: 0.167, y: 0.224 }, t: 47, s: [80, -0.624], to: [0, -0.016], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.889 }, o: { x: 0.167, y: 0.288 }, t: 48, s: [80, -0.659], to: [0, -8e-3], ti: [0, 2e-3] }, { i: { x: 0.833, y: 0.612 }, o: { x: 0.167, y: 0.336 }, t: 49, s: [80, -0.673], to: [0, -2e-3], ti: [0, -3e-3] }, { i: { x: 0.833, y: 0.78 }, o: { x: 0.167, y: 0.106 }, t: 50, s: [80, -0.67], to: [0, 3e-3], ti: [0, -8e-3] }, { i: { x: 0.833, y: 0.809 }, o: { x: 0.167, y: 0.134 }, t: 51, s: [80, -0.653], to: [0, 8e-3], ti: [0, -0.011] }, { i: { x: 0.833, y: 0.82 }, o: { x: 0.167, y: 0.148 }, t: 52, s: [80, -0.625], to: [0, 0.011], ti: [0, -0.013] }, { i: { x: 0.833, y: 0.826 }, o: { x: 0.167, y: 0.155 }, t: 53, s: [80, -0.589], to: [0, 0.013], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.83 }, o: { x: 0.167, y: 0.16 }, t: 54, s: [80, -0.547], to: [0, 0.015], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.164 }, t: 55, s: [80, -0.501], to: [0, 0.015], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.835 }, o: { x: 0.167, y: 0.166 }, t: 56, s: [80, -0.454], to: [0, 0.016], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.169 }, t: 57, s: [80, -0.406], to: [0, 0.016], ti: [0, -8e-3] }, { t: 58, s: [80, -0.36] }], ix: 2 }, a: { a: 0, k: [80, -0.126], ix: 1 }, s: { a: 1, k: [{ i: { x: [0.667, 0.667], y: [1, 1] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 0, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 10, s: [110, 110] }, { i: { x: [0.833, 0.833], y: [0.851, 0.851] }, o: { x: [0.167, 0.167], y: [0.203, 0.203] }, t: 20, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.853, 0.853] }, o: { x: [0.167, 0.167], y: [0.189, 0.189] }, t: 21, s: [99.193, 99.193] }, { i: { x: [0.833, 0.833], y: [0.857, 0.857] }, o: { x: [0.167, 0.167], y: [0.193, 0.193] }, t: 22, s: [98.553, 98.553] }, { i: { x: [0.833, 0.833], y: [0.863, 0.863] }, o: { x: [0.167, 0.167], y: [0.2, 0.2] }, t: 23, s: [98.068, 98.068] }, { i: { x: [0.833, 0.833], y: [0.873, 0.873] }, o: { x: [0.167, 0.167], y: [0.213, 0.213] }, t: 24, s: [97.722, 97.722] }, { i: { x: [0.833, 0.833], y: [0.899, 0.899] }, o: { x: [0.167, 0.167], y: [0.244, 0.244] }, t: 25, s: [97.5, 97.5] }, { i: { x: [0.833, 0.833], y: [1.087, 1.087] }, o: { x: [0.167, 0.167], y: [0.473, 0.473] }, t: 26, s: [97.385, 97.385] }, { i: { x: [0.833, 0.833], y: [0.734, 0.734] }, o: { x: [0.167, 0.167], y: [0.042, 0.042] }, t: 27, s: [97.36, 97.36] }, { i: { x: [0.833, 0.833], y: [0.798, 0.798] }, o: { x: [0.167, 0.167], y: [0.121, 0.121] }, t: 28, s: [97.41, 97.41] }, { i: { x: [0.833, 0.833], y: [0.815, 0.815] }, o: { x: [0.167, 0.167], y: [0.142, 0.142] }, t: 29, s: [97.521, 97.521] }, { i: { x: [0.833, 0.833], y: [0.823, 0.823] }, o: { x: [0.167, 0.167], y: [0.152, 0.152] }, t: 30, s: [97.677, 97.677] }, { i: { x: [0.833, 0.833], y: [0.828, 0.828] }, o: { x: [0.167, 0.167], y: [0.158, 0.158] }, t: 31, s: [97.867, 97.867] }, { i: { x: [0.833, 0.833], y: [0.832, 0.832] }, o: { x: [0.167, 0.167], y: [0.162, 0.162] }, t: 32, s: [98.079, 98.079] }, { i: { x: [0.833, 0.833], y: [0.834, 0.834] }, o: { x: [0.167, 0.167], y: [0.165, 0.165] }, t: 33, s: [98.304, 98.304] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.167, 0.167], y: [0.168, 0.168] }, t: 34, s: [98.534, 98.534] }, { i: { x: [0.833, 0.833], y: [0.838, 0.838] }, o: { x: [0.167, 0.167], y: [0.17, 0.17] }, t: 35, s: [98.761, 98.761] }, { i: { x: [0.833, 0.833], y: [0.84, 0.84] }, o: { x: [0.167, 0.167], y: [0.172, 0.172] }, t: 36, s: [98.98, 98.98] }, { i: { x: [0.833, 0.833], y: [0.841, 0.841] }, o: { x: [0.167, 0.167], y: [0.174, 0.174] }, t: 37, s: [99.186, 99.186] }, { i: { x: [0.833, 0.833], y: [0.843, 0.843] }, o: { x: [0.167, 0.167], y: [0.175, 0.175] }, t: 38, s: [99.377, 99.377] }, { i: { x: [0.833, 0.833], y: [0.844, 0.844] }, o: { x: [0.167, 0.167], y: [0.177, 0.177] }, t: 39, s: [99.55, 99.55] }, { i: { x: [0.833, 0.833], y: [0.846, 0.846] }, o: { x: [0.167, 0.167], y: [0.179, 0.179] }, t: 40, s: [99.703, 99.703] }, { i: { x: [0.833, 0.833], y: [0.847, 0.847] }, o: { x: [0.167, 0.167], y: [0.181, 0.181] }, t: 41, s: [99.837, 99.837] }, { i: { x: [0.833, 0.833], y: [0.849, 0.849] }, o: { x: [0.167, 0.167], y: [0.184, 0.184] }, t: 42, s: [99.95, 99.95] }, { i: { x: [0.833, 0.833], y: [0.852, 0.852] }, o: { x: [0.167, 0.167], y: [0.187, 0.187] }, t: 43, s: [100.045, 100.045] }, { i: { x: [0.833, 0.833], y: [0.855, 0.855] }, o: { x: [0.167, 0.167], y: [0.191, 0.191] }, t: 44, s: [100.121, 100.121] }, { i: { x: [0.833, 0.833], y: [0.86, 0.86] }, o: { x: [0.167, 0.167], y: [0.196, 0.196] }, t: 45, s: [100.18, 100.18] }, { i: { x: [0.833, 0.833], y: [0.867, 0.867] }, o: { x: [0.167, 0.167], y: [0.206, 0.206] }, t: 46, s: [100.224, 100.224] }, { i: { x: [0.833, 0.833], y: [0.883, 0.883] }, o: { x: [0.167, 0.167], y: [0.224, 0.224] }, t: 47, s: [100.253, 100.253] }, { i: { x: [0.833, 0.833], y: [0.935, 0.935] }, o: { x: [0.167, 0.167], y: [0.288, 0.288] }, t: 48, s: [100.271, 100.271] }, { i: { x: [0.833, 0.833], y: [0.453, 0.453] }, o: { x: [0.167, 0.167], y: [-0.301, -0.301] }, t: 49, s: [100.278, 100.278] }, { i: { x: [0.833, 0.833], y: [0.78, 0.78] }, o: { x: [0.167, 0.167], y: [0.098, 0.098] }, t: 50, s: [100.276, 100.276] }, { i: { x: [0.833, 0.833], y: [0.809, 0.809] }, o: { x: [0.167, 0.167], y: [0.134, 0.134] }, t: 51, s: [100.268, 100.268] }, { i: { x: [0.833, 0.833], y: [0.82, 0.82] }, o: { x: [0.167, 0.167], y: [0.148, 0.148] }, t: 52, s: [100.254, 100.254] }, { i: { x: [0.833, 0.833], y: [0.826, 0.826] }, o: { x: [0.167, 0.167], y: [0.155, 0.155] }, t: 53, s: [100.235, 100.235] }, { i: { x: [0.833, 0.833], y: [0.83, 0.83] }, o: { x: [0.167, 0.167], y: [0.16, 0.16] }, t: 54, s: [100.214, 100.214] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.164, 0.164] }, t: 55, s: [100.191, 100.191] }, { i: { x: [0.833, 0.833], y: [0.835, 0.835] }, o: { x: [0.167, 0.167], y: [0.166, 0.166] }, t: 56, s: [100.167, 100.167] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.169, 0.169] }, t: 57, s: [100.142, 100.142] }, { t: 58, s: [100.119, 100.119] }], ix: 3 }, r: { a: 0, k: 0, ix: 6 }, o: { a: 0, k: 100, ix: 7 }, sk: { a: 0, k: 0, ix: 4 }, sa: { a: 0, k: 0, ix: 5 }, nm: "Transform" }], nm: "Ellipse 1", np: 4, cix: 2, bm: 0, ix: 1, mn: "ADBE Vector Group", hd: false }, { ty: "gr", it: [{ ty: "tr", p: { a: 0, k: [80, -0.126], ix: 2 }, a: { a: 0, k: [0, 0], ix: 1 }, s: { a: 0, k: [100, 100], ix: 3 }, r: { a: 0, k: 0, ix: 6 }, o: { a: 0, k: 100, ix: 7 }, sk: { a: 0, k: 0, ix: 4 }, sa: { a: 0, k: 0, ix: 5 }, nm: "Transform" }], nm: "Group 1", np: 0, cix: 2, bm: 0, ix: 2, mn: "ADBE Vector Group", hd: false }], ip: 0, op: 80, st: 0, bm: 0 }, { ddd: 0, ind: 2, ty: 4, nm: "circle2", sr: 1, ks: { o: { a: 0, k: 100, ix: 11 }, r: { a: 0, k: 0, ix: 10 }, p: { a: 0, k: [340.03, 299.995, 0], ix: 2, l: 2 }, a: { a: 0, k: [-39.97, 5e-3, 0], ix: 1, l: 2 }, s: { a: 0, k: [100, -100, 100], ix: 6, l: 2 } }, ao: 0, ef: [{ ty: 5, nm: "Elastic: Position - Transform", np: 5, mn: "Pseudo/MDS Elastic Controller", ix: 1, en: 1, ef: [{ ty: 0, nm: "Amplitude", mn: "Pseudo/MDS Elastic Controller-0001", ix: 1, v: { a: 0, k: 20, ix: 1 } }, { ty: 0, nm: "Frequency", mn: "Pseudo/MDS Elastic Controller-0002", ix: 2, v: { a: 0, k: 40, ix: 2 } }, { ty: 0, nm: "Decay", mn: "Pseudo/MDS Elastic Controller-0003", ix: 3, v: { a: 0, k: 60, ix: 3 } }] }, { ty: 5, nm: "Elastic: Scale - Transform", np: 5, mn: "Pseudo/MDS Elastic Controller", ix: 2, en: 1, ef: [{ ty: 0, nm: "Amplitude", mn: "Pseudo/MDS Elastic Controller-0001", ix: 1, v: { a: 0, k: 20, ix: 1 } }, { ty: 0, nm: "Frequency", mn: "Pseudo/MDS Elastic Controller-0002", ix: 2, v: { a: 0, k: 40, ix: 2 } }, { ty: 0, nm: "Decay", mn: "Pseudo/MDS Elastic Controller-0003", ix: 3, v: { a: 0, k: 60, ix: 3 } }] }], shapes: [{ ty: "gr", it: [{ ind: 0, ty: "sh", ix: 1, ks: { a: 0, k: { i: [[0, 22.091], [22.091, 0], [0, -22.091]], o: [[0, -22.091], [-22.091, 0], [0, 22.091]], v: [[80, 0], [40, -40], [0, 0]], c: false }, ix: 2 }, nm: "Path 1", mn: "ADBE Vector Shape - Group", hd: false }, { ty: "tm", s: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 18, s: [0] }, { t: 48, s: [99.9] }], ix: 1 }, e: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 12, s: [0.1] }, { t: 42, s: [100] }], ix: 2 }, o: { a: 0, k: 0, ix: 3 }, m: 1, ix: 2, nm: "Trim Paths 1", mn: "ADBE Vector Filter - Trim", hd: false }, { ty: "st", c: { a: 0, k: [1, 1, 1, 1], ix: 3 }, o: { a: 0, k: 100, ix: 4 }, w: { a: 1, k: [{ i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 12, s: [20] }, { i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 18, s: [30] }, { t: 48, s: [20] }], ix: 5 }, lc: 2, lj: 1, ml: 4, bm: 0, nm: "Stroke 1", mn: "ADBE Vector Graphic - Stroke", hd: false }, { ty: "tr", p: { a: 1, k: [{ i: { x: 0.667, y: 1 }, o: { x: 0.333, y: 0 }, t: 12, s: [80, -0.126], to: [0, -3.312], ti: [0, 0] }, { i: { x: 0.833, y: 0.829 }, o: { x: 0.333, y: 0 }, t: 22, s: [80, -20], to: [0, 0], ti: [0, -3.577] }, { i: { x: 0.833, y: 0.875 }, o: { x: 0.167, y: 0.136 }, t: 32, s: [80, -0.126], to: [0, 3.577], ti: [0, -0.475] }, { i: { x: 0.833, y: 0.853 }, o: { x: 0.167, y: 0.248 }, t: 33, s: [80, 1.464], to: [0, 0.475], ti: [0, -0.369] }, { i: { x: 0.833, y: 0.857 }, o: { x: 0.167, y: 0.193 }, t: 34, s: [80, 2.723], to: [0, 0.369], ti: [0, -0.273] }, { i: { x: 0.833, y: 0.863 }, o: { x: 0.167, y: 0.2 }, t: 35, s: [80, 3.677], to: [0, 0.273], ti: [0, -0.186] }, { i: { x: 0.833, y: 0.873 }, o: { x: 0.167, y: 0.213 }, t: 36, s: [80, 4.358], to: [0, 0.186], ti: [0, -0.111] }, { i: { x: 0.833, y: 0.897 }, o: { x: 0.167, y: 0.244 }, t: 37, s: [80, 4.795], to: [0, 0.111], ti: [0, -0.046] }, { i: { x: 0.833, y: 0.762 }, o: { x: 0.167, y: 0.438 }, t: 38, s: [80, 5.022], to: [0, 0.046], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.734 }, o: { x: 0.167, y: 0.129 }, t: 39, s: [80, 5.07], to: [0, -8e-3], ti: [0, 0.053] }, { i: { x: 0.833, y: 0.798 }, o: { x: 0.167, y: 0.121 }, t: 40, s: [80, 4.971], to: [0, -0.053], ti: [0, 0.087] }, { i: { x: 0.833, y: 0.815 }, o: { x: 0.167, y: 0.142 }, t: 41, s: [80, 4.755], to: [0, -0.087], ti: [0, 0.114] }, { i: { x: 0.833, y: 0.823 }, o: { x: 0.167, y: 0.152 }, t: 42, s: [80, 4.447], to: [0, -0.114], ti: [0, 0.132] }, { i: { x: 0.833, y: 0.828 }, o: { x: 0.167, y: 0.158 }, t: 43, s: [80, 4.073], to: [0, -0.132], ti: [0, 0.144] }, { i: { x: 0.833, y: 0.832 }, o: { x: 0.167, y: 0.162 }, t: 44, s: [80, 3.655], to: [0, -0.144], ti: [0, 0.149] }, { i: { x: 0.833, y: 0.834 }, o: { x: 0.167, y: 0.165 }, t: 45, s: [80, 3.212], to: [0, -0.149], ti: [0, 0.15] }, { i: { x: 0.833, y: 0.836 }, o: { x: 0.167, y: 0.168 }, t: 46, s: [80, 2.76], to: [0, -0.15], ti: [0, 0.146] }, { i: { x: 0.833, y: 0.838 }, o: { x: 0.167, y: 0.17 }, t: 47, s: [80, 2.313], to: [0, -0.146], ti: [0, 0.14] }, { i: { x: 0.833, y: 0.84 }, o: { x: 0.167, y: 0.172 }, t: 48, s: [80, 1.882], to: [0, -0.14], ti: [0, 0.13] }, { i: { x: 0.833, y: 0.841 }, o: { x: 0.167, y: 0.174 }, t: 49, s: [80, 1.476], to: [0, -0.13], ti: [0, 0.119] }, { i: { x: 0.833, y: 0.843 }, o: { x: 0.167, y: 0.175 }, t: 50, s: [80, 1.1], to: [0, -0.119], ti: [0, 0.107] }, { i: { x: 0.833, y: 0.844 }, o: { x: 0.167, y: 0.177 }, t: 51, s: [80, 0.76], to: [0, -0.107], ti: [0, 0.094] }, { i: { x: 0.833, y: 0.846 }, o: { x: 0.167, y: 0.179 }, t: 52, s: [80, 0.458], to: [0, -0.094], ti: [0, 0.081] }, { i: { x: 0.833, y: 0.847 }, o: { x: 0.167, y: 0.181 }, t: 53, s: [80, 0.195], to: [0, -0.081], ti: [0, 0.068] }, { i: { x: 0.833, y: 0.849 }, o: { x: 0.167, y: 0.184 }, t: 54, s: [80, -0.028], to: [0, -0.068], ti: [0, 0.056] }, { i: { x: 0.833, y: 0.852 }, o: { x: 0.167, y: 0.187 }, t: 55, s: [80, -0.214], to: [0, -0.056], ti: [0, 0.044] }, { i: { x: 0.833, y: 0.855 }, o: { x: 0.167, y: 0.191 }, t: 56, s: [80, -0.364], to: [0, -0.044], ti: [0, 0.034] }, { i: { x: 0.833, y: 0.86 }, o: { x: 0.167, y: 0.196 }, t: 57, s: [80, -0.48], to: [0, -0.034], ti: [0, 0.024] }, { i: { x: 0.833, y: 0.867 }, o: { x: 0.167, y: 0.206 }, t: 58, s: [80, -0.566], to: [0, -0.024], ti: [0, 0.016] }, { i: { x: 0.833, y: 0.883 }, o: { x: 0.167, y: 0.224 }, t: 59, s: [80, -0.624], to: [0, -0.016], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.889 }, o: { x: 0.167, y: 0.288 }, t: 60, s: [80, -0.659], to: [0, -8e-3], ti: [0, 2e-3] }, { i: { x: 0.833, y: 0.612 }, o: { x: 0.167, y: 0.336 }, t: 61, s: [80, -0.673], to: [0, -2e-3], ti: [0, -3e-3] }, { i: { x: 0.833, y: 0.78 }, o: { x: 0.167, y: 0.106 }, t: 62, s: [80, -0.67], to: [0, 3e-3], ti: [0, -8e-3] }, { i: { x: 0.833, y: 0.809 }, o: { x: 0.167, y: 0.134 }, t: 63, s: [80, -0.653], to: [0, 8e-3], ti: [0, -0.011] }, { i: { x: 0.833, y: 0.82 }, o: { x: 0.167, y: 0.148 }, t: 64, s: [80, -0.625], to: [0, 0.011], ti: [0, -0.013] }, { i: { x: 0.833, y: 0.826 }, o: { x: 0.167, y: 0.155 }, t: 65, s: [80, -0.589], to: [0, 0.013], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.83 }, o: { x: 0.167, y: 0.16 }, t: 66, s: [80, -0.547], to: [0, 0.015], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.164 }, t: 67, s: [80, -0.501], to: [0, 0.015], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.835 }, o: { x: 0.167, y: 0.166 }, t: 68, s: [80, -0.454], to: [0, 0.016], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.837 }, o: { x: 0.167, y: 0.169 }, t: 69, s: [80, -0.406], to: [0, 0.016], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.839 }, o: { x: 0.167, y: 0.171 }, t: 70, s: [80, -0.36], to: [0, 0.015], ti: [0, -0.014] }, { i: { x: 0.833, y: 0.84 }, o: { x: 0.167, y: 0.173 }, t: 71, s: [80, -0.316], to: [0, 0.014], ti: [0, -0.013] }, { i: { x: 0.833, y: 0.842 }, o: { x: 0.167, y: 0.174 }, t: 72, s: [80, -0.274], to: [0, 0.013], ti: [0, -0.012] }, { i: { x: 0.833, y: 0.843 }, o: { x: 0.167, y: 0.176 }, t: 73, s: [80, -0.237], to: [0, 0.012], ti: [0, -0.011] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.178 }, t: 74, s: [80, -0.203], to: [0, 0.011], ti: [0, -5e-3] }, { t: 75, s: [80, -0.173] }], ix: 2 }, a: { a: 0, k: [80, -0.126], ix: 1 }, s: { a: 1, k: [{ i: { x: [0.667, 0.667], y: [1, 1] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 12, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 22, s: [110, 110] }, { i: { x: [0.833, 0.833], y: [0.851, 0.851] }, o: { x: [0.167, 0.167], y: [0.203, 0.203] }, t: 32, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.853, 0.853] }, o: { x: [0.167, 0.167], y: [0.189, 0.189] }, t: 33, s: [99.193, 99.193] }, { i: { x: [0.833, 0.833], y: [0.857, 0.857] }, o: { x: [0.167, 0.167], y: [0.193, 0.193] }, t: 34, s: [98.553, 98.553] }, { i: { x: [0.833, 0.833], y: [0.863, 0.863] }, o: { x: [0.167, 0.167], y: [0.2, 0.2] }, t: 35, s: [98.068, 98.068] }, { i: { x: [0.833, 0.833], y: [0.873, 0.873] }, o: { x: [0.167, 0.167], y: [0.213, 0.213] }, t: 36, s: [97.722, 97.722] }, { i: { x: [0.833, 0.833], y: [0.899, 0.899] }, o: { x: [0.167, 0.167], y: [0.244, 0.244] }, t: 37, s: [97.5, 97.5] }, { i: { x: [0.833, 0.833], y: [1.087, 1.087] }, o: { x: [0.167, 0.167], y: [0.473, 0.473] }, t: 38, s: [97.385, 97.385] }, { i: { x: [0.833, 0.833], y: [0.734, 0.734] }, o: { x: [0.167, 0.167], y: [0.042, 0.042] }, t: 39, s: [97.36, 97.36] }, { i: { x: [0.833, 0.833], y: [0.798, 0.798] }, o: { x: [0.167, 0.167], y: [0.121, 0.121] }, t: 40, s: [97.41, 97.41] }, { i: { x: [0.833, 0.833], y: [0.815, 0.815] }, o: { x: [0.167, 0.167], y: [0.142, 0.142] }, t: 41, s: [97.521, 97.521] }, { i: { x: [0.833, 0.833], y: [0.823, 0.823] }, o: { x: [0.167, 0.167], y: [0.152, 0.152] }, t: 42, s: [97.677, 97.677] }, { i: { x: [0.833, 0.833], y: [0.828, 0.828] }, o: { x: [0.167, 0.167], y: [0.158, 0.158] }, t: 43, s: [97.867, 97.867] }, { i: { x: [0.833, 0.833], y: [0.832, 0.832] }, o: { x: [0.167, 0.167], y: [0.162, 0.162] }, t: 44, s: [98.079, 98.079] }, { i: { x: [0.833, 0.833], y: [0.834, 0.834] }, o: { x: [0.167, 0.167], y: [0.165, 0.165] }, t: 45, s: [98.304, 98.304] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.167, 0.167], y: [0.168, 0.168] }, t: 46, s: [98.534, 98.534] }, { i: { x: [0.833, 0.833], y: [0.838, 0.838] }, o: { x: [0.167, 0.167], y: [0.17, 0.17] }, t: 47, s: [98.761, 98.761] }, { i: { x: [0.833, 0.833], y: [0.84, 0.84] }, o: { x: [0.167, 0.167], y: [0.172, 0.172] }, t: 48, s: [98.98, 98.98] }, { i: { x: [0.833, 0.833], y: [0.841, 0.841] }, o: { x: [0.167, 0.167], y: [0.174, 0.174] }, t: 49, s: [99.186, 99.186] }, { i: { x: [0.833, 0.833], y: [0.843, 0.843] }, o: { x: [0.167, 0.167], y: [0.175, 0.175] }, t: 50, s: [99.377, 99.377] }, { i: { x: [0.833, 0.833], y: [0.844, 0.844] }, o: { x: [0.167, 0.167], y: [0.177, 0.177] }, t: 51, s: [99.55, 99.55] }, { i: { x: [0.833, 0.833], y: [0.846, 0.846] }, o: { x: [0.167, 0.167], y: [0.179, 0.179] }, t: 52, s: [99.703, 99.703] }, { i: { x: [0.833, 0.833], y: [0.847, 0.847] }, o: { x: [0.167, 0.167], y: [0.181, 0.181] }, t: 53, s: [99.837, 99.837] }, { i: { x: [0.833, 0.833], y: [0.849, 0.849] }, o: { x: [0.167, 0.167], y: [0.184, 0.184] }, t: 54, s: [99.95, 99.95] }, { i: { x: [0.833, 0.833], y: [0.852, 0.852] }, o: { x: [0.167, 0.167], y: [0.187, 0.187] }, t: 55, s: [100.045, 100.045] }, { i: { x: [0.833, 0.833], y: [0.855, 0.855] }, o: { x: [0.167, 0.167], y: [0.191, 0.191] }, t: 56, s: [100.121, 100.121] }, { i: { x: [0.833, 0.833], y: [0.86, 0.86] }, o: { x: [0.167, 0.167], y: [0.196, 0.196] }, t: 57, s: [100.18, 100.18] }, { i: { x: [0.833, 0.833], y: [0.867, 0.867] }, o: { x: [0.167, 0.167], y: [0.206, 0.206] }, t: 58, s: [100.224, 100.224] }, { i: { x: [0.833, 0.833], y: [0.883, 0.883] }, o: { x: [0.167, 0.167], y: [0.224, 0.224] }, t: 59, s: [100.253, 100.253] }, { i: { x: [0.833, 0.833], y: [0.935, 0.935] }, o: { x: [0.167, 0.167], y: [0.288, 0.288] }, t: 60, s: [100.271, 100.271] }, { i: { x: [0.833, 0.833], y: [0.453, 0.453] }, o: { x: [0.167, 0.167], y: [-0.301, -0.301] }, t: 61, s: [100.278, 100.278] }, { i: { x: [0.833, 0.833], y: [0.78, 0.78] }, o: { x: [0.167, 0.167], y: [0.098, 0.098] }, t: 62, s: [100.276, 100.276] }, { i: { x: [0.833, 0.833], y: [0.809, 0.809] }, o: { x: [0.167, 0.167], y: [0.134, 0.134] }, t: 63, s: [100.268, 100.268] }, { i: { x: [0.833, 0.833], y: [0.82, 0.82] }, o: { x: [0.167, 0.167], y: [0.148, 0.148] }, t: 64, s: [100.254, 100.254] }, { i: { x: [0.833, 0.833], y: [0.826, 0.826] }, o: { x: [0.167, 0.167], y: [0.155, 0.155] }, t: 65, s: [100.235, 100.235] }, { i: { x: [0.833, 0.833], y: [0.83, 0.83] }, o: { x: [0.167, 0.167], y: [0.16, 0.16] }, t: 66, s: [100.214, 100.214] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.164, 0.164] }, t: 67, s: [100.191, 100.191] }, { i: { x: [0.833, 0.833], y: [0.835, 0.835] }, o: { x: [0.167, 0.167], y: [0.166, 0.166] }, t: 68, s: [100.167, 100.167] }, { i: { x: [0.833, 0.833], y: [0.837, 0.837] }, o: { x: [0.167, 0.167], y: [0.169, 0.169] }, t: 69, s: [100.142, 100.142] }, { i: { x: [0.833, 0.833], y: [0.839, 0.839] }, o: { x: [0.167, 0.167], y: [0.171, 0.171] }, t: 70, s: [100.119, 100.119] }, { i: { x: [0.833, 0.833], y: [0.84, 0.84] }, o: { x: [0.167, 0.167], y: [0.173, 0.173] }, t: 71, s: [100.096, 100.096] }, { i: { x: [0.833, 0.833], y: [0.842, 0.842] }, o: { x: [0.167, 0.167], y: [0.174, 0.174] }, t: 72, s: [100.075, 100.075] }, { i: { x: [0.833, 0.833], y: [0.843, 0.843] }, o: { x: [0.167, 0.167], y: [0.176, 0.176] }, t: 73, s: [100.056, 100.056] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.178, 0.178] }, t: 74, s: [100.039, 100.039] }, { t: 75, s: [100.024, 100.024] }], ix: 3 }, r: { a: 0, k: 0, ix: 6 }, o: { a: 0, k: 100, ix: 7 }, sk: { a: 0, k: 0, ix: 4 }, sa: { a: 0, k: 0, ix: 5 }, nm: "Transform" }], nm: "Ellipse 1", np: 4, cix: 2, bm: 0, ix: 1, mn: "ADBE Vector Group", hd: false }], ip: 0, op: 80, st: 12, bm: 0 }, { ddd: 0, ind: 3, ty: 4, nm: "circle4", sr: 1, ks: { o: { a: 0, k: 100, ix: 11 }, r: { a: 0, k: 0, ix: 10 }, p: { a: 0, k: [460, 300, 0], ix: 2, l: 2 }, a: { a: 0, k: [0, 0, 0], ix: 1, l: 2 }, s: { a: 0, k: [100, 100, 100], ix: 6, l: 2 } }, ao: 0, ef: [{ ty: 5, nm: "Elastic Controller", np: 5, mn: "Pseudo/MDS Elastic Controller", ix: 1, en: 1, ef: [{ ty: 0, nm: "Amplitude", mn: "Pseudo/MDS Elastic Controller-0001", ix: 1, v: { a: 0, k: 20, ix: 1 } }, { ty: 0, nm: "Frequency", mn: "Pseudo/MDS Elastic Controller-0002", ix: 2, v: { a: 0, k: 40, ix: 2 } }, { ty: 0, nm: "Decay", mn: "Pseudo/MDS Elastic Controller-0003", ix: 3, v: { a: 0, k: 60, ix: 3 } }] }], shapes: [{ ty: "gr", it: [{ ind: 0, ty: "sh", ix: 1, ks: { a: 0, k: { i: [[0, 11.046], [-11.046, 0], [0, -11.046]], o: [[0, -11.046], [11.046, 0], [0, 11.046]], v: [[-80, 0], [-60, -20], [-40, 0]], c: false }, ix: 2 }, nm: "Path 1", mn: "ADBE Vector Shape - Group", hd: false }, { ty: "tm", s: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 24, s: [0] }, { t: 54, s: [99.9] }], ix: 1 }, e: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 18, s: [0.1] }, { t: 48, s: [100] }], ix: 2 }, o: { a: 0, k: 0, ix: 3 }, m: 1, ix: 2, nm: "Trim Paths 1", mn: "ADBE Vector Filter - Trim", hd: false }, { ty: "st", c: { a: 0, k: [1, 1, 1, 1], ix: 3 }, o: { a: 0, k: 100, ix: 4 }, w: { a: 1, k: [{ i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 18, s: [20] }, { i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 24, s: [25] }, { t: 54, s: [20] }], ix: 5 }, lc: 2, lj: 1, ml: 4, bm: 0, nm: "Stroke 1", mn: "ADBE Vector Graphic - Stroke", hd: false }, { ty: "tr", p: { a: 1, k: [{ i: { x: 0.667, y: 1 }, o: { x: 0.333, y: 0 }, t: 18, s: [80, -0.126], to: [0, -3.312], ti: [0, 0] }, { i: { x: 0.833, y: 0.829 }, o: { x: 0.333, y: 0 }, t: 28, s: [80, -20], to: [0, 0], ti: [0, -3.577] }, { i: { x: 0.833, y: 0.875 }, o: { x: 0.167, y: 0.136 }, t: 38, s: [80, -0.126], to: [0, 3.577], ti: [0, -0.475] }, { i: { x: 0.833, y: 0.853 }, o: { x: 0.167, y: 0.248 }, t: 39, s: [80, 1.464], to: [0, 0.475], ti: [0, -0.369] }, { i: { x: 0.833, y: 0.857 }, o: { x: 0.167, y: 0.193 }, t: 40, s: [80, 2.723], to: [0, 0.369], ti: [0, -0.273] }, { i: { x: 0.833, y: 0.863 }, o: { x: 0.167, y: 0.2 }, t: 41, s: [80, 3.677], to: [0, 0.273], ti: [0, -0.186] }, { i: { x: 0.833, y: 0.873 }, o: { x: 0.167, y: 0.213 }, t: 42, s: [80, 4.358], to: [0, 0.186], ti: [0, -0.111] }, { i: { x: 0.833, y: 0.897 }, o: { x: 0.167, y: 0.244 }, t: 43, s: [80, 4.795], to: [0, 0.111], ti: [0, -0.046] }, { i: { x: 0.833, y: 0.762 }, o: { x: 0.167, y: 0.438 }, t: 44, s: [80, 5.022], to: [0, 0.046], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.734 }, o: { x: 0.167, y: 0.129 }, t: 45, s: [80, 5.07], to: [0, -8e-3], ti: [0, 0.053] }, { i: { x: 0.833, y: 0.798 }, o: { x: 0.167, y: 0.121 }, t: 46, s: [80, 4.971], to: [0, -0.053], ti: [0, 0.087] }, { i: { x: 0.833, y: 0.815 }, o: { x: 0.167, y: 0.142 }, t: 47, s: [80, 4.755], to: [0, -0.087], ti: [0, 0.114] }, { i: { x: 0.833, y: 0.823 }, o: { x: 0.167, y: 0.152 }, t: 48, s: [80, 4.447], to: [0, -0.114], ti: [0, 0.132] }, { i: { x: 0.833, y: 0.828 }, o: { x: 0.167, y: 0.158 }, t: 49, s: [80, 4.073], to: [0, -0.132], ti: [0, 0.144] }, { i: { x: 0.833, y: 0.832 }, o: { x: 0.167, y: 0.162 }, t: 50, s: [80, 3.655], to: [0, -0.144], ti: [0, 0.149] }, { i: { x: 0.833, y: 0.834 }, o: { x: 0.167, y: 0.165 }, t: 51, s: [80, 3.212], to: [0, -0.149], ti: [0, 0.15] }, { i: { x: 0.833, y: 0.836 }, o: { x: 0.167, y: 0.168 }, t: 52, s: [80, 2.76], to: [0, -0.15], ti: [0, 0.146] }, { i: { x: 0.833, y: 0.838 }, o: { x: 0.167, y: 0.17 }, t: 53, s: [80, 2.313], to: [0, -0.146], ti: [0, 0.14] }, { i: { x: 0.833, y: 0.84 }, o: { x: 0.167, y: 0.172 }, t: 54, s: [80, 1.882], to: [0, -0.14], ti: [0, 0.13] }, { i: { x: 0.833, y: 0.841 }, o: { x: 0.167, y: 0.174 }, t: 55, s: [80, 1.476], to: [0, -0.13], ti: [0, 0.119] }, { i: { x: 0.833, y: 0.843 }, o: { x: 0.167, y: 0.175 }, t: 56, s: [80, 1.1], to: [0, -0.119], ti: [0, 0.107] }, { i: { x: 0.833, y: 0.844 }, o: { x: 0.167, y: 0.177 }, t: 57, s: [80, 0.76], to: [0, -0.107], ti: [0, 0.094] }, { i: { x: 0.833, y: 0.846 }, o: { x: 0.167, y: 0.179 }, t: 58, s: [80, 0.458], to: [0, -0.094], ti: [0, 0.081] }, { i: { x: 0.833, y: 0.847 }, o: { x: 0.167, y: 0.181 }, t: 59, s: [80, 0.195], to: [0, -0.081], ti: [0, 0.068] }, { i: { x: 0.833, y: 0.849 }, o: { x: 0.167, y: 0.184 }, t: 60, s: [80, -0.028], to: [0, -0.068], ti: [0, 0.056] }, { i: { x: 0.833, y: 0.852 }, o: { x: 0.167, y: 0.187 }, t: 61, s: [80, -0.214], to: [0, -0.056], ti: [0, 0.044] }, { i: { x: 0.833, y: 0.855 }, o: { x: 0.167, y: 0.191 }, t: 62, s: [80, -0.364], to: [0, -0.044], ti: [0, 0.034] }, { i: { x: 0.833, y: 0.86 }, o: { x: 0.167, y: 0.196 }, t: 63, s: [80, -0.48], to: [0, -0.034], ti: [0, 0.024] }, { i: { x: 0.833, y: 0.867 }, o: { x: 0.167, y: 0.206 }, t: 64, s: [80, -0.566], to: [0, -0.024], ti: [0, 0.016] }, { i: { x: 0.833, y: 0.883 }, o: { x: 0.167, y: 0.224 }, t: 65, s: [80, -0.624], to: [0, -0.016], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.889 }, o: { x: 0.167, y: 0.288 }, t: 66, s: [80, -0.659], to: [0, -8e-3], ti: [0, 2e-3] }, { i: { x: 0.833, y: 0.612 }, o: { x: 0.167, y: 0.336 }, t: 67, s: [80, -0.673], to: [0, -2e-3], ti: [0, -3e-3] }, { i: { x: 0.833, y: 0.78 }, o: { x: 0.167, y: 0.106 }, t: 68, s: [80, -0.67], to: [0, 3e-3], ti: [0, -8e-3] }, { i: { x: 0.833, y: 0.809 }, o: { x: 0.167, y: 0.134 }, t: 69, s: [80, -0.653], to: [0, 8e-3], ti: [0, -0.011] }, { i: { x: 0.833, y: 0.82 }, o: { x: 0.167, y: 0.148 }, t: 70, s: [80, -0.625], to: [0, 0.011], ti: [0, -0.013] }, { i: { x: 0.833, y: 0.826 }, o: { x: 0.167, y: 0.155 }, t: 71, s: [80, -0.589], to: [0, 0.013], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.83 }, o: { x: 0.167, y: 0.16 }, t: 72, s: [80, -0.547], to: [0, 0.015], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.164 }, t: 73, s: [80, -0.501], to: [0, 0.015], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.835 }, o: { x: 0.167, y: 0.166 }, t: 74, s: [80, -0.454], to: [0, 0.016], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.837 }, o: { x: 0.167, y: 0.169 }, t: 75, s: [80, -0.406], to: [0, 0.016], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.839 }, o: { x: 0.167, y: 0.171 }, t: 76, s: [80, -0.36], to: [0, 0.015], ti: [0, -0.014] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.173 }, t: 77, s: [80, -0.316], to: [0, 0.014], ti: [0, -7e-3] }, { t: 78, s: [80, -0.274] }], ix: 2 }, a: { a: 0, k: [80, -0.126], ix: 1 }, s: { a: 1, k: [{ i: { x: [0.667, 0.667], y: [1, 1] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 18, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 28, s: [110, 110] }, { i: { x: [0.833, 0.833], y: [0.851, 0.851] }, o: { x: [0.167, 0.167], y: [0.203, 0.203] }, t: 38, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.853, 0.853] }, o: { x: [0.167, 0.167], y: [0.189, 0.189] }, t: 39, s: [99.193, 99.193] }, { i: { x: [0.833, 0.833], y: [0.857, 0.857] }, o: { x: [0.167, 0.167], y: [0.193, 0.193] }, t: 40, s: [98.553, 98.553] }, { i: { x: [0.833, 0.833], y: [0.863, 0.863] }, o: { x: [0.167, 0.167], y: [0.2, 0.2] }, t: 41, s: [98.068, 98.068] }, { i: { x: [0.833, 0.833], y: [0.873, 0.873] }, o: { x: [0.167, 0.167], y: [0.213, 0.213] }, t: 42, s: [97.722, 97.722] }, { i: { x: [0.833, 0.833], y: [0.899, 0.899] }, o: { x: [0.167, 0.167], y: [0.244, 0.244] }, t: 43, s: [97.5, 97.5] }, { i: { x: [0.833, 0.833], y: [1.087, 1.087] }, o: { x: [0.167, 0.167], y: [0.473, 0.473] }, t: 44, s: [97.385, 97.385] }, { i: { x: [0.833, 0.833], y: [0.734, 0.734] }, o: { x: [0.167, 0.167], y: [0.042, 0.042] }, t: 45, s: [97.36, 97.36] }, { i: { x: [0.833, 0.833], y: [0.798, 0.798] }, o: { x: [0.167, 0.167], y: [0.121, 0.121] }, t: 46, s: [97.41, 97.41] }, { i: { x: [0.833, 0.833], y: [0.815, 0.815] }, o: { x: [0.167, 0.167], y: [0.142, 0.142] }, t: 47, s: [97.521, 97.521] }, { i: { x: [0.833, 0.833], y: [0.823, 0.823] }, o: { x: [0.167, 0.167], y: [0.152, 0.152] }, t: 48, s: [97.677, 97.677] }, { i: { x: [0.833, 0.833], y: [0.828, 0.828] }, o: { x: [0.167, 0.167], y: [0.158, 0.158] }, t: 49, s: [97.867, 97.867] }, { i: { x: [0.833, 0.833], y: [0.832, 0.832] }, o: { x: [0.167, 0.167], y: [0.162, 0.162] }, t: 50, s: [98.079, 98.079] }, { i: { x: [0.833, 0.833], y: [0.834, 0.834] }, o: { x: [0.167, 0.167], y: [0.165, 0.165] }, t: 51, s: [98.304, 98.304] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.167, 0.167], y: [0.168, 0.168] }, t: 52, s: [98.534, 98.534] }, { i: { x: [0.833, 0.833], y: [0.838, 0.838] }, o: { x: [0.167, 0.167], y: [0.17, 0.17] }, t: 53, s: [98.761, 98.761] }, { i: { x: [0.833, 0.833], y: [0.84, 0.84] }, o: { x: [0.167, 0.167], y: [0.172, 0.172] }, t: 54, s: [98.98, 98.98] }, { i: { x: [0.833, 0.833], y: [0.841, 0.841] }, o: { x: [0.167, 0.167], y: [0.174, 0.174] }, t: 55, s: [99.186, 99.186] }, { i: { x: [0.833, 0.833], y: [0.843, 0.843] }, o: { x: [0.167, 0.167], y: [0.175, 0.175] }, t: 56, s: [99.377, 99.377] }, { i: { x: [0.833, 0.833], y: [0.844, 0.844] }, o: { x: [0.167, 0.167], y: [0.177, 0.177] }, t: 57, s: [99.55, 99.55] }, { i: { x: [0.833, 0.833], y: [0.846, 0.846] }, o: { x: [0.167, 0.167], y: [0.179, 0.179] }, t: 58, s: [99.703, 99.703] }, { i: { x: [0.833, 0.833], y: [0.847, 0.847] }, o: { x: [0.167, 0.167], y: [0.181, 0.181] }, t: 59, s: [99.837, 99.837] }, { i: { x: [0.833, 0.833], y: [0.849, 0.849] }, o: { x: [0.167, 0.167], y: [0.184, 0.184] }, t: 60, s: [99.95, 99.95] }, { i: { x: [0.833, 0.833], y: [0.852, 0.852] }, o: { x: [0.167, 0.167], y: [0.187, 0.187] }, t: 61, s: [100.045, 100.045] }, { i: { x: [0.833, 0.833], y: [0.855, 0.855] }, o: { x: [0.167, 0.167], y: [0.191, 0.191] }, t: 62, s: [100.121, 100.121] }, { i: { x: [0.833, 0.833], y: [0.86, 0.86] }, o: { x: [0.167, 0.167], y: [0.196, 0.196] }, t: 63, s: [100.18, 100.18] }, { i: { x: [0.833, 0.833], y: [0.867, 0.867] }, o: { x: [0.167, 0.167], y: [0.206, 0.206] }, t: 64, s: [100.224, 100.224] }, { i: { x: [0.833, 0.833], y: [0.883, 0.883] }, o: { x: [0.167, 0.167], y: [0.224, 0.224] }, t: 65, s: [100.253, 100.253] }, { i: { x: [0.833, 0.833], y: [0.935, 0.935] }, o: { x: [0.167, 0.167], y: [0.288, 0.288] }, t: 66, s: [100.271, 100.271] }, { i: { x: [0.833, 0.833], y: [0.453, 0.453] }, o: { x: [0.167, 0.167], y: [-0.301, -0.301] }, t: 67, s: [100.278, 100.278] }, { i: { x: [0.833, 0.833], y: [0.78, 0.78] }, o: { x: [0.167, 0.167], y: [0.098, 0.098] }, t: 68, s: [100.276, 100.276] }, { i: { x: [0.833, 0.833], y: [0.809, 0.809] }, o: { x: [0.167, 0.167], y: [0.134, 0.134] }, t: 69, s: [100.268, 100.268] }, { i: { x: [0.833, 0.833], y: [0.82, 0.82] }, o: { x: [0.167, 0.167], y: [0.148, 0.148] }, t: 70, s: [100.254, 100.254] }, { i: { x: [0.833, 0.833], y: [0.826, 0.826] }, o: { x: [0.167, 0.167], y: [0.155, 0.155] }, t: 71, s: [100.235, 100.235] }, { i: { x: [0.833, 0.833], y: [0.83, 0.83] }, o: { x: [0.167, 0.167], y: [0.16, 0.16] }, t: 72, s: [100.214, 100.214] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.164, 0.164] }, t: 73, s: [100.191, 100.191] }, { i: { x: [0.833, 0.833], y: [0.835, 0.835] }, o: { x: [0.167, 0.167], y: [0.166, 0.166] }, t: 74, s: [100.167, 100.167] }, { i: { x: [0.833, 0.833], y: [0.837, 0.837] }, o: { x: [0.167, 0.167], y: [0.169, 0.169] }, t: 75, s: [100.142, 100.142] }, { i: { x: [0.833, 0.833], y: [0.839, 0.839] }, o: { x: [0.167, 0.167], y: [0.171, 0.171] }, t: 76, s: [100.119, 100.119] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.173, 0.173] }, t: 77, s: [100.096, 100.096] }, { t: 78, s: [100.075, 100.075] }], ix: 3 }, r: { a: 0, k: 0, ix: 6 }, o: { a: 0, k: 100, ix: 7 }, sk: { a: 0, k: 0, ix: 4 }, sa: { a: 0, k: 0, ix: 5 }, nm: "Transform" }], nm: "Ellipse 1", np: 4, cix: 2, bm: 0, ix: 1, mn: "ADBE Vector Group", hd: false }], ip: 0, op: 80, st: 18, bm: 0 }, { ddd: 0, ind: 4, ty: 4, nm: "circle1", sr: 1, ks: { o: { a: 0, k: 100, ix: 11 }, r: { a: 0, k: 0, ix: 10 }, p: { a: 0, k: [420, 300, 0], ix: 2, l: 2 }, a: { a: 0, k: [0, 0, 0], ix: 1, l: 2 }, s: { a: 0, k: [100, 100, 100], ix: 6, l: 2 } }, ao: 0, ef: [{ ty: 5, nm: "Elastic Controller", np: 5, mn: "Pseudo/MDS Elastic Controller", ix: 1, en: 1, ef: [{ ty: 0, nm: "Amplitude", mn: "Pseudo/MDS Elastic Controller-0001", ix: 1, v: { a: 0, k: 20, ix: 1 } }, { ty: 0, nm: "Frequency", mn: "Pseudo/MDS Elastic Controller-0002", ix: 2, v: { a: 0, k: 40, ix: 2 } }, { ty: 0, nm: "Decay", mn: "Pseudo/MDS Elastic Controller-0003", ix: 3, v: { a: 0, k: 60, ix: 3 } }] }], shapes: [{ ty: "gr", it: [{ ind: 0, ty: "sh", ix: 1, ks: { a: 0, k: { i: [[0, 33.137], [-33.137, 0], [0, -33.137]], o: [[0, -33.137], [33.137, 0], [0, 33.137]], v: [[-80, 0], [-20, -60], [40, 0]], c: false }, ix: 2 }, nm: "Path 1", mn: "ADBE Vector Shape - Group", hd: false }, { ty: "tm", s: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 12, s: [0] }, { t: 42, s: [99.9] }], ix: 1 }, e: { a: 1, k: [{ i: { x: [0.15], y: [1] }, o: { x: [0.15], y: [0] }, t: 6, s: [0.1] }, { t: 36, s: [100] }], ix: 2 }, o: { a: 0, k: 0, ix: 3 }, m: 1, ix: 2, nm: "Trim Paths 1", mn: "ADBE Vector Filter - Trim", hd: false }, { ty: "st", c: { a: 0, k: [1, 1, 1, 1], ix: 3 }, o: { a: 0, k: 100, ix: 4 }, w: { a: 1, k: [{ i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 6, s: [20] }, { i: { x: [0.667], y: [1] }, o: { x: [0.333], y: [0] }, t: 12, s: [30] }, { t: 42, s: [20] }], ix: 5 }, lc: 2, lj: 1, ml: 4, bm: 0, nm: "Stroke 1", mn: "ADBE Vector Graphic - Stroke", hd: false }, { ty: "tr", p: { a: 1, k: [{ i: { x: 0.667, y: 1 }, o: { x: 0.333, y: 0 }, t: 6, s: [80, -0.126], to: [0, -3.312], ti: [0, 0] }, { i: { x: 0.833, y: 0.829 }, o: { x: 0.333, y: 0 }, t: 16, s: [80, -20], to: [0, 0], ti: [0, -3.577] }, { i: { x: 0.833, y: 0.875 }, o: { x: 0.167, y: 0.136 }, t: 26, s: [80, -0.126], to: [0, 3.577], ti: [0, -0.475] }, { i: { x: 0.833, y: 0.853 }, o: { x: 0.167, y: 0.248 }, t: 27, s: [80, 1.464], to: [0, 0.475], ti: [0, -0.369] }, { i: { x: 0.833, y: 0.857 }, o: { x: 0.167, y: 0.193 }, t: 28, s: [80, 2.723], to: [0, 0.369], ti: [0, -0.273] }, { i: { x: 0.833, y: 0.863 }, o: { x: 0.167, y: 0.2 }, t: 29, s: [80, 3.677], to: [0, 0.273], ti: [0, -0.186] }, { i: { x: 0.833, y: 0.873 }, o: { x: 0.167, y: 0.213 }, t: 30, s: [80, 4.358], to: [0, 0.186], ti: [0, -0.111] }, { i: { x: 0.833, y: 0.897 }, o: { x: 0.167, y: 0.244 }, t: 31, s: [80, 4.795], to: [0, 0.111], ti: [0, -0.046] }, { i: { x: 0.833, y: 0.762 }, o: { x: 0.167, y: 0.438 }, t: 32, s: [80, 5.022], to: [0, 0.046], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.734 }, o: { x: 0.167, y: 0.129 }, t: 33, s: [80, 5.07], to: [0, -8e-3], ti: [0, 0.053] }, { i: { x: 0.833, y: 0.798 }, o: { x: 0.167, y: 0.121 }, t: 34, s: [80, 4.971], to: [0, -0.053], ti: [0, 0.087] }, { i: { x: 0.833, y: 0.815 }, o: { x: 0.167, y: 0.142 }, t: 35, s: [80, 4.755], to: [0, -0.087], ti: [0, 0.114] }, { i: { x: 0.833, y: 0.823 }, o: { x: 0.167, y: 0.152 }, t: 36, s: [80, 4.447], to: [0, -0.114], ti: [0, 0.132] }, { i: { x: 0.833, y: 0.828 }, o: { x: 0.167, y: 0.158 }, t: 37, s: [80, 4.073], to: [0, -0.132], ti: [0, 0.144] }, { i: { x: 0.833, y: 0.832 }, o: { x: 0.167, y: 0.162 }, t: 38, s: [80, 3.655], to: [0, -0.144], ti: [0, 0.149] }, { i: { x: 0.833, y: 0.834 }, o: { x: 0.167, y: 0.165 }, t: 39, s: [80, 3.212], to: [0, -0.149], ti: [0, 0.15] }, { i: { x: 0.833, y: 0.836 }, o: { x: 0.167, y: 0.168 }, t: 40, s: [80, 2.76], to: [0, -0.15], ti: [0, 0.146] }, { i: { x: 0.833, y: 0.838 }, o: { x: 0.167, y: 0.17 }, t: 41, s: [80, 2.313], to: [0, -0.146], ti: [0, 0.14] }, { i: { x: 0.833, y: 0.84 }, o: { x: 0.167, y: 0.172 }, t: 42, s: [80, 1.882], to: [0, -0.14], ti: [0, 0.13] }, { i: { x: 0.833, y: 0.841 }, o: { x: 0.167, y: 0.174 }, t: 43, s: [80, 1.476], to: [0, -0.13], ti: [0, 0.119] }, { i: { x: 0.833, y: 0.843 }, o: { x: 0.167, y: 0.175 }, t: 44, s: [80, 1.1], to: [0, -0.119], ti: [0, 0.107] }, { i: { x: 0.833, y: 0.844 }, o: { x: 0.167, y: 0.177 }, t: 45, s: [80, 0.76], to: [0, -0.107], ti: [0, 0.094] }, { i: { x: 0.833, y: 0.846 }, o: { x: 0.167, y: 0.179 }, t: 46, s: [80, 0.458], to: [0, -0.094], ti: [0, 0.081] }, { i: { x: 0.833, y: 0.847 }, o: { x: 0.167, y: 0.181 }, t: 47, s: [80, 0.195], to: [0, -0.081], ti: [0, 0.068] }, { i: { x: 0.833, y: 0.849 }, o: { x: 0.167, y: 0.184 }, t: 48, s: [80, -0.028], to: [0, -0.068], ti: [0, 0.056] }, { i: { x: 0.833, y: 0.852 }, o: { x: 0.167, y: 0.187 }, t: 49, s: [80, -0.214], to: [0, -0.056], ti: [0, 0.044] }, { i: { x: 0.833, y: 0.855 }, o: { x: 0.167, y: 0.191 }, t: 50, s: [80, -0.364], to: [0, -0.044], ti: [0, 0.034] }, { i: { x: 0.833, y: 0.86 }, o: { x: 0.167, y: 0.196 }, t: 51, s: [80, -0.48], to: [0, -0.034], ti: [0, 0.024] }, { i: { x: 0.833, y: 0.867 }, o: { x: 0.167, y: 0.206 }, t: 52, s: [80, -0.566], to: [0, -0.024], ti: [0, 0.016] }, { i: { x: 0.833, y: 0.883 }, o: { x: 0.167, y: 0.224 }, t: 53, s: [80, -0.624], to: [0, -0.016], ti: [0, 8e-3] }, { i: { x: 0.833, y: 0.889 }, o: { x: 0.167, y: 0.288 }, t: 54, s: [80, -0.659], to: [0, -8e-3], ti: [0, 2e-3] }, { i: { x: 0.833, y: 0.612 }, o: { x: 0.167, y: 0.336 }, t: 55, s: [80, -0.673], to: [0, -2e-3], ti: [0, -3e-3] }, { i: { x: 0.833, y: 0.78 }, o: { x: 0.167, y: 0.106 }, t: 56, s: [80, -0.67], to: [0, 3e-3], ti: [0, -8e-3] }, { i: { x: 0.833, y: 0.809 }, o: { x: 0.167, y: 0.134 }, t: 57, s: [80, -0.653], to: [0, 8e-3], ti: [0, -0.011] }, { i: { x: 0.833, y: 0.82 }, o: { x: 0.167, y: 0.148 }, t: 58, s: [80, -0.625], to: [0, 0.011], ti: [0, -0.013] }, { i: { x: 0.833, y: 0.826 }, o: { x: 0.167, y: 0.155 }, t: 59, s: [80, -0.589], to: [0, 0.013], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.83 }, o: { x: 0.167, y: 0.16 }, t: 60, s: [80, -0.547], to: [0, 0.015], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.164 }, t: 61, s: [80, -0.501], to: [0, 0.015], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.835 }, o: { x: 0.167, y: 0.166 }, t: 62, s: [80, -0.454], to: [0, 0.016], ti: [0, -0.016] }, { i: { x: 0.833, y: 0.837 }, o: { x: 0.167, y: 0.169 }, t: 63, s: [80, -0.406], to: [0, 0.016], ti: [0, -0.015] }, { i: { x: 0.833, y: 0.839 }, o: { x: 0.167, y: 0.171 }, t: 64, s: [80, -0.36], to: [0, 0.015], ti: [0, -0.014] }, { i: { x: 0.833, y: 0.833 }, o: { x: 0.167, y: 0.173 }, t: 65, s: [80, -0.316], to: [0, 0.014], ti: [0, -7e-3] }, { t: 66, s: [80, -0.274] }], ix: 2 }, a: { a: 0, k: [80, -0.126], ix: 1 }, s: { a: 1, k: [{ i: { x: [0.667, 0.667], y: [1, 1] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 6, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.333, 0.333], y: [0, 0] }, t: 16, s: [110, 110] }, { i: { x: [0.833, 0.833], y: [0.851, 0.851] }, o: { x: [0.167, 0.167], y: [0.203, 0.203] }, t: 26, s: [100, 100] }, { i: { x: [0.833, 0.833], y: [0.853, 0.853] }, o: { x: [0.167, 0.167], y: [0.189, 0.189] }, t: 27, s: [99.193, 99.193] }, { i: { x: [0.833, 0.833], y: [0.857, 0.857] }, o: { x: [0.167, 0.167], y: [0.193, 0.193] }, t: 28, s: [98.553, 98.553] }, { i: { x: [0.833, 0.833], y: [0.863, 0.863] }, o: { x: [0.167, 0.167], y: [0.2, 0.2] }, t: 29, s: [98.068, 98.068] }, { i: { x: [0.833, 0.833], y: [0.873, 0.873] }, o: { x: [0.167, 0.167], y: [0.213, 0.213] }, t: 30, s: [97.722, 97.722] }, { i: { x: [0.833, 0.833], y: [0.899, 0.899] }, o: { x: [0.167, 0.167], y: [0.244, 0.244] }, t: 31, s: [97.5, 97.5] }, { i: { x: [0.833, 0.833], y: [1.087, 1.087] }, o: { x: [0.167, 0.167], y: [0.473, 0.473] }, t: 32, s: [97.385, 97.385] }, { i: { x: [0.833, 0.833], y: [0.734, 0.734] }, o: { x: [0.167, 0.167], y: [0.042, 0.042] }, t: 33, s: [97.36, 97.36] }, { i: { x: [0.833, 0.833], y: [0.798, 0.798] }, o: { x: [0.167, 0.167], y: [0.121, 0.121] }, t: 34, s: [97.41, 97.41] }, { i: { x: [0.833, 0.833], y: [0.815, 0.815] }, o: { x: [0.167, 0.167], y: [0.142, 0.142] }, t: 35, s: [97.521, 97.521] }, { i: { x: [0.833, 0.833], y: [0.823, 0.823] }, o: { x: [0.167, 0.167], y: [0.152, 0.152] }, t: 36, s: [97.677, 97.677] }, { i: { x: [0.833, 0.833], y: [0.828, 0.828] }, o: { x: [0.167, 0.167], y: [0.158, 0.158] }, t: 37, s: [97.867, 97.867] }, { i: { x: [0.833, 0.833], y: [0.832, 0.832] }, o: { x: [0.167, 0.167], y: [0.162, 0.162] }, t: 38, s: [98.079, 98.079] }, { i: { x: [0.833, 0.833], y: [0.834, 0.834] }, o: { x: [0.167, 0.167], y: [0.165, 0.165] }, t: 39, s: [98.304, 98.304] }, { i: { x: [0.833, 0.833], y: [0.836, 0.836] }, o: { x: [0.167, 0.167], y: [0.168, 0.168] }, t: 40, s: [98.534, 98.534] }, { i: { x: [0.833, 0.833], y: [0.838, 0.838] }, o: { x: [0.167, 0.167], y: [0.17, 0.17] }, t: 41, s: [98.761, 98.761] }, { i: { x: [0.833, 0.833], y: [0.84, 0.84] }, o: { x: [0.167, 0.167], y: [0.172, 0.172] }, t: 42, s: [98.98, 98.98] }, { i: { x: [0.833, 0.833], y: [0.841, 0.841] }, o: { x: [0.167, 0.167], y: [0.174, 0.174] }, t: 43, s: [99.186, 99.186] }, { i: { x: [0.833, 0.833], y: [0.843, 0.843] }, o: { x: [0.167, 0.167], y: [0.175, 0.175] }, t: 44, s: [99.377, 99.377] }, { i: { x: [0.833, 0.833], y: [0.844, 0.844] }, o: { x: [0.167, 0.167], y: [0.177, 0.177] }, t: 45, s: [99.55, 99.55] }, { i: { x: [0.833, 0.833], y: [0.846, 0.846] }, o: { x: [0.167, 0.167], y: [0.179, 0.179] }, t: 46, s: [99.703, 99.703] }, { i: { x: [0.833, 0.833], y: [0.847, 0.847] }, o: { x: [0.167, 0.167], y: [0.181, 0.181] }, t: 47, s: [99.837, 99.837] }, { i: { x: [0.833, 0.833], y: [0.849, 0.849] }, o: { x: [0.167, 0.167], y: [0.184, 0.184] }, t: 48, s: [99.95, 99.95] }, { i: { x: [0.833, 0.833], y: [0.852, 0.852] }, o: { x: [0.167, 0.167], y: [0.187, 0.187] }, t: 49, s: [100.045, 100.045] }, { i: { x: [0.833, 0.833], y: [0.855, 0.855] }, o: { x: [0.167, 0.167], y: [0.191, 0.191] }, t: 50, s: [100.121, 100.121] }, { i: { x: [0.833, 0.833], y: [0.86, 0.86] }, o: { x: [0.167, 0.167], y: [0.196, 0.196] }, t: 51, s: [100.18, 100.18] }, { i: { x: [0.833, 0.833], y: [0.867, 0.867] }, o: { x: [0.167, 0.167], y: [0.206, 0.206] }, t: 52, s: [100.224, 100.224] }, { i: { x: [0.833, 0.833], y: [0.883, 0.883] }, o: { x: [0.167, 0.167], y: [0.224, 0.224] }, t: 53, s: [100.253, 100.253] }, { i: { x: [0.833, 0.833], y: [0.935, 0.935] }, o: { x: [0.167, 0.167], y: [0.288, 0.288] }, t: 54, s: [100.271, 100.271] }, { i: { x: [0.833, 0.833], y: [0.453, 0.453] }, o: { x: [0.167, 0.167], y: [-0.301, -0.301] }, t: 55, s: [100.278, 100.278] }, { i: { x: [0.833, 0.833], y: [0.78, 0.78] }, o: { x: [0.167, 0.167], y: [0.098, 0.098] }, t: 56, s: [100.276, 100.276] }, { i: { x: [0.833, 0.833], y: [0.809, 0.809] }, o: { x: [0.167, 0.167], y: [0.134, 0.134] }, t: 57, s: [100.268, 100.268] }, { i: { x: [0.833, 0.833], y: [0.82, 0.82] }, o: { x: [0.167, 0.167], y: [0.148, 0.148] }, t: 58, s: [100.254, 100.254] }, { i: { x: [0.833, 0.833], y: [0.826, 0.826] }, o: { x: [0.167, 0.167], y: [0.155, 0.155] }, t: 59, s: [100.235, 100.235] }, { i: { x: [0.833, 0.833], y: [0.83, 0.83] }, o: { x: [0.167, 0.167], y: [0.16, 0.16] }, t: 60, s: [100.214, 100.214] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.164, 0.164] }, t: 61, s: [100.191, 100.191] }, { i: { x: [0.833, 0.833], y: [0.835, 0.835] }, o: { x: [0.167, 0.167], y: [0.166, 0.166] }, t: 62, s: [100.167, 100.167] }, { i: { x: [0.833, 0.833], y: [0.837, 0.837] }, o: { x: [0.167, 0.167], y: [0.169, 0.169] }, t: 63, s: [100.142, 100.142] }, { i: { x: [0.833, 0.833], y: [0.839, 0.839] }, o: { x: [0.167, 0.167], y: [0.171, 0.171] }, t: 64, s: [100.119, 100.119] }, { i: { x: [0.833, 0.833], y: [0.833, 0.833] }, o: { x: [0.167, 0.167], y: [0.173, 0.173] }, t: 65, s: [100.096, 100.096] }, { t: 66, s: [100.075, 100.075] }], ix: 3 }, r: { a: 0, k: 0, ix: 6 }, o: { a: 0, k: 100, ix: 7 }, sk: { a: 0, k: 0, ix: 4 }, sa: { a: 0, k: 0, ix: 5 }, nm: "Transform" }], nm: "Ellipse 1", np: 4, cix: 2, bm: 0, ix: 1, mn: "ADBE Vector Group", hd: false }], ip: 0, op: 80, st: 6, bm: 0 }], markers: [] };
@@ -27752,7 +28016,7 @@ var LoadingScreen = class extends Screen {
   renderComplete(parent2) {
     super.renderComplete(parent2);
     const animationNode = parent2.querySelector("#loading-animation");
-    import_lottie_web.default.loadAnimation({
+    import_lottie_web2.default.loadAnimation({
       container: animationNode,
       // the dom element that will contain the animation
       renderer: "svg",
@@ -30319,7 +30583,7 @@ function throttling(octokit, octokitOptions) {
   events.on("rate-limit", state.onRateLimit);
   events.on(
     "error",
-    (e4) => octokit.log.warn("Error in throttling-plugin limit handler", e4)
+    (e5) => octokit.log.warn("Error in throttling-plugin limit handler", e5)
   );
   state.retryLimiter.on("failed", async function(error, info) {
     const [state2, request2, options] = info.args;
@@ -31251,7 +31515,7 @@ var Github = class {
         ref: `heads/${this._user.login}`
       });
       return true;
-    } catch (e4) {
+    } catch (e5) {
       return false;
     }
   }
@@ -31331,7 +31595,7 @@ var Github = class {
     this._user = userResponse.data;
     try {
       await this._initGithub();
-    } catch (e4) {
+    } catch (e5) {
       this.octokit = void 0;
       return false;
     }
@@ -31489,6 +31753,13 @@ lit-html/directives/live.js:
   (**
    * @license
    * Copyright 2020 Google LLC
+   * SPDX-License-Identifier: BSD-3-Clause
+   *)
+
+lit-html/directives/unsafe-html.js:
+  (**
+   * @license
+   * Copyright 2017 Google LLC
    * SPDX-License-Identifier: BSD-3-Clause
    *)
 */

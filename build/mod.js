@@ -2608,22 +2608,23 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
         break;
     }
     typeData = await strapi.getTypeSpec(componentType, cache, useDefaultCache);
-    if (typeData) {
-      const properties = node.type === "COMPONENT" || node.type === "COMPONENT_SET" ? node.componentPropertyDefinitions : node.componentProperties;
-      if (Object.keys(properties).length) {
-        const componentProps = {};
-        for (let key in properties) {
-          key = properties[key].type === "VARIANT" ? `${key}#variant` : key;
-          const [description, propertyId] = key.split(/#(?!.*#)/);
-          componentProps[key] = {
-            description,
-            type: "componentProperty",
-            key,
-            propertyId
-          };
-        }
-        typeData.userData = Object.assign({}, typeData.userData, componentProps);
+  }
+  if (typeData && (node.type === "COMPONENT" || node.type === "INSTANCE" || node.type === "COMPONENT_SET")) {
+    const properties = node.type === "COMPONENT" || node.type === "COMPONENT_SET" ? node.componentPropertyDefinitions : node.componentProperties;
+    if (Object.keys(properties).length) {
+      const componentProps = {};
+      for (let key in properties) {
+        key = properties[key].type === "VARIANT" ? `${key}#variant` : key;
+        const [description, propertyId] = key.split(/#(?!.*#)/);
+        componentProps[key] = {
+          description,
+          type: "componentProperty",
+          key,
+          propertyId
+        };
       }
+      typeData.userData = Object.assign({}, typeData.userData, componentProps);
+      console.log("Component properties", componentProps);
     }
   }
   return typeData;
@@ -2738,7 +2739,6 @@ var Strapi = class {
       if (this.defaultCache.has(type)) {
         return Object.assign({}, this.defaultCache.get(type));
       }
-      return null;
     }
     const query = import_qs.default.stringify({
       filters: {
@@ -2772,6 +2772,7 @@ var Strapi = class {
       if (cache) {
         cache.set(type, spec);
       }
+      this.defaultCache.set(type, spec);
       return Object.assign({}, spec);
     }
     return null;
@@ -3080,7 +3081,7 @@ var PhenoUI = class {
     return await this.strapi.createCategory(data.collection, data.uid);
   }
   async getTypeList(data) {
-    if (!this.isLoggedIn()) {
+    if (!await this.isLoggedIn()) {
       return [];
     }
     try {
@@ -3100,6 +3101,39 @@ var PhenoUI = class {
       node.resize(data.width, data.height);
     } else {
       console.warn(`Node with id [${data.id}] could not be found to resize it`);
+    }
+  }
+  async replaceContentsWithSvg(data) {
+    const node = findNode(this.api, data.id);
+    if (node) {
+      const content = this.api.createNodeFromSvg(data.svg);
+      for (const child of node.children) {
+        child.remove();
+      }
+      for (const child of content.children) {
+        node.appendChild(child);
+      }
+      content.remove();
+    } else {
+      console.warn(`Node with id [${data.id}] could not be found to replace its contents with svg`);
+    }
+  }
+  async resizeUi(data) {
+    const minWidth = 240;
+    const maxWidth = 480;
+    const minHeight = 400;
+    const maxHeight = 640;
+    const width = Math.min(maxWidth, Math.max(minWidth, data.width || 0));
+    const height = Math.min(maxHeight, Math.max(minHeight, data.height || 0));
+    this.api.ui.resize(width, height);
+  }
+  async getLayerSize(id) {
+    const node = findNode(this.api, id);
+    if (node) {
+      return { width: node.width, height: node.height };
+    } else {
+      console.warn(`Node with id [${id}] could not be found to get its size`);
+      return { width: 0, height: 0 };
     }
   }
   async _callLayerScreenUpdate(node, useDefaultCache = false) {
