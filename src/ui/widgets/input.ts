@@ -303,7 +303,7 @@ export function booleanInput(data: InputData): TemplateResult {
                     id="${data.id}"
                     class="bool-input"
                     type="checkbox"
-                    ?checked="${Boolean(data.value)}"
+                    .checked="${Boolean(data.value)}"
                     @change="${function (this:HTMLInputElement, _e: Event) {
                         if (data.onUpdate) {
                             data.onUpdate(data.id, this.checked);
