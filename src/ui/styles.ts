@@ -449,12 +449,12 @@ export function getStyles(): TemplateResult[] {
             .lottie-play-bar {
                 flex-grow: 1;
                 height: 100%;
-                background-color: var(--figma-color-bg-tertiary);
+                background-color: var(--figma-color-bg-secondary);
             }
             
             .lottie-play-progress {
                 height: 100%;
-                background-color: var(--figma-color-bg-secondary);
+                background-color: var(--figma-color-bg-inverse);
             }
             
             .tab-container {
