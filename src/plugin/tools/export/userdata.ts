@@ -53,6 +53,12 @@ function _getVariantOptions(node: UINode, key: string) {
 
 export function getUserData(node: UINode, type: string, userData: UserDataSpec) {
     for (const key of Object.keys(userData)) {
+        // skip the layout object
+        // sorry future Dario, this is a hack and should probably be switched to use a dedicated field in strapi
+        if (key === '__layout__') {
+            continue;
+        }
+
         const value = getMetadata(node, `${type}_${key}`);
         // make a copy of the object to avoid overwriting the original one
         userData[key] = Object.assign({}, userData[key]);

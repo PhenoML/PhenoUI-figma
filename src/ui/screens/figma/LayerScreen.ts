@@ -67,48 +67,76 @@ export class LayerScreen extends Screen {
         return this.template;
     }
 
+    _makeRow(bus: MessageBus, layerId: string, layerType: string, name: string, content: UserType | {key: string, value: UserType}[]): TemplateResult {
+        if (Array.isArray(content)) {
+            return html`
+                <div class="row">
+                    ${content.map((item) => this._getUserField(bus, layerId, layerType, item.key, item.value))}
+                </div>
+            `;
+        }
+
+        switch (content.type) {
+            case 'group':
+                return html`
+                    <div class="group-container">
+                        <div class="row-full">
+                            ${this._getUserField(bus, layerId, layerType, name, content)}
+                        </div>
+                    </div>
+                `;
+
+            case 'lottie':
+                return this._getUserField(bus, layerId, layerType, name, content);
+
+            default:
+                return html`
+                    <div class="row">
+                        ${this._getUserField(bus, layerId, layerType, name, content)}
+                    </div>
+                `;
+        }
+    }
+
     getCustomDataFields(bus: MessageBus, data: LayerData): TemplateResult[] | typeof nothing {
         if (data.layer.typeData && data.layer.typeData.userData) {
             const userData = data.layer.typeData.userData;
             const rows: TemplateResult[] = [];
             const layerType = data.layer.widgetOverride || data.layer.widgetDefault;
             const keys = Object.keys(userData);
-            // keys.forEach(k => console.log(k));
-            keys.sort((a, b) => {
-                const aV = userData[a];
-                const bV = userData[b];
-                if (aV.type === 'group') {
-                    return 1;
-                } else if (bV.type === 'group') {
-                    return -1;
-                } else if (aV.type === 'componentProperty' && bV.type !== 'componentProperty') {
-                    return 1;
-                } else if (aV.type !== 'componentProperty' && bV.type === 'componentProperty') {
-                    return -1;
-                } else if (aV.type !== 'componentProperty' && bV.type !== 'componentProperty') {
-                    return 0;
-                } else {
-                    return (aV as any).propertyId > (bV as any).propertyId ? 1 : -1;
+
+            if ('__layout__' in userData) {
+                // handle custom layout
+                for (const row of userData['__layout__'] as any) {
+                    if (Array.isArray(row)) {
+                        const items = row.map((key: string) => ({key, value: userData[key]}));
+                        rows.push(this._makeRow(bus, data.layer.id, layerType, '', items));
+                    } else {
+                        rows.push(this._makeRow(bus, data.layer.id, layerType, row, userData[row]))
+                    }
                 }
-            });
-            // keys.forEach(k => console.log(k));
-            for (const key of keys) {
-                if (userData[key].type === 'group') {
-                    rows.push(html`
-                        <div class="group-container">
-                            <div class="row-full">
-                                ${this._getUserField(bus, data.layer.id, layerType, key, userData[key])}
-                            </div>
-                        </div>
-                    `);
-                } else if (userData[key].type === 'lottie') {
-                    rows.push(this._getUserField(bus, data.layer.id, layerType, key, userData[key]));
-                } else {
-                    rows.push(html`
-                        <div class="row">
-                            ${this._getUserField(bus, data.layer.id, layerType, key, userData[key])}
-                        </div>
-                    `);
+            } else {
+                // default layout
+                keys.sort((a, b) => {
+                    const aV = userData[a];
+                    const bV = userData[b];
+                    if (aV.type === 'group') {
+                        return 1;
+                    } else if (bV.type === 'group') {
+                        return -1;
+                    } else if (aV.type === 'componentProperty' && bV.type !== 'componentProperty') {
+                        return 1;
+                    } else if (aV.type !== 'componentProperty' && bV.type === 'componentProperty') {
+                        return -1;
+                    } else if (aV.type !== 'componentProperty' && bV.type !== 'componentProperty') {
+                        return 0;
+                    } else {
+                        return (aV as any).propertyId > (bV as any).propertyId ? 1 : -1;
+                    }
+                });
+
+                for (const key of keys) {
+                    rows.push(this._makeRow(bus, data.layer.id, layerType, key, userData[key]));
                 }
             }
             return rows;
