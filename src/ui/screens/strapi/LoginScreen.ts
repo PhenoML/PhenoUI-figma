@@ -21,10 +21,10 @@ export class LoginScreen extends Screen {
     updateTemplate(data: StrapiLoginData, bus: MessageBus): TemplateResult[] {
         const template = html`
             <section>
-                <div class="row centered">
+                <div class="row-full flex-center">
                     <div class="logo">${logoPhenoML}</div>
                 </div>
-                <div class="row">
+                <div class="row-full">
                     <div class="title">please connect to strapi</div>
                 </div>
             </section>

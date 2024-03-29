@@ -133,6 +133,10 @@ export function getStyles(): TemplateResult[] {
                 padding: 2px 8px;
             }
             
+            .flex-center {
+                justify-content: center;
+            }
+            
             .title {
                 text-align: center;
                 font-weight: 600;
