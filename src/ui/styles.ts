@@ -14,6 +14,8 @@ export function getStyles(): TemplateResult[] {
                 font-size: 11px;
                 overflow-x: hidden;
                 overflow-y: auto
+                --webkit-user-drag: none;
+                user-select: none;
             }
             
             body {
@@ -63,6 +65,10 @@ export function getStyles(): TemplateResult[] {
             option {
                 background-color: var(--figma-color-bg);
                 color: var(--figma-color-text);
+            }
+            
+            label {
+                user-select: none;
             }
             
             /*svg {*/
@@ -138,6 +144,7 @@ export function getStyles(): TemplateResult[] {
             }
             
             .label {
+                user-select: none;
                 font-weight: 600;
             }
             
@@ -391,6 +398,7 @@ export function getStyles(): TemplateResult[] {
                 color: var(--figma-color-text);
                 font-family: Inter, sans-serif;
                 font-size: 11px;
+                user-select: none;
             }
             
             .loading-animation {
