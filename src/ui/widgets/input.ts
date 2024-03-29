@@ -20,7 +20,7 @@ type InputData = {
     placeholder?: string,
     value?: UserDataValue,
     properties?: string[],
-    onUpdate?: (id: string, value: Exclude<UserDataValue, PropertyBinding>) => void,
+    onUpdate?: (id: string, value: Exclude<UserDataValue, PropertyBinding>, refreshLayerView: boolean) => void,
     onUpdatePropertyBinding?: (id: string, value: string) => void,
     provider?: AutocompleteProvider,
 }
@@ -144,7 +144,7 @@ function _input(type: string, data: InputData) {
                 @input="${data.provider ? handleInput : null}"
                 @change="${function (this: HTMLInputElement, _e: Event) {
                     if (data.onUpdate) {
-                        data.onUpdate(data.id, this.value);
+                        data.onUpdate(data.id, this.value, false);
                     }
                 }}"
                 @keypress="${function (this: HTMLInputElement, e: KeyboardEvent) {
@@ -190,7 +190,7 @@ export function groupInput(data: InputData): TemplateResult {
                     @click="${function (this: HTMLElement, _e: MouseEvent) {
                         if (data.onUpdate) {
                             props.push({ type:'string', description: '', value: '' });
-                            data.onUpdate(data.id, { type: 'group', properties: props });
+                            data.onUpdate(data.id, { type: 'group', properties: props }, true);
                         }
                     }}"
                 >
@@ -209,7 +209,7 @@ export function groupInput(data: InputData): TemplateResult {
                         onUpdate: (_, value: Exclude<UserDataValue, PropertyBinding>) => {
                             if (data.onUpdate) {
                                 p.description = value as string;
-                                data.onUpdate(data.id, { type: 'group', properties: props });
+                                data.onUpdate(data.id, { type: 'group', properties: props }, false);
                             }
                         },
                     
@@ -224,7 +224,7 @@ export function groupInput(data: InputData): TemplateResult {
                             onUpdate: (_, value: Exclude<UserDataValue, PropertyBinding>) => {
                                 if (data.onUpdate) {
                                     p.value = value as string;
-                                    data.onUpdate(data.id, { type: 'group', properties: props });
+                                    data.onUpdate(data.id, { type: 'group', properties: props }, false);
                                 }
                             },
                         })
@@ -234,7 +234,7 @@ export function groupInput(data: InputData): TemplateResult {
                         @click="${function (this: HTMLElement, _e: MouseEvent) {
                             if (data.onUpdate) {
                                 props.splice(props.indexOf(p), 1);
-                                data.onUpdate(data.id, { type: 'group', properties: props });
+                                data.onUpdate(data.id, { type: 'group', properties: props }, true);
                             }
                         }}"
                     >
@@ -260,7 +260,7 @@ export function boundedPropertyInput(data: InputData): TemplateResult {
                     class="input-icon unlink-icon"
                     @click="${function (this: HTMLElement, _e: MouseEvent) {
                         if (data.onUpdate) {
-                            data.onUpdate(data.id, (data.value as any)?.value ?? null);
+                            data.onUpdate(data.id, (data.value as any)?.value ?? null, true);
                         }
                     }}"
             >
@@ -282,7 +282,7 @@ export function selectInput(data: DropdownData): TemplateResult {
                 .value="${live(data.value)}"
                 @change="${function (this:HTMLInputElement, _e: Event) {
                     if (data.onUpdate) {
-                        data.onUpdate(data.id, this.value);
+                        data.onUpdate(data.id, this.value, false);
                     }
                 }}"
             >
@@ -306,7 +306,7 @@ export function booleanInput(data: InputData): TemplateResult {
                     .checked="${Boolean(data.value)}"
                     @change="${function (this:HTMLInputElement, _e: Event) {
                         if (data.onUpdate) {
-                            data.onUpdate(data.id, this.checked);
+                            data.onUpdate(data.id, this.checked, false);
                         }
                     }}"
                 / >

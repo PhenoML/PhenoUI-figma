@@ -146,14 +146,15 @@ export class LayerScreen extends Screen {
 
     _getUserField(bus: MessageBus, layerID: string, widgetType: string, name: string, data: UserType): TemplateResult {
         const key = `${widgetType}_${name}`;
-        const onUpdate = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>) => {
+        const onUpdate = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>, refreshLayerView: boolean) => {
             await bus.execute('updateMetadata', {
                 id: layerID,
                 key,
                 value
             });
-            // ugh... this should probably be handled differently
-            // if (data.value !== null && typeof data.value === 'object' && !Array.isArray(data.value)) {
+            // Future Dario: this introduces a delay in the UI update that makes it look like the data was not updated
+            // properly. Default to always updating the layer vew for now...
+            // if (refreshLayerView) {
                 await bus.execute('updateLayerView', undefined);
             // }
         };

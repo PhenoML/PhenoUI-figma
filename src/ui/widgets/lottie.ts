@@ -149,7 +149,7 @@ export function lottieInput(bus: MessageBus, data: LottieData): TemplateResult {
                         }
                     );
                     if (data.onUpdate) {
-                        data.onUpdate(data.id, content);
+                        data.onUpdate(data.id, content, true);
                     }
                 } catch (_) {
                     console.error('Invalid JSON loaded for lottie animation.');
