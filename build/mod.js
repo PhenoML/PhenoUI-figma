@@ -2385,20 +2385,33 @@ function _getVariantOptions(node, key) {
   }
   return [];
 }
-function getUserData(node, type, userData) {
+function getUserData(node, type, userData, parentType) {
   for (const key of Object.keys(userData)) {
-    const value = getMetadata(node, `${type}_${key}`);
+    if (key === "__layout__") {
+      continue;
+    }
+    const valueKey = parentType ? `${type}_${parentType}_${key}` : `${type}_${key}`;
+    const value = getMetadata(node, valueKey);
     userData[key] = Object.assign({}, userData[key]);
     const data = userData[key];
     switch (data.type) {
       case "number":
-        data.value = parseFloat(value);
+        if (typeof value === "string") {
+          if (Boolean(value)) {
+            data.value = parseFloat(value);
+          }
+        } else {
+          data.value = value;
+        }
         break;
       case "componentProperty":
         Object.assign(data, getComponentProperty(node, data.key));
         if (data.valueType === "VARIANT") {
           data.options = _getVariantOptions(node, data.key);
         }
+        break;
+      case "union":
+        data.fields = getUserData(node, type, data.fields, parentType ? `${parentType}_${key}` : key);
         break;
       default:
         data.value = value;

@@ -25408,7 +25408,7 @@ function _input(type, data2) {
                 @input="${data2.provider ? handleInput : null}"
                 @change="${function(_e) {
     if (data2.onUpdate) {
-      data2.onUpdate(data2.id, this.value);
+      data2.onUpdate(data2.id, this.value, false);
     }
   }}"
                 @keypress="${function(e5) {
@@ -25451,7 +25451,7 @@ function groupInput(data2) {
                     @click="${function(_e) {
     if (data2.onUpdate) {
       props.push({ type: "string", description: "", value: "" });
-      data2.onUpdate(data2.id, { type: "group", properties: props });
+      data2.onUpdate(data2.id, { type: "group", properties: props }, true);
     }
   }}"
                 >
@@ -25470,7 +25470,7 @@ function groupInput(data2) {
     onUpdate: (_2, value2) => {
       if (data2.onUpdate) {
         p2.description = value2;
-        data2.onUpdate(data2.id, { type: "group", properties: props });
+        data2.onUpdate(data2.id, { type: "group", properties: props }, false);
       }
     }
   })}
@@ -25484,7 +25484,7 @@ function groupInput(data2) {
       onUpdate: (_2, value2) => {
         if (data2.onUpdate) {
           p2.value = value2;
-          data2.onUpdate(data2.id, { type: "group", properties: props });
+          data2.onUpdate(data2.id, { type: "group", properties: props }, false);
         }
       }
     });
@@ -25494,7 +25494,7 @@ function groupInput(data2) {
                         @click="${function(_e) {
     if (data2.onUpdate) {
       props.splice(props.indexOf(p2), 1);
-      data2.onUpdate(data2.id, { type: "group", properties: props });
+      data2.onUpdate(data2.id, { type: "group", properties: props }, true);
     }
   }}"
                     >
@@ -25520,7 +25520,7 @@ function boundedPropertyInput(data2) {
                     @click="${function(_e) {
     var _a3, _b;
     if (data2.onUpdate) {
-      data2.onUpdate(data2.id, (_b = (_a3 = data2.value) == null ? void 0 : _a3.value) != null ? _b : null);
+      data2.onUpdate(data2.id, (_b = (_a3 = data2.value) == null ? void 0 : _a3.value) != null ? _b : null, true);
     }
   }}"
             >
@@ -25541,7 +25541,7 @@ function selectInput(data2) {
                 .value="${l2(data2.value)}"
                 @change="${function(_e) {
     if (data2.onUpdate) {
-      data2.onUpdate(data2.id, this.value);
+      data2.onUpdate(data2.id, this.value, false);
     }
   }}"
             >
@@ -25561,14 +25561,14 @@ function booleanInput(data2) {
                     id="${data2.id}"
                     class="bool-input"
                     type="checkbox"
-                    ?checked="${Boolean(data2.value)}"
+                    .checked="${Boolean(data2.value)}"
                     @change="${function(_e) {
     if (data2.onUpdate) {
-      data2.onUpdate(data2.id, this.checked);
+      data2.onUpdate(data2.id, this.checked, false);
     }
   }}"
                 / >
-                <label>${data2.label}</label>
+                <label for="${data2.id}">${data2.label}</label>
             </div>
             ${_makeLinkProperty(data2)}
         </div>
@@ -25862,20 +25862,69 @@ var o2 = e2(e3);
 
 // src/ui/widgets/lottie.ts
 function lottiePlayer(bus, data2) {
+  var _a3, _b, _c, _d;
   const container = document.createElement("div");
   container.classList.add("lottie-animation");
-  const animationData2 = JSON.parse(data2.value);
+  const animationData2 = data2.fields.data.value;
   const animation = import_lottie_web.default.loadAnimation({
     container,
     renderer: "svg",
     loop: true,
     autoplay: false,
-    animationData: animationData2
+    animationData: JSON.parse(animationData2)
   });
+  const animationTotalFrames = animation.totalFrames - 1;
+  let fromFrame = (_b = (_a3 = data2.fields.from.value) != null ? _a3 : data2.fields.from.default) != null ? _b : 0;
+  let toFrame = (_d = (_c = data2.fields.to.value) != null ? _c : data2.fields.to.default) != null ? _d : 0;
   const progress = document.createElement("div");
   progress.classList.add("lottie-play-progress");
+  progress.style.width = "0";
+  const inputRow = document.createElement("div");
+  inputRow.classList.add("row-full");
+  const inputTemplate = x`
+        ${numberInput({
+    id: `${data2.type}_${data2.name}_from`,
+    label: data2.fields.from.description,
+    icon: "F",
+    value: fromFrame,
+    onUpdate: async (id, value2) => {
+      const frame = Math.max(0, Math.min(animationTotalFrames, value2));
+      updateFrom(frame);
+      animation.goToAndStop(0, true);
+    }
+  })}
+
+        ${numberInput({
+    id: `${data2.type}_${data2.name}_to`,
+    label: data2.fields.to.description,
+    icon: "T",
+    value: toFrame,
+    onUpdate: async (id, value2) => {
+      const frame = Math.max(0, Math.min(animationTotalFrames, value2));
+      updateTo(frame);
+      animation.goToAndStop(frame - fromFrame, true);
+    }
+  })}
+    `;
+  j(inputTemplate, inputRow);
+  const fromInput = inputRow.querySelector(`#${data2.type}_${data2.name}_from`);
+  const from = document.createElement("div");
+  from.classList.add("lottie-play-from");
+  from.style.left = `${fromFrame / animationTotalFrames * 100}%`;
+  from.addEventListener("mousedown", handleMouseDown);
+  const fromArea = document.createElement("div");
+  fromArea.classList.add("lottie-play-from-area");
+  fromArea.style.width = from.style.left;
+  const toInput = inputRow.querySelector(`#${data2.type}_${data2.name}_to`);
+  const to = document.createElement("div");
+  to.classList.add("lottie-play-to");
+  to.style.left = `${toFrame / animationTotalFrames * 100}%`;
+  to.addEventListener("mousedown", handleMouseDown);
+  const toArea = document.createElement("div");
+  toArea.classList.add("lottie-play-to-area");
+  toArea.style.width = `${100 - parseFloat(to.style.left)}%`;
   animation.addEventListener("enterFrame", (e5) => {
-    progress.style.width = `${Math.round(animation.currentFrame / animation.totalFrames * 100)}%`;
+    progress.style.width = `${Math.round((animation.currentFrame + fromFrame) / animationTotalFrames * 100)}%`;
   });
   const controlButton = document.createElement("div");
   controlButton.classList.add("icon-button");
@@ -25890,27 +25939,97 @@ function lottiePlayer(bus, data2) {
     }
   });
   let barElement = null;
+  let fromElement = null;
+  let toElement = null;
   let mouseDown = false;
+  function percentToFrame(percent) {
+    return Math.floor(percent * animationTotalFrames);
+  }
   function getTargetFrame(el, evt) {
     const rect = el.getBoundingClientRect();
     const x2 = evt.clientX - rect.left;
     const percent = Math.min(1, Math.max(0, x2 / rect.width));
-    return Math.floor(percent * (animation.totalFrames - 1));
+    return percentToFrame(percent) - fromFrame;
   }
   function handleMouseDown(evt) {
+    if (this === from) {
+      fromElement = this;
+      return;
+    } else if (this === to) {
+      toElement = this;
+      return;
+    }
     mouseDown = true;
     barElement = this;
-    animation.goToAndStop(getTargetFrame(barElement, evt), true);
+    let targetFrame = getTargetFrame(barElement, evt);
+    if (!fromElement && !toElement) {
+      targetFrame = Math.max(0, Math.min(animation.totalFrames, targetFrame));
+    }
+    animation.goToAndStop(targetFrame, true);
     j(playButton, controlButton);
   }
   function handleMouseUp() {
     mouseDown = false;
     barElement = null;
+    fromElement = null;
+    toElement = null;
+  }
+  let timeout = null;
+  function updateSegment() {
+    animation.setSegment(fromFrame, toFrame);
+    fromInput.value = `${fromFrame}`;
+    toInput.value = `${toFrame}`;
+    if (timeout) {
+      window.clearTimeout(timeout);
+    }
+    timeout = window.setTimeout(() => {
+      if (data2.onUpdate) {
+        data2.onUpdate(data2.id, fromFrame, false, `${data2.type}_${data2.name}_from`);
+        data2.onUpdate(data2.id, toFrame, false, `${data2.type}_${data2.name}_to`);
+        timeout = null;
+      }
+    }, 500);
+  }
+  updateSegment();
+  animation.goToAndStop(0, true);
+  function updateFrom(value2) {
+    const frame = value2 != null ? value2 : percentToFrame(parseFloat(progress.style.width) / 100);
+    const percent = frame / animationTotalFrames * 100;
+    from.style.left = `${percent}%`;
+    fromArea.style.width = `${percent}%`;
+    fromFrame = frame;
+    if (fromFrame > toFrame) {
+      updateTo(value2);
+    } else {
+      updateSegment();
+    }
+  }
+  function updateTo(value2) {
+    const frame = value2 != null ? value2 : percentToFrame(parseFloat(progress.style.width) / 100);
+    const percent = frame / animationTotalFrames * 100;
+    to.style.left = `${percent}%`;
+    toArea.style.width = `${100 - percent}%`;
+    toFrame = frame;
+    if (toFrame < fromFrame) {
+      updateFrom(value2);
+    } else {
+      updateSegment();
+    }
   }
   function handleMouseMove(evt) {
     if (mouseDown && barElement) {
-      animation.goToAndStop(getTargetFrame(barElement, evt), true);
+      let targetFrame = getTargetFrame(barElement, evt);
+      if (!fromElement && !toElement) {
+        targetFrame = Math.max(0, Math.min(animation.totalFrames, targetFrame));
+      }
+      animation.goToAndStop(targetFrame, true);
       j(playButton, controlButton);
+      if (fromElement) {
+        updateFrom();
+      }
+      if (toElement) {
+        updateTo();
+      }
     }
   }
   document.addEventListener("mouseup", handleMouseUp);
@@ -25925,7 +26044,7 @@ function lottiePlayer(bus, data2) {
                     class="lottie-play-bar"
                     @mousedown=${handleMouseDown}
                 >
-                    ${progress}
+                    ${[fromArea, from, toArea, to, progress]}
                 </div>
                 <div 
                     class="icon-button"
@@ -25947,6 +26066,7 @@ function lottiePlayer(bus, data2) {
                     ${placeButton}
                 </div>
             </div>
+            ${inputRow}
         </div>
     `;
 }
@@ -25961,7 +26081,6 @@ function loadFile(file) {
   });
 }
 function lottieInput(bus, data2) {
-  console.log("lottieInput", data2);
   const fileInput = document.createElement("input");
   fileInput.type = "file";
   fileInput.accept = ".json";
@@ -25974,7 +26093,7 @@ function lottieInput(bus, data2) {
       if (content2) {
         try {
           const json = JSON.parse(content2);
-          import_lottie_web.default.loadAnimation(
+          const animation = import_lottie_web.default.loadAnimation(
             {
               container: document.createElement("div"),
               renderer: "svg",
@@ -25983,8 +26102,12 @@ function lottieInput(bus, data2) {
               animationData: json
             }
           );
+          const totalFrames = animation.totalFrames;
+          animation.destroy();
           if (data2.onUpdate) {
-            data2.onUpdate(data2.id, content2);
+            await data2.onUpdate(data2.id, 0, false, `${data2.type}_${data2.name}_from`);
+            await data2.onUpdate(data2.id, totalFrames - 1, false, `${data2.type}_${data2.name}_to`);
+            await data2.onUpdate(data2.id, content2, true, `${data2.type}_${data2.name}_data`);
           }
         } catch (_2) {
           console.error("Invalid JSON loaded for lottie animation.");
@@ -25993,7 +26116,7 @@ function lottieInput(bus, data2) {
     }
   });
   return x`
-        ${data2.value ? x`<div class="row-full">${lottiePlayer(bus, data2)}</div>` : null}
+        ${data2.fields.data.value ? x`<div class="row-full">${lottiePlayer(bus, data2)}</div>` : null}
         <div class="row-full">
             <div class="container padding-top-8">
                 ${button({
@@ -26009,7 +26132,6 @@ function lottieInput(bus, data2) {
 // src/ui/screens/figma/LayerScreen.ts
 var LayerScreen = class extends Screen {
   updateTemplate(data2, bus) {
-    console.log(data2);
     const template = x`
             ${getHeader(data2.layer.name, 0 /* figma */, bus)}
             <section>
@@ -26057,46 +26179,68 @@ var LayerScreen = class extends Screen {
     this.template = [template];
     return this.template;
   }
+  _makeRow(bus, layerId, layerType, name2, content2) {
+    if (Array.isArray(content2)) {
+      return x`
+                <div class="row">
+                    ${content2.map((item) => this._getUserField(bus, layerId, layerType, item.key, item.value))}
+                </div>
+            `;
+    }
+    switch (content2.type) {
+      case "group":
+        return x`
+                    <div class="group-container">
+                        <div class="row-full">
+                            ${this._getUserField(bus, layerId, layerType, name2, content2)}
+                        </div>
+                    </div>
+                `;
+      case "union":
+        return this._getUserField(bus, layerId, layerType, name2, content2);
+      default:
+        return x`
+                    <div class="row">
+                        ${this._getUserField(bus, layerId, layerType, name2, content2)}
+                    </div>
+                `;
+    }
+  }
   getCustomDataFields(bus, data2) {
     if (data2.layer.typeData && data2.layer.typeData.userData) {
       const userData = data2.layer.typeData.userData;
       const rows = [];
       const layerType = data2.layer.widgetOverride || data2.layer.widgetDefault;
       const keys = Object.keys(userData);
-      keys.sort((a3, b2) => {
-        const aV = userData[a3];
-        const bV = userData[b2];
-        if (aV.type === "group") {
-          return 1;
-        } else if (bV.type === "group") {
-          return -1;
-        } else if (aV.type === "componentProperty" && bV.type !== "componentProperty") {
-          return 1;
-        } else if (aV.type !== "componentProperty" && bV.type === "componentProperty") {
-          return -1;
-        } else if (aV.type !== "componentProperty" && bV.type !== "componentProperty") {
-          return 0;
-        } else {
-          return aV.propertyId > bV.propertyId ? 1 : -1;
+      if ("__layout__" in userData) {
+        for (const row of userData["__layout__"]) {
+          if (Array.isArray(row)) {
+            const items = row.map((key2) => ({ key: key2, value: userData[key2] }));
+            rows.push(this._makeRow(bus, data2.layer.id, layerType, "", items));
+          } else {
+            rows.push(this._makeRow(bus, data2.layer.id, layerType, row, userData[row]));
+          }
         }
-      });
-      for (const key2 of keys) {
-        if (userData[key2].type === "group") {
-          rows.push(x`
-                        <div class="group-container">
-                            <div class="row-full">
-                                ${this._getUserField(bus, data2.layer.id, layerType, key2, userData[key2])}
-                            </div>
-                        </div>
-                    `);
-        } else if (userData[key2].type === "lottie") {
-          rows.push(this._getUserField(bus, data2.layer.id, layerType, key2, userData[key2]));
-        } else {
-          rows.push(x`
-                        <div class="row">
-                            ${this._getUserField(bus, data2.layer.id, layerType, key2, userData[key2])}
-                        </div>
-                    `);
+      } else {
+        keys.sort((a3, b2) => {
+          const aV = userData[a3];
+          const bV = userData[b2];
+          if (aV.type === "group") {
+            return 1;
+          } else if (bV.type === "group") {
+            return -1;
+          } else if (aV.type === "componentProperty" && bV.type !== "componentProperty") {
+            return 1;
+          } else if (aV.type !== "componentProperty" && bV.type === "componentProperty") {
+            return -1;
+          } else if (aV.type !== "componentProperty" && bV.type !== "componentProperty") {
+            return 0;
+          } else {
+            return aV.propertyId > bV.propertyId ? 1 : -1;
+          }
+        });
+        for (const key2 of keys) {
+          rows.push(this._makeRow(bus, data2.layer.id, layerType, key2, userData[key2]));
         }
       }
       return rows;
@@ -26106,13 +26250,15 @@ var LayerScreen = class extends Screen {
   _getUserField(bus, layerID, widgetType, name2, data2) {
     var _a3, _b, _c, _d;
     const key2 = `${widgetType}_${name2}`;
-    const onUpdate = async (_id, value2) => {
+    const onUpdate = async (_id, value2, refreshLayerView, keyOverride) => {
       await bus.execute("updateMetadata", {
         id: layerID,
-        key: key2,
+        key: keyOverride != null ? keyOverride : key2,
         value: value2
       });
-      await bus.execute("updateLayerView", void 0);
+      if (refreshLayerView) {
+        await bus.execute("updateLayerView", void 0);
+      }
     };
     const onUpdateComponentProperty = async (_id, value2) => {
       await bus.execute("updateComponentProperty", {
@@ -26132,15 +26278,17 @@ var LayerScreen = class extends Screen {
       });
       await bus.execute("updateLayerView", void 0);
     };
-    switch (data2.type) {
+    const type = data2.type === "union" ? data2.handler : data2.type;
+    const anyData = data2;
+    switch (type) {
       case "string": {
         const inputData = {
           id: key2,
           label: data2.description,
           icon: name2.charAt(0).toUpperCase(),
-          placeholder: data2.default || data2.description,
+          placeholder: anyData.default || data2.description,
           value: data2.value,
-          properties: data2.properties,
+          properties: anyData.properties,
           onUpdate,
           onUpdatePropertyBinding
         };
@@ -26155,8 +26303,8 @@ var LayerScreen = class extends Screen {
           label: data2.description,
           icon: name2.charAt(0).toUpperCase(),
           placeholder: data2.description,
-          value: (_b = (_a3 = data2.value) != null ? _a3 : data2.default) != null ? _b : void 0,
-          properties: data2.properties,
+          value: (_b = (_a3 = data2.value) != null ? _a3 : anyData.default) != null ? _b : void 0,
+          properties: anyData.properties,
           onUpdate,
           onUpdatePropertyBinding
         };
@@ -26170,7 +26318,7 @@ var LayerScreen = class extends Screen {
           id: key2,
           label: data2.description,
           icon: name2.charAt(0).toUpperCase(),
-          value: (_d = (_c = data2.value) != null ? _c : data2.default) != null ? _d : void 0,
+          value: (_d = (_c = data2.value) != null ? _c : anyData.default) != null ? _d : void 0,
           onUpdate
         });
       case "select":
@@ -26178,8 +26326,8 @@ var LayerScreen = class extends Screen {
           id: key2,
           label: data2.description,
           icon: name2.charAt(0).toUpperCase(),
-          value: data2.value || data2.default || void 0,
-          options: data2.options,
+          value: data2.value || anyData.default || void 0,
+          options: anyData.options,
           onUpdate
         });
       case "group":
@@ -26188,12 +26336,12 @@ var LayerScreen = class extends Screen {
           name: name2,
           label: data2.description,
           icon: "{;}",
-          value: data2.value || { type: "group", properties: data2.default || [] },
+          value: data2.value || { type: "group", properties: anyData.default || [] },
           onUpdate,
           onUpdatePropertyBinding
         });
       case "componentProperty":
-        if (data2.valueType === "TEXT") {
+        if (anyData.valueType === "TEXT") {
           return textInput({
             id: key2,
             label: data2.description,
@@ -26202,7 +26350,7 @@ var LayerScreen = class extends Screen {
             value: data2.value,
             onUpdate: onUpdateComponentProperty
           });
-        } else if (data2.valueType === "BOOLEAN") {
+        } else if (anyData.valueType === "BOOLEAN") {
           return booleanInput({
             id: key2,
             label: data2.description,
@@ -26211,22 +26359,24 @@ var LayerScreen = class extends Screen {
             value: data2.value,
             onUpdate: onUpdateComponentProperty
           });
-        } else if (data2.valueType === "VARIANT") {
+        } else if (anyData.valueType === "VARIANT") {
           return selectInput({
             id: key2,
             label: data2.description,
             icon: name2.charAt(0).toUpperCase(),
-            value: data2.value || data2.default || void 0,
-            options: data2.options,
+            value: data2.value || anyData.default || void 0,
+            options: anyData.options,
             onUpdate: onUpdateComponentProperty
           });
         }
-        return x`<div class="error-description">ERROR: Unknown component [${data2.type}] valueType [${data2.valueType}]</div>`;
+        return x`<div class="error-description">ERROR: Unknown component [${data2.type}] valueType [${anyData.valueType}]</div>`;
       case "lottie":
         return lottieInput(bus, {
           id: layerID,
+          name: name2,
+          type: widgetType,
           description: data2.description,
-          value: data2.value,
+          fields: anyData.fields,
           onUpdate
         });
       default:
@@ -26411,6 +26561,8 @@ function getStyles() {
                 font-size: 11px;
                 overflow-x: hidden;
                 overflow-y: auto
+                --webkit-user-drag: none;
+                user-select: none;
             }
             
             body {
@@ -26460,6 +26612,10 @@ function getStyles() {
             option {
                 background-color: var(--figma-color-bg);
                 color: var(--figma-color-text);
+            }
+            
+            label {
+                user-select: none;
             }
             
             /*svg {*/
@@ -26513,7 +26669,8 @@ function getStyles() {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                padding: 2px 32px 2px 8px;
+                padding: 0 32px 0 8px;
+                margin: 2px 0;
             }
             
             .row-full {
@@ -26521,7 +26678,12 @@ function getStyles() {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                padding: 2px 8px;
+                padding: 0 8px;
+                margin: 2px 0;
+            }
+            
+            .flex-center {
+                justify-content: center;
             }
             
             .title {
@@ -26535,6 +26697,7 @@ function getStyles() {
             }
             
             .label {
+                user-select: none;
                 font-weight: 600;
             }
             
@@ -26550,9 +26713,9 @@ function getStyles() {
             }
             
             .input-container {
-                min-height: 32px;
+                min-height: 30px;
                 position: relative;
-                border: 1px solid transparent;
+                outline: 1px solid transparent;
                 display: flex;
                 flex-grow: 1;
                 align-items: center;
@@ -26606,6 +26769,13 @@ function getStyles() {
             
             .text-input::placeholder {
                 color: var(--figma-color-text-disabled);
+            }
+
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                /* display: none; <- Crashes Chrome on hover */
+                -webkit-appearance: none;
+                margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
             }
             
             .autocomplete-container {
@@ -26788,6 +26958,7 @@ function getStyles() {
                 color: var(--figma-color-text);
                 font-family: Inter, sans-serif;
                 font-size: 11px;
+                user-select: none;
             }
             
             .loading-animation {
@@ -26844,14 +27015,66 @@ function getStyles() {
             }
             
             .lottie-play-bar {
+                position: relative;
                 flex-grow: 1;
                 height: 100%;
-                background-color: var(--figma-color-bg-tertiary);
+                background-color: var(--figma-color-bg-secondary);
             }
             
             .lottie-play-progress {
                 height: 100%;
-                background-color: var(--figma-color-bg-secondary);
+                background-color: var(--figma-color-bg-selected);
+            }
+            
+            .lottie-play-from {
+                position: absolute;
+                top: 0;
+                height: 100%;
+                width: 3px;
+                border-right: 1px solid var(--figma-color-bg-component);
+                background-color: var(--figma-color-icon);
+                transform: translate(-100%, 0);
+                cursor: ew-resize;
+            }
+            
+            .lottie-play-from-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                background: repeating-linear-gradient(
+                        45deg,
+                        var(--figma-color-bg),
+                        var(--figma-color-bg) 10px,
+                        var(--figma-color-bg-component-tertiary) 10px,
+                        var(--figma-color-bg-component-tertiary) 20px
+                );
+            }
+
+            .lottie-play-to-area {
+                position: absolute;
+                right: 0;
+                top: 0;
+                height: 100%;
+                background: repeating-linear-gradient(
+                        45deg,
+                        var(--figma-color-bg),
+                        var(--figma-color-bg) 10px,
+                        var(--figma-color-bg-component-tertiary) 10px,
+                        var(--figma-color-bg-component-tertiary) 20px
+                );
+                transform: rotate(180deg);
+            }
+            
+
+            .lottie-play-to {
+                position: absolute;
+                top: 0;
+                height: 100%;
+                width: 3px;
+                border-left: 1px solid var(--figma-color-bg-component);
+                background-color: var(--figma-color-icon);
+                cursor: ew-resize;
             }
             
             .tab-container {
@@ -27834,10 +28057,10 @@ var LoginScreen = class extends Screen {
   updateTemplate(data2, bus) {
     const template = x`
             <section>
-                <div class="row centered">
+                <div class="row-full flex-center">
                     <div class="logo">${logoPhenoML}</div>
                 </div>
-                <div class="row">
+                <div class="row-full">
                     <div class="title">please connect to strapi</div>
                 </div>
             </section>
