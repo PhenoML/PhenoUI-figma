@@ -16,7 +16,6 @@ import {lottieInput} from '../../widgets/lottie';
 
 export class LayerScreen extends Screen {
     updateTemplate(data: LayerData, bus: MessageBus): TemplateResult[] {
-        console.log(data);
         const template = html`
             ${getHeader(data.layer.name, AvailableTabs.figma, bus)}
             <section>
@@ -86,7 +85,7 @@ export class LayerScreen extends Screen {
                     </div>
                 `;
 
-            case 'lottie':
+            case 'union':
                 return this._getUserField(bus, layerId, layerType, name, content);
 
             default:
@@ -146,11 +145,11 @@ export class LayerScreen extends Screen {
 
     _getUserField(bus: MessageBus, layerID: string, widgetType: string, name: string, data: UserType): TemplateResult {
         const key = `${widgetType}_${name}`;
-        const onUpdate = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>, refreshLayerView: boolean) => {
+        const onUpdate = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>, refreshLayerView: boolean, keyOverride?: string) => {
             await bus.execute('updateMetadata', {
                 id: layerID,
-                key,
-                value
+                key: keyOverride ?? key,
+                value,
             });
             // Future Dario: this introduces a delay in the UI update that makes it look like the data was not updated
             // properly.
@@ -179,15 +178,18 @@ export class LayerScreen extends Screen {
             await bus.execute('updateLayerView', undefined);
         };
 
-        switch (data.type) {
+        const type = data.type === 'union' ? data.handler : data.type;
+        const anyData = data as any; // stupid, stupid, stupid typescript
+
+        switch (type) {
             case 'string': {
                 const inputData = {
                     id: key,
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
-                    placeholder: data.default as string || data.description,
+                    placeholder: anyData.default as string || data.description,
                     value: data.value,
-                    properties: data.properties,
+                    properties: anyData.properties,
                     onUpdate,
                     onUpdatePropertyBinding,
                 };
@@ -203,8 +205,8 @@ export class LayerScreen extends Screen {
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
                     placeholder: data.description,
-                    value: data.value ?? data.default ?? undefined,
-                    properties: data.properties,
+                    value: data.value ?? anyData.default ?? undefined,
+                    properties: anyData.properties,
                     onUpdate,
                     onUpdatePropertyBinding,
                 }
@@ -219,7 +221,7 @@ export class LayerScreen extends Screen {
                     id: key,
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
-                    value: data.value ?? data.default ?? undefined,
+                    value: data.value ?? anyData.default ?? undefined,
                     onUpdate,
                 });
 
@@ -228,8 +230,8 @@ export class LayerScreen extends Screen {
                     id: key,
                     label: data.description,
                     icon: name.charAt(0).toUpperCase(),
-                    value: data.value || data.default || undefined,
-                    options: data.options,
+                    value: data.value || anyData.default || undefined,
+                    options: anyData.options,
                     onUpdate,
                 });
 
@@ -239,13 +241,13 @@ export class LayerScreen extends Screen {
                     name: name,
                     label: data.description,
                     icon: '{;}',
-                    value: data.value || { type: 'group', properties: data.default || [] },
+                    value: data.value || { type: 'group', properties: anyData.default || [] },
                     onUpdate,
                     onUpdatePropertyBinding,
                 });
 
             case 'componentProperty':
-                if (data.valueType === 'TEXT') {
+                if (anyData.valueType === 'TEXT') {
                     return textInput({
                         id: key,
                         label: data.description,
@@ -254,7 +256,7 @@ export class LayerScreen extends Screen {
                         value: data.value,
                         onUpdate: onUpdateComponentProperty,
                     });
-                } else if (data.valueType === 'BOOLEAN') {
+                } else if (anyData.valueType === 'BOOLEAN') {
                     return booleanInput({
                         id: key,
                         label: data.description,
@@ -263,23 +265,25 @@ export class LayerScreen extends Screen {
                         value: data.value,
                         onUpdate: onUpdateComponentProperty,
                     });
-                } else if (data.valueType === 'VARIANT') {
+                } else if (anyData.valueType === 'VARIANT') {
                     return selectInput({
                         id: key,
                         label: data.description,
                         icon: name.charAt(0).toUpperCase(),
-                        value: data.value || data.default || undefined,
-                        options: data.options as [],
+                        value: data.value || anyData.default || undefined,
+                        options: anyData.options as [],
                         onUpdate: onUpdateComponentProperty,
                     });
                 }
-                return html`<div class="error-description">ERROR: Unknown component [${data.type}] valueType [${data.valueType}]</div>`;
+                return html`<div class="error-description">ERROR: Unknown component [${data.type}] valueType [${anyData.valueType}]</div>`;
 
             case 'lottie':
                 return lottieInput(bus, {
                     id: layerID,
+                    name,
+                    type: widgetType,
                     description: data.description,
-                    value: data.value,
+                    fields: anyData.fields,
                     onUpdate,
                 });
 

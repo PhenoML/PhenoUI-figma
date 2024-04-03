@@ -5,31 +5,41 @@ import {pauseButton, placeButton, playButton} from './icons';
 import {MessageBus} from '../../shared/MessageBus';
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import {button} from './button';
-import {PropertyBinding, UserDataValue} from '../../plugin/Strapi';
+import {PropertyBinding, UserDataValue, UserType} from '../../plugin/Strapi';
+
+type OfUnion<T extends {type: string}> = {
+    [P in T['type']]: Extract<T, {type: P}>
+}
 
 type LottieData = {
     id: string,
+    name: string,
+    type: string,
     description: string,
-    value: string | null,
-    onUpdate?: (id: string, value: Exclude<UserDataValue, PropertyBinding>, refreshLayerView: boolean) => void,
+    fields: {
+        data: Extract<UserType, { type: 'string' }>,
+        from: Extract<UserType, { type: 'number' }>,
+        to: Extract<UserType, { type: 'number' }>,
+    },
+    onUpdate?: (id: string, value: Exclude<UserDataValue, PropertyBinding>, refreshLayerView: boolean, keyOverride: string) => Promise<void>,
 }
 
 function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     const container = document.createElement('div');
     container.classList.add('lottie-animation');
 
-    const animationData = JSON.parse(data.value!);
+    const animationData = data.fields.data.value! as string;
     console.log(animationData);
     const animation = lottie.loadAnimation({
         container: container,
         renderer: 'svg',
         loop: true,
         autoplay: false,
-        animationData: JSON.parse(animationData.animation),
+        animationData: JSON.parse(animationData),
     });
     const animationTotalFrames = animation.totalFrames - 1;
-    let fromFrame = animationData.from;
-    let toFrame = animationData.to;
+    let fromFrame = data.fields.from.value ?? data.fields.from.default ?? 0;
+    let toFrame = data.fields.to.value ?? data.fields.to.default ?? 0;
 
     const progress = document.createElement('div');
     progress.classList.add('lottie-play-progress');
@@ -125,12 +135,8 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
 
         timeout = window.setTimeout(() => {
             if (data.onUpdate) {
-                const newData = {
-                    from: fromFrame,
-                    to: toFrame,
-                    animation: animationData.animation,
-                }
-                data.onUpdate(data.id, JSON.stringify(newData), false);
+                data.onUpdate(data.id, fromFrame, false, `${data.type}_${data.name}_from`);
+                data.onUpdate(data.id, toFrame, false, `${data.type}_${data.name}_to`);
                 timeout = null;
             }
         }, 500);
@@ -253,12 +259,9 @@ export function lottieInput(bus: MessageBus, data: LottieData): TemplateResult {
                     const totalFrames = animation.totalFrames;
                     animation.destroy();
                     if (data.onUpdate) {
-                        const animationData = {
-                            from: 0,
-                            to: totalFrames - 1,
-                            animation: content,
-                        }
-                        data.onUpdate(data.id, JSON.stringify(animationData), true);
+                        await data.onUpdate(data.id, 0, false, `${data.type}_${data.name}_from`);
+                        await data.onUpdate(data.id, totalFrames - 1, false, `${data.type}_${data.name}_to`);
+                        await data.onUpdate(data.id, content, true, `${data.type}_${data.name}_data`);
                     }
                 } catch (_) {
                     console.error('Invalid JSON loaded for lottie animation.');
@@ -268,7 +271,7 @@ export function lottieInput(bus: MessageBus, data: LottieData): TemplateResult {
     });
 
     return html`
-        ${data.value ? html`<div class="row-full">${lottiePlayer(bus, data)}</div>` : null}
+        ${data.fields.data.value ? html`<div class="row-full">${lottiePlayer(bus, data)}</div>` : null}
         <div class="row-full">
             <div class="container padding-top-8">
                 ${button({
