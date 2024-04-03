@@ -75,7 +75,7 @@ export type SetTabData = {
 
 export type SetLocalData = {
     key: string,
-    value: Exclude<UserDataValue, PropertyBinding>,
+    value: string | number | boolean,
 }
 
 export type ResizeLayerData = {
