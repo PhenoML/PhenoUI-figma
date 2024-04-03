@@ -215,14 +215,24 @@ function _getUserDataExport(node: UINode, type: string, userData: UserDataSpec |
     const withValues = getUserData(node, type, userData);
     const result: { [key: string]: any } = {};
     for (const key of Object.keys(userData)) {
-        result[key] = withValues[key].value;
+        const entry = withValues[key];
+        result[key] = entry.value;
         if (result[key] === '' || result[key] === null || result[key] === undefined) {
-            result[key] = withValues[key].default;
-            if (withValues[key].type === 'group') {
+            result[key] = entry.default;
+            if (entry.type === 'group') {
                 result[key] = {
                     type: 'group',
                     properties: result[key] || [],
                 }
+            } else if (entry.type === 'union') {
+                const fields = entry.fields;
+                const fieldKeys = Object.keys(fields);
+                const fieldValues = fieldKeys.map(k => ({ [k]: fields[k].value ?? fields[k].default }));
+                result[key] = {
+                    type: 'union',
+                    fields: Object.assign({}, ...fieldValues),
+                }
+                console.log('Union', result[key]);
             }
         }
     }
