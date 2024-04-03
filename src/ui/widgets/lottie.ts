@@ -11,7 +11,7 @@ type LottieData = {
     id: string,
     description: string,
     value: string | null,
-    onUpdate?: (id: string, value: Exclude<UserDataValue, PropertyBinding>) => void,
+    onUpdate?: (id: string, value: Exclude<UserDataValue, PropertyBinding>, refreshLayerView: boolean) => void,
 }
 
 function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
@@ -19,19 +19,42 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     container.classList.add('lottie-animation');
 
     const animationData = JSON.parse(data.value!);
+    console.log(animationData);
     const animation = lottie.loadAnimation({
         container: container,
         renderer: 'svg',
         loop: true,
         autoplay: false,
-        animationData: animationData,
+        animationData: JSON.parse(animationData.animation),
     });
+    const animationTotalFrames = animation.totalFrames - 1;
+    let fromFrame = animationData.from;
+    let toFrame = animationData.to;
 
     const progress = document.createElement('div');
     progress.classList.add('lottie-play-progress');
+    progress.style.width = '0';
+
+    const from = document.createElement('div');
+    from.classList.add('lottie-play-from');
+    from.style.left = `${(fromFrame / animationTotalFrames) * 100}%`;
+    from.addEventListener('mousedown', handleMouseDown);
+
+    const fromArea = document.createElement('div');
+    fromArea.classList.add('lottie-play-from-area');
+    fromArea.style.width = from.style.left;
+
+    const to = document.createElement('div');
+    to.classList.add('lottie-play-to');
+    to.style.left = `${(toFrame / animationTotalFrames) * 100}%`;
+    to.addEventListener('mousedown', handleMouseDown);
+
+    const toArea = document.createElement('div');
+    toArea.classList.add('lottie-play-to-area');
+    toArea.style.width = `${100 - parseFloat(to.style.left)}%`;
 
     animation.addEventListener('enterFrame', (e) => {
-        progress.style.width = `${Math.round((animation.currentFrame / animation.totalFrames) * 100)}%`;
+        progress.style.width = `${Math.round(((animation.currentFrame + fromFrame) / animationTotalFrames) * 100)}%`;
     });
 
     const controlButton = document.createElement('div');
@@ -49,31 +72,110 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     });
 
     let barElement: HTMLElement | null = null;
+    let fromElement: HTMLElement | null = null;
+    let toElement: HTMLElement | null = null;
     let mouseDown = false;
 
+    function percentToFrame(percent: number): number {
+        return Math.floor(percent * animationTotalFrames);
+    }
     function getTargetFrame(el: HTMLElement, evt: MouseEvent): number {
         const rect = el.getBoundingClientRect();
         const x = evt.clientX - rect.left;
         const percent = Math.min(1.0, Math.max(0.0, x / rect.width));
-        return Math.floor(percent * (animation.totalFrames - 1));
+        return percentToFrame(percent) - fromFrame;
     }
 
     function handleMouseDown(this: HTMLElement, evt: MouseEvent) {
+        if (this === from) {
+            fromElement = this;
+            return;
+        } else if (this === to) {
+            toElement = this;
+            return;
+        }
+
         mouseDown = true;
         barElement = this;
-        animation.goToAndStop(getTargetFrame(barElement, evt), true);
+
+        let targetFrame = getTargetFrame(barElement, evt);
+        if (!fromElement && !toElement) {
+            targetFrame = Math.max(0, Math.min(animation.totalFrames, targetFrame));
+        }
+        animation.goToAndStop(targetFrame, true);
         render(playButton, controlButton);
     }
 
     function handleMouseUp() {
         mouseDown = false;
         barElement = null;
+        fromElement = null;
+        toElement = null;
+    }
+
+    // debounce calling `data.onUpdate` to avoid clogging the plugin bridge
+    let timeout: number | null = null;
+    function updateSegment() {
+        fromFrame = percentToFrame(parseFloat(from.style.left) / 100);
+        toFrame = percentToFrame(parseFloat(to.style.left) / 100);
+        animation.setSegment(fromFrame, toFrame);
+        if (timeout) {
+            window.clearTimeout(timeout);
+        }
+
+        timeout = window.setTimeout(() => {
+            if (data.onUpdate) {
+                const newData = {
+                    from: fromFrame,
+                    to: toFrame,
+                    animation: animationData.animation,
+                }
+                data.onUpdate(data.id, JSON.stringify(newData), false);
+                timeout = null;
+            }
+        }, 500);
+    }
+
+    // update the segment once to initialize the animation to the constraints in the data
+    updateSegment();
+    animation.goToAndStop(0, true);
+
+    function updateFrom() {
+        from.style.left = progress.style.width;
+        fromArea.style.width = progress.style.width;
+        if (parseFloat(from.style.left) > parseFloat(to.style.left)) {
+            updateTo();
+        } else {
+            updateSegment();
+        }
+    }
+
+    function updateTo() {
+        to.style.left = progress.style.width;
+        toArea.style.width = `${100 - parseFloat(progress.style.width)}%`;
+        if (parseFloat(to.style.left) < parseFloat(from.style.left)) {
+            updateFrom();
+        } else {
+            updateSegment();
+        }
     }
 
     function handleMouseMove(evt: MouseEvent) {
         if (mouseDown && barElement) {
-            animation.goToAndStop(getTargetFrame(barElement, evt), true);
+            let targetFrame = getTargetFrame(barElement, evt);
+            if (!fromElement && !toElement) {
+                targetFrame = Math.max(0, Math.min(animation.totalFrames, targetFrame));
+            }
+            animation.goToAndStop(targetFrame, true);
             render(playButton, controlButton);
+
+            if (fromElement) {
+                updateFrom();
+            }
+
+            if (toElement) {
+                updateTo();
+            }
         }
     }
 
@@ -90,7 +192,7 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
                     class="lottie-play-bar"
                     @mousedown=${handleMouseDown}
                 >
-                    ${progress}
+                    ${[fromArea, from, toArea, to, progress]}
                 </div>
                 <div 
                     class="icon-button"
@@ -139,7 +241,7 @@ export function lottieInput(bus: MessageBus, data: LottieData): TemplateResult {
             if (content) {
                 try {
                     const json = JSON.parse(content);
-                    lottie.loadAnimation(
+                    const animation = lottie.loadAnimation(
                         {
                             container: document.createElement('div'),
                             renderer: 'svg',
@@ -148,8 +250,15 @@ export function lottieInput(bus: MessageBus, data: LottieData): TemplateResult {
                             animationData: json,
                         }
                     );
+                    const totalFrames = animation.totalFrames;
+                    animation.destroy();
                     if (data.onUpdate) {
-                        data.onUpdate(data.id, content, true);
+                        const animationData = {
+                            from: 0,
+                            to: totalFrames - 1,
+                            animation: content,
+                        }
+                        data.onUpdate(data.id, JSON.stringify(animationData), true);
                     }
                 } catch (_) {
                     console.error('Invalid JSON loaded for lottie animation.');

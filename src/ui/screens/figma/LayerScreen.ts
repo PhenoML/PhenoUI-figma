@@ -153,10 +153,10 @@ export class LayerScreen extends Screen {
                 value
             });
             // Future Dario: this introduces a delay in the UI update that makes it look like the data was not updated
-            // properly. Default to always updating the layer vew for now...
-            // if (refreshLayerView) {
+            // properly.
+            if (refreshLayerView) {
                 await bus.execute('updateLayerView', undefined);
-            // }
+            }
         };
 
         const onUpdateComponentProperty = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>) => {

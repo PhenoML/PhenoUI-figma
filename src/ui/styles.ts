@@ -459,6 +459,7 @@ export function getStyles(): TemplateResult[] {
             }
             
             .lottie-play-bar {
+                position: relative;
                 flex-grow: 1;
                 height: 100%;
                 background-color: var(--figma-color-bg-secondary);
@@ -466,7 +467,58 @@ export function getStyles(): TemplateResult[] {
             
             .lottie-play-progress {
                 height: 100%;
-                background-color: var(--figma-color-bg-inverse);
+                background-color: var(--figma-color-bg-selected);
+            }
+            
+            .lottie-play-from {
+                position: absolute;
+                top: 0;
+                height: 100%;
+                width: 3px;
+                border-right: 1px solid var(--figma-color-bg-component);
+                background-color: var(--figma-color-icon);
+                transform: translate(-100%, 0);
+                cursor: ew-resize;
+            }
+            
+            .lottie-play-from-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                background: repeating-linear-gradient(
+                        45deg,
+                        var(--figma-color-bg),
+                        var(--figma-color-bg) 10px,
+                        var(--figma-color-bg-component-tertiary) 10px,
+                        var(--figma-color-bg-component-tertiary) 20px
+                );
+            }
+
+            .lottie-play-to-area {
+                position: absolute;
+                right: 0;
+                top: 0;
+                height: 100%;
+                background: repeating-linear-gradient(
+                        45deg,
+                        var(--figma-color-bg),
+                        var(--figma-color-bg) 10px,
+                        var(--figma-color-bg-component-tertiary) 10px,
+                        var(--figma-color-bg-component-tertiary) 20px
+                );
+                transform: rotate(180deg);
+            }
+            
+
+            .lottie-play-to {
+                position: absolute;
+                top: 0;
+                height: 100%;
+                width: 3px;
+                border-left: 1px solid var(--figma-color-bg-component);
+                background-color: var(--figma-color-icon);
+                cursor: ew-resize;
             }
             
             .tab-container {
