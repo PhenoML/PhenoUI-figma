@@ -2592,14 +2592,27 @@ function _getUserDataExport(node, type, userData) {
   const withValues = getUserData(node, type, userData);
   const result = {};
   for (const key of Object.keys(userData)) {
-    result[key] = withValues[key].value;
+    const entry = withValues[key];
+    result[key] = entry.value;
     if (result[key] === "" || result[key] === null || result[key] === void 0) {
-      result[key] = withValues[key].default;
-      if (withValues[key].type === "group") {
+      result[key] = entry.default;
+      if (entry.type === "group") {
         result[key] = {
           type: "group",
           properties: result[key] || []
         };
+      } else if (entry.type === "union") {
+        const fields = entry.fields;
+        const fieldKeys = Object.keys(fields);
+        const fieldValues = fieldKeys.map((k) => {
+          var _a;
+          return { [k]: (_a = fields[k].value) != null ? _a : fields[k].default };
+        });
+        result[key] = {
+          type: "union",
+          fields: Object.assign({}, ...fieldValues)
+        };
+        console.log("Union", result[key]);
       }
     }
   }
