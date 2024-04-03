@@ -122,7 +122,8 @@ export function getStyles(): TemplateResult[] {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                padding: 2px 32px 2px 8px;
+                padding: 0 32px 0 8px;
+                margin: 2px 0;
             }
             
             .row-full {
@@ -130,7 +131,8 @@ export function getStyles(): TemplateResult[] {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                padding: 2px 8px;
+                padding: 0 8px;
+                margin: 2px 0;
             }
             
             .flex-center {
@@ -164,9 +166,9 @@ export function getStyles(): TemplateResult[] {
             }
             
             .input-container {
-                min-height: 32px;
+                min-height: 30px;
                 position: relative;
-                border: 1px solid transparent;
+                outline: 1px solid transparent;
                 display: flex;
                 flex-grow: 1;
                 align-items: center;
@@ -220,6 +222,13 @@ export function getStyles(): TemplateResult[] {
             
             .text-input::placeholder {
                 color: var(--figma-color-text-disabled);
+            }
+
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                /* display: none; <- Crashes Chrome on hover */
+                -webkit-appearance: none;
+                margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
             }
             
             .autocomplete-container {
