@@ -310,7 +310,7 @@ export function booleanInput(data: InputData): TemplateResult {
                         }
                     }}"
                 / >
-                <label>${data.label}</label>
+                <label for="${data.id}">${data.label}</label>
             </div>
             ${_makeLinkProperty(data)}
         </div>
