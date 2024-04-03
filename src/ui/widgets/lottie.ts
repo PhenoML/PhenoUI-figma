@@ -6,6 +6,7 @@ import {MessageBus} from '../../shared/MessageBus';
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import {button} from './button';
 import {PropertyBinding, UserDataValue, UserType} from '../../plugin/Strapi';
+import {numberInput} from './input';
 
 type OfUnion<T extends {type: string}> = {
     [P in T['type']]: Extract<T, {type: P}>
@@ -29,7 +30,6 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     container.classList.add('lottie-animation');
 
     const animationData = data.fields.data.value! as string;
-    console.log(animationData);
     const animation = lottie.loadAnimation({
         container: container,
         renderer: 'svg',
@@ -45,6 +45,36 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     progress.classList.add('lottie-play-progress');
     progress.style.width = '0';
 
+    const inputRow = document.createElement('div');
+    inputRow.classList.add('row-full');
+    const inputTemplate = html`
+        ${numberInput({
+        id: `${data.type}_${data.name}_from`,
+        label: data.fields.from.description,
+        icon: 'F',
+        value: fromFrame,
+        onUpdate: async (id, value) => {
+            const frame = Math.max(0, Math.min(animationTotalFrames, value as number));
+            updateFrom(frame);
+            animation.goToAndStop(0, true);
+        },
+    })}
+
+        ${numberInput({
+        id: `${data.type}_${data.name}_to`,
+        label: data.fields.to.description,
+        icon: 'T',
+        value: toFrame,
+        onUpdate: async (id, value) => {
+            const frame = Math.max(0, Math.min(animationTotalFrames, value as number));
+            updateTo(frame);
+            animation.goToAndStop(frame - fromFrame, true);
+        },
+    })}
+    `;
+    render(inputTemplate, inputRow);
+
+    const fromInput = inputRow.querySelector(`#${data.type}_${data.name}_from`) as HTMLInputElement;
     const from = document.createElement('div');
     from.classList.add('lottie-play-from');
     from.style.left = `${(fromFrame / animationTotalFrames) * 100}%`;
@@ -54,6 +84,7 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     fromArea.classList.add('lottie-play-from-area');
     fromArea.style.width = from.style.left;
 
+    const toInput = inputRow.querySelector(`#${data.type}_${data.name}_to`) as HTMLInputElement;
     const to = document.createElement('div');
     to.classList.add('lottie-play-to');
     to.style.left = `${(toFrame / animationTotalFrames) * 100}%`;
@@ -126,9 +157,13 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     // debounce calling `data.onUpdate` to avoid clogging the plugin bridge
     let timeout: number | null = null;
     function updateSegment() {
-        fromFrame = percentToFrame(parseFloat(from.style.left) / 100);
-        toFrame = percentToFrame(parseFloat(to.style.left) / 100);
+        // fromFrame = percentToFrame(parseFloat(from.style.left) / 100);
+        // toFrame = percentToFrame(parseFloat(to.style.left) / 100);
         animation.setSegment(fromFrame, toFrame);
+
+        fromInput.value = `${fromFrame}`;
+        toInput.value = `${toFrame}`;
+
         if (timeout) {
             window.clearTimeout(timeout);
         }
@@ -146,21 +181,27 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
     updateSegment();
     animation.goToAndStop(0, true);
 
-    function updateFrom() {
-        from.style.left = progress.style.width;
-        fromArea.style.width = progress.style.width;
-        if (parseFloat(from.style.left) > parseFloat(to.style.left)) {
-            updateTo();
+    function updateFrom(value?: number) {
+        const frame = value ?? percentToFrame(parseFloat(progress.style.width) / 100);
+        const percent = (frame / animationTotalFrames) * 100;
+        from.style.left = `${percent}%`;
+        fromArea.style.width = `${percent}%`;
+        fromFrame = frame;
+        if (fromFrame > toFrame) {
+            updateTo(value);
         } else {
             updateSegment();
         }
     }
 
-    function updateTo() {
-        to.style.left = progress.style.width;
-        toArea.style.width = `${100 - parseFloat(progress.style.width)}%`;
-        if (parseFloat(to.style.left) < parseFloat(from.style.left)) {
-            updateFrom();
+    function updateTo(value?: number) {
+        const frame = value ?? percentToFrame(parseFloat(progress.style.width) / 100);
+        const percent = (frame / animationTotalFrames) * 100;
+        to.style.left = `${percent}%`;
+        toArea.style.width = `${100 - percent}%`;
+        toFrame = frame;
+        if (toFrame < fromFrame) {
+            updateFrom(value);
         } else {
             updateSegment();
         }
@@ -220,6 +261,7 @@ function lottiePlayer(bus: MessageBus, data: LottieData): TemplateResult {
                     ${placeButton}
                 </div>
             </div>
+            ${inputRow}
         </div>
     `;
 }
@@ -235,7 +277,6 @@ function loadFile(file: File): Promise<string|null> {
 }
 
 export function lottieInput(bus: MessageBus, data: LottieData): TemplateResult {
-    console.log('lottieInput', data);
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.json';

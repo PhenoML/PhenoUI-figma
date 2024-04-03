@@ -82,6 +82,7 @@ export type UserType = {
     handler: UserType['type'],
     fields: UserDataSpec,
     value: never,
+    default: never,
 });
 
 export type UserDataValue = Exclude<UserType['value'], undefined>;
