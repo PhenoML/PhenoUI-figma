@@ -37,9 +37,14 @@ export type UserType = {
     description: string,
     linkedTo?: string,
 } & ({
-    type: 'string' | 'boolean',
-    default?: string | boolean,
-    value?: string | boolean | PropertyBinding,
+    type: 'string',
+    default?: string,
+    value?: string | PropertyBinding,
+    properties?: string[],
+} | {
+    type: 'boolean',
+    default?: boolean,
+    value?: boolean | PropertyBinding,
     properties?: string[],
 } | {
     type: 'number',
@@ -72,7 +77,12 @@ export type UserType = {
     type: 'lottie',
     default: string | null,
     value: string | null,
-})
+} | {
+    type: 'union',
+    handler: UserType['type'],
+    fields: UserDataSpec,
+    value: never,
+});
 
 export type UserDataValue = Exclude<UserType['value'], undefined>;
 

@@ -51,7 +51,7 @@ function _getVariantOptions(node: UINode, key: string) {
 
 }
 
-export function getUserData(node: UINode, type: string, userData: UserDataSpec) {
+export function getUserData(node: UINode, type: string, userData: UserDataSpec, parentType?: string) {
     for (const key of Object.keys(userData)) {
         // skip the layout object
         // sorry future Dario, this is a hack and should probably be switched to use a dedicated field in strapi
@@ -59,13 +59,20 @@ export function getUserData(node: UINode, type: string, userData: UserDataSpec) 
             continue;
         }
 
-        const value = getMetadata(node, `${type}_${key}`);
+        const valueKey = parentType ? `${type}_${parentType}_${key}` : `${type}_${key}`;
+        const value = getMetadata(node, valueKey);
         // make a copy of the object to avoid overwriting the original one
         userData[key] = Object.assign({}, userData[key]);
         const data = userData[key];
         switch (data.type) {
             case 'number':
-                data.value = parseFloat(value as string);
+                if (typeof value === 'string') {
+                    if (Boolean(value)) {
+                        data.value = parseFloat(value as string);
+                    }
+                } else {
+                    data.value = value as number;
+                }
                 break;
 
             case 'componentProperty':
@@ -73,6 +80,10 @@ export function getUserData(node: UINode, type: string, userData: UserDataSpec) 
                 if (data.valueType === 'VARIANT') {
                     data.options = _getVariantOptions(node, data.key);
                 }
+                break;
+
+            case 'union':
+                data.fields = getUserData(node, type, data.fields, parentType ? `${parentType}_${key}` : key);
                 break;
 
             default:
