@@ -28,27 +28,35 @@ async function _downloadExport(name: string, payload: any) {
     await new Promise(resolve => setTimeout(resolve, 1000));
 }
 
-export function extractImages(payload: any): any[] {
-    const images = []
-    if (payload.type === 'figma-image') {
-        images.push(payload);
+function _extractNodesOfType(payload: any, type: string): any[] {
+    const nodes = [];
+    if (payload.type === type) {
+        nodes.push(payload);
     }
 
     if ('children' in payload) {
         for (const child of payload.children) {
-            images.push(...extractImages(child));
+            nodes.push(..._extractNodesOfType(child, type));
         }
     } else if ('child' in payload) {
-        images.push(...extractImages(payload.child));
+        nodes.push(..._extractNodesOfType(payload.child, type));
     }
 
     if ('variants' in payload) {
         for (const key of Object.keys(payload.variants)) {
-            images.push(...extractImages(payload.variants[key]));
+            nodes.push(..._extractNodesOfType(payload.variants[key], type));
         }
     }
 
-    return images;
+    return nodes;
+}
+
+export function extractImages(payload: any): any[] {
+    return _extractNodesOfType(payload, 'figma-image');
+}
+
+export function extractAnimations(payload: any): any[] {
+    return _extractNodesOfType(payload, 'figma-lottie-animation');
 }
 
 export async function exportLayer(manager: UIManager, bus: MessageBus, id: string, name: string, mode: ExportLayerMode, from: Screen) {
