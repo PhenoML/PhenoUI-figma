@@ -25626,7 +25626,7 @@ var import_qs = __toESM(require_lib());
 
 // src/ui/tools/export/strapi.ts
 var import_qs2 = __toESM(require_lib());
-async function _strapiImageExists(bus, name2, jwt) {
+async function _strapiAssetExists(bus, name2, jwt) {
   const query = import_qs2.default.stringify({
     filters: {
       name: {
@@ -25646,32 +25646,25 @@ async function _strapiImageExists(bus, name2, jwt) {
   }
   return null;
 }
-async function _uploadImagesToStrapi(bus, images) {
-  var _a3, _b;
+async function _uploadAssetsToStrapi(bus, assets, callbacks) {
   const jwt = await bus.execute("getStrapiJwt", void 0);
   const server = await bus.execute("getStrapiServer", void 0);
   const url = await bus.execute("getStrapiUrlForEndpoint", { collection: "/api/upload" /* upload */ });
-  for (const image of images) {
-    const uploadMethod = (_b = (_a3 = image.__userData.method) != null ? _a3 : image.uploadMethod) != null ? _b : "embed";
+  for (const asset of assets) {
+    const uploadMethod = callbacks.getUploadMethod(asset);
     if (uploadMethod === "embed") {
       continue;
     }
-    const filename = `${image.__info.name}.${image.format}`;
-    const existing = await _strapiImageExists(bus, filename, jwt);
+    const filename = callbacks.getAssetName(asset);
+    const existing = await _strapiAssetExists(bus, filename, jwt);
     if (uploadMethod == "link" && existing) {
-      image.data = new URL(existing.url, server).href;
+      callbacks.setAssetData(asset, new URL(existing.url, server).href);
       continue;
     }
     const query = existing ? `?id=${existing.id}` : "";
     const form = new FormData();
-    if (image.format === "svg") {
-      const blob = new Blob([image.data], { type: "image/svg+xml" });
-      form.append("files", blob, filename);
-    } else {
-      const bytes = Uint8Array.from(atob(image.data), (c2) => c2.charCodeAt(0));
-      const blob = new Blob([bytes], { type: `image/${image.format}` });
-      form.append("files", blob, filename);
-    }
+    const blob = callbacks.getAssetBlob(asset);
+    form.append("files", blob, filename);
     const response = await fetch(`${url}${query}`, {
       method: "post",
       headers: {
@@ -25680,11 +25673,42 @@ async function _uploadImagesToStrapi(bus, images) {
       body: form
     });
     const result = await response.json();
-    const imageResult = Array.isArray(result) ? result[0] : result;
-    if (imageResult) {
-      image.data = new URL(imageResult.url, server).href;
+    const assetResult = Array.isArray(result) ? result[0] : result;
+    if (assetResult) {
+      callbacks.setAssetData(asset, new URL(assetResult.url, server).href);
     }
   }
+}
+async function _uploadImagesToStrapi(bus, images) {
+  await _uploadAssetsToStrapi(bus, images, {
+    getUploadMethod: (image) => {
+      var _a3, _b;
+      return (_b = (_a3 = image.__userData.method) != null ? _a3 : image.uploadMethod) != null ? _b : "embed";
+    },
+    getAssetName: (image) => `${image.__info.name}.${image.format}`,
+    setAssetData: (image, data2) => image.data = data2,
+    getAssetBlob: (image) => {
+      if (image.format === "svg") {
+        return new Blob([image.data], { type: "image/svg+xml" });
+      } else {
+        const bytes = Uint8Array.from(atob(image.data), (c2) => c2.charCodeAt(0));
+        return new Blob([bytes], { type: `image/${image.format}` });
+      }
+    }
+  });
+}
+async function _uploadAnimationsToStrapi(bus, animations) {
+  await _uploadAssetsToStrapi(bus, animations, {
+    getUploadMethod: (animation) => {
+      var _a3;
+      const method = (_a3 = animation.__userData.method) != null ? _a3 : "embed";
+      console.log(method);
+      return method;
+    },
+    getAssetName: (animation) => `${animation.__info.name}.json`,
+    setAssetData: (animation, data2) => animation.__userData.animation.fields.data = data2,
+    getAssetBlob: (animation) => new Blob([animation.__userData.animation.fields.data], { type: "application/json" })
+  });
 }
 async function uploadToStrapi(bus, name2, payload) {
   const collection = payload.type === "figma-component" ? "/api/figma-widgets" /* widgets */ : "/api/screens" /* screens */;
@@ -25695,6 +25719,8 @@ async function uploadToStrapi(bus, name2, payload) {
   const slug = `${categoryUid.toLowerCase().replace(/ /g, "-")}-${name2.toLowerCase().replace(/ /g, "-")}`;
   const images = extractImages(payload);
   await _uploadImagesToStrapi(bus, images);
+  const animations = extractAnimations(payload);
+  await _uploadAnimationsToStrapi(bus, animations);
   if (payload.type !== "figma-image") {
     let data2;
     if (payload.type === "figma-component") {
@@ -25789,24 +25815,30 @@ async function _downloadExport(name2, payload) {
   link.setAttribute("download", `${name2},json`);
   await new Promise((resolve) => setTimeout(resolve, 1e3));
 }
-function extractImages(payload) {
-  const images = [];
-  if (payload.type === "figma-image") {
-    images.push(payload);
+function _extractNodesOfType(payload, type) {
+  const nodes = [];
+  if (payload.type === type) {
+    nodes.push(payload);
   }
   if ("children" in payload) {
     for (const child of payload.children) {
-      images.push(...extractImages(child));
+      nodes.push(..._extractNodesOfType(child, type));
     }
   } else if ("child" in payload) {
-    images.push(...extractImages(payload.child));
+    nodes.push(..._extractNodesOfType(payload.child, type));
   }
   if ("variants" in payload) {
     for (const key2 of Object.keys(payload.variants)) {
-      images.push(...extractImages(payload.variants[key2]));
+      nodes.push(..._extractNodesOfType(payload.variants[key2], type));
     }
   }
-  return images;
+  return nodes;
+}
+function extractImages(payload) {
+  return _extractNodesOfType(payload, "figma-image");
+}
+function extractAnimations(payload) {
+  return _extractNodesOfType(payload, "figma-lottie-animation");
 }
 async function exportLayer(manager, bus, id, name2, mode, from) {
   if (!_exporting) {
