@@ -2637,21 +2637,19 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
   }
   if (typeData && (node.type === "COMPONENT" || node.type === "INSTANCE" || node.type === "COMPONENT_SET")) {
     const properties = node.type === "COMPONENT" || node.type === "COMPONENT_SET" ? node.componentPropertyDefinitions : node.componentProperties;
-    if (Object.keys(properties).length) {
-      const componentProps = {};
-      for (let key in properties) {
-        key = properties[key].type === "VARIANT" ? `${key}#variant` : key;
-        const [description, propertyId] = key.split(/#(?!.*#)/);
-        componentProps[key] = {
-          description,
-          type: "componentProperty",
-          key,
-          propertyId
-        };
-      }
-      typeData.userData = Object.assign({}, typeData.userData, componentProps);
-      console.log("Component properties", componentProps);
+    const componentProps = {};
+    for (let key in properties) {
+      key = properties[key].type === "VARIANT" ? `${key}#variant` : key;
+      const [description, propertyId] = key.split(/#(?!.*#)/);
+      componentProps[key] = {
+        description,
+        type: "componentProperty",
+        key,
+        propertyId
+      };
     }
+    typeData.userData = Object.assign({}, typeData.userData, componentProps);
+    console.log("Component properties", componentProps);
   }
   return typeData;
 }
