@@ -2277,8 +2277,9 @@ var builtInMethods = {
   nativeType: (context, node) => figmaTypeToWidget(node),
   getVariants: async (context, node, baseSpec) => {
     const variants = {};
+    const mappings = Object.assign({}, baseSpec.mappings);
     for (let i = 0, n = node.children.length; i < n; ++i) {
-      variants[node.children[i].name] = _overrideSource(baseSpec.mappings, `children[${i}]`);
+      variants[node.children[i].name] = _overrideSource(mappings, `children[${i}]`);
     }
     return processSpec(context.cache, context.strapi, node, variants);
   },
@@ -2669,15 +2670,6 @@ async function exportNode(cache, strapi, node, overrideType) {
     const userData = _getUserDataExport(node, type, spec.userData);
     if (userData) {
       result["__userData"] = userData;
-    }
-    if (node.type === "COMPONENT" || node.type === "COMPONENT_SET") {
-      for (const key of Object.keys(result.variants)) {
-        result.variants[key]["dimensions"]["parent"]["x"] = null;
-        result.variants[key]["dimensions"]["parent"]["y"] = null;
-        result.variants[key]["dimensions"]["parent"]["width"] = null;
-        result.variants[key]["dimensions"]["parent"]["height"] = null;
-        result.variants[key]["layout"]["parent"]["layoutMode"] = null;
-      }
     }
     return result;
   } catch (e) {

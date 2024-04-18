@@ -301,17 +301,6 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
             result['__userData'] = userData;
         }
 
-        // if the node is a component set the parent dimensions elements and the parent layout to null
-        if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-            for (const key of Object.keys(result.variants)) {
-                result.variants[key]['dimensions']['parent']['x'] = null;
-                result.variants[key]['dimensions']['parent']['y'] = null;
-                result.variants[key]['dimensions']['parent']['width'] = null;
-                result.variants[key]['dimensions']['parent']['height'] = null;
-                result.variants[key]['layout']['parent']['layoutMode'] = null;
-            }
-        }
-
         return result;
     } catch (e) {
         console.error(e);

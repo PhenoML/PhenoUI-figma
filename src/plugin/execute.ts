@@ -40,8 +40,9 @@ const builtInMethods: { [key: string]: Function } = {
     nativeType: (context: ExecutionContext, node: any) => figmaTypeToWidget(node),
     getVariants: async (context: ExecutionContext, node: FrameNode, baseSpec: TypeSpec) => {
         const variants: any = {};
+        const mappings = Object.assign({}, baseSpec.mappings);
         for (let i = 0, n = node.children.length; i < n; ++i) {
-            variants[node.children[i].name] = _overrideSource(baseSpec.mappings, `children[${i}]`);
+            variants[node.children[i].name] = _overrideSource(mappings, `children[${i}]`);
         }
         return processSpec(context.cache, context.strapi, node, variants);
     },
