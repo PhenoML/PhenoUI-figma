@@ -214,7 +214,7 @@ export class PhenoUI {
 
     async strapiLogout() {
         await this.strapi.logout();
-        this.handleSelectionChange(figma.currentPage.selection);
+        this.handleSelectionChange([]);
     }
 
     updateLayerView() {
