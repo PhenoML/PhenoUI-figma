@@ -3063,7 +3063,7 @@ var PhenoUI = class {
   }
   async strapiLogout() {
     await this.strapi.logout();
-    this.handleSelectionChange(figma.currentPage.selection);
+    this.handleSelectionChange([]);
   }
   updateLayerView() {
     this.handleSelectionChange(figma.currentPage.selection);

@@ -28063,7 +28063,7 @@ var EmptyScreen = class extends Screen {
 
 // src/ui/screens/ErrorScreen.ts
 var ErrorScreen = class extends Screen {
-  updateTemplate(data2, _bus) {
+  updateTemplate(data2, bus) {
     const template = x`
             <section>
                 <div class="row-full"></div>
@@ -28072,6 +28072,17 @@ var ErrorScreen = class extends Screen {
                 </div>
                 <div class="row-full">
                     <div class="error-description">${data2.error.description}</div>
+                </div>
+            </section>
+            <section>
+                <div class="row-full">
+                    <div class="container">
+                        ${button({
+      id: data2.error.title,
+      label: "Log out of strapi",
+      onClick: async (id) => await bus.execute("strapiLogout", void 0)
+    })}
+                    </div>
                 </div>
             </section>
         `;
