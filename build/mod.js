@@ -2285,6 +2285,15 @@ var builtInMethods = {
   },
   nodeAsType: async (context, node, type) => {
     return await exportNode(context.cache, context.strapi, node, type);
+  },
+  firstVisibleProperty: (context, entries, property) => {
+    var _a;
+    for (const entry of entries) {
+      if (entry.visible) {
+        return (_a = entry[property]) != null ? _a : null;
+      }
+    }
+    return null;
   }
 };
 async function execute(cache, strapi, node, instruction) {
