@@ -48,6 +48,14 @@ const builtInMethods: { [key: string]: Function } = {
     },
     nodeAsType: async (context: ExecutionContext, node: UINode, type: string) => {
             return await exportNode(context.cache, context.strapi, node, type);
+    },
+    firstVisibleProperty: (context: ExecutionContext, entries: any[], property: string) => {
+        for (const entry of entries) {
+            if (entry.visible) {
+                return entry[property] ?? null;
+            }
+        }
+        return null;
     }
 }
 
