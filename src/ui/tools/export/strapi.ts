@@ -108,7 +108,13 @@ async function _uploadAnimationsToStrapi(bus: MessageBus, animations: any[]) {
 export async function uploadToStrapi(bus: MessageBus, name: string, payload: any) {
     const collection: StrapiEndpoints = payload.type === 'figma-component' ? StrapiEndpoints.widgets : StrapiEndpoints.screens;
     const categoryCollection: StrapiEndpoints = payload.type === 'figma-component' ? StrapiEndpoints.widgetCategories : StrapiEndpoints.screenCategories;
-    const categoryUid = await bus.execute('getLocalData', LayerMetadata.strapiUser);
+    let categoryUid = await bus.execute('getMetadata', {
+        id: LayerMetadata.currentPage,
+        key: LayerMetadata.strapiCategory
+    });
+    if (!categoryUid) {
+        categoryUid = await bus.execute('getLocalData', LayerMetadata.strapiUser);
+    }
     const categoryData = await bus.execute('getCategory', { collection: categoryCollection, uid: categoryUid });
     const category = categoryData ? categoryData.id : (await bus.execute('createCategory', { collection: categoryCollection, uid: categoryUid })).id;
     const slug = `${categoryUid.toLowerCase().replace(/ /g, '-')}-${name.toLowerCase().replace(/ /g, '-')}`;
