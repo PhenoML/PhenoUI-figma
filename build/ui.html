@@ -25713,7 +25713,13 @@ async function _uploadAnimationsToStrapi(bus, animations) {
 async function uploadToStrapi(bus, name2, payload) {
   const collection = payload.type === "figma-component" ? "/api/figma-widgets" /* widgets */ : "/api/screens" /* screens */;
   const categoryCollection = payload.type === "figma-component" ? "/api/figma-widget-categories" /* widgetCategories */ : "/api/screen-categories" /* screenCategories */;
-  const categoryUid = await bus.execute("getLocalData", "com.phenoui.strapi.auth.user" /* strapiUser */);
+  let categoryUid = await bus.execute("getMetadata", {
+    id: "com.phenoui.figma.current.page" /* currentPage */,
+    key: "com.phenoui.strapi.category" /* strapiCategory */
+  });
+  if (!categoryUid) {
+    categoryUid = await bus.execute("getLocalData", "com.phenoui.strapi.auth.user" /* strapiUser */);
+  }
   const categoryData = await bus.execute("getCategory", { collection: categoryCollection, uid: categoryUid });
   const category = categoryData ? categoryData.id : (await bus.execute("createCategory", { collection: categoryCollection, uid: categoryUid })).id;
   const slug = `${categoryUid.toLowerCase().replace(/ /g, "-")}-${name2.toLowerCase().replace(/ /g, "-")}`;
@@ -25845,16 +25851,17 @@ async function exportLayer(manager, bus, id, name2, mode, from) {
     const loading = manager._getScreen(7 /* loading */);
     manager.renderScreen(loading, manager.root);
     _exporting = true;
-    const payload = await bus.execute("exportToFlutter", { id });
+    const payload = mode == 1 /* rawJson */ ? await bus.execute("exportRawJson", { id }) : await bus.execute("exportToFlutter", { id });
     if (payload) {
       switch (mode) {
         case 0 /* json */:
+        case 1 /* rawJson */:
           await _downloadExport(name2, payload);
           break;
-        case 1 /* strapiUpload */:
+        case 2 /* strapiUpload */:
           await uploadToStrapi(bus, name2, payload);
           break;
-        case 2 /* githubCommit */:
+        case 3 /* githubCommit */:
           await commitToGithub(bus, name2, payload, from._manager.github);
           break;
         default:
@@ -26205,6 +26212,13 @@ var LayerScreen = class extends Screen {
       onClick: async (id) => await exportLayer(this._manager, bus, id, data2.layer.name, 0 /* json */, this)
     })}
                     </div>
+                    <div class="container">
+                        ${button({
+      id: data2.layer.id,
+      label: "Export to raw JSON",
+      onClick: async (id) => await exportLayer(this._manager, bus, id, data2.layer.name, 1 /* rawJson */, this)
+    })}
+                    </div>
                 </div>
             </section>
         `;
@@ -26470,15 +26484,37 @@ var LayerScreen = class extends Screen {
 // src/ui/screens/strapi/LayerScreen.ts
 var LayerScreen2 = class extends Screen {
   async updateTemplate(data2, bus) {
+    const strapiUser = await bus.execute("getLocalData", "com.phenoui.strapi.auth.user" /* strapiUser */);
+    const strapiCategory = await bus.execute("getMetadata", {
+      id: "com.phenoui.figma.current.page" /* currentPage */,
+      key: "com.phenoui.strapi.category" /* strapiCategory */
+    });
     const template = x`
             ${getHeader(data2.layer.name, 1 /* strapi */, bus)}
             <section>
+                <div class="row-full">
+                    ${textInput({
+      id: data2.layer.id,
+      label: "Category Override",
+      icon: "C",
+      placeholder: strapiUser,
+      value: strapiCategory,
+      onUpdate: async (id, value2) => {
+        await bus.execute("updateMetadata", {
+          id: "com.phenoui.figma.current.page" /* currentPage */,
+          key: "com.phenoui.strapi.category" /* strapiCategory */,
+          value: value2
+        });
+        await bus.execute("updateLayerView", void 0);
+      }
+    })}
+                </div>
                 <div class="row-full">
                     <div class="container">
                         ${button({
       id: data2.layer.id,
       label: "Upload to strapi",
-      onClick: async (id) => await exportLayer(this._manager, bus, id, data2.layer.name, 1 /* strapiUpload */, this),
+      onClick: async (id) => await exportLayer(this._manager, bus, id, data2.layer.name, 2 /* strapiUpload */, this),
       disabled: !Boolean(data2.layer.exportable)
     })}
                     </div>
@@ -26520,7 +26556,7 @@ var LayerScreen3 = class extends Screen {
                         ${button({
       id: data2.layer.id,
       label: "Commit to github",
-      onClick: async (id) => await exportLayer(this._manager, bus, id, data2.layer.name, 2 /* githubCommit */, this),
+      onClick: async (id) => await exportLayer(this._manager, bus, id, data2.layer.name, 3 /* githubCommit */, this),
       disabled: !Boolean(data2.layer.exportable)
     })}
                     </div>

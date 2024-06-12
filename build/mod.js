@@ -2435,6 +2435,8 @@ function getUserData(node, type, userData, parentType) {
 function findNode(api, id) {
   if (id === api.root.id) {
     return api.root;
+  } else if (id === api.currentPage.id || id === "com.phenoui.figma.current.page" /* currentPage */) {
+    return api.currentPage;
   }
   return api.getNodeById(id);
 }
@@ -2644,6 +2646,17 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
         break;
     }
     typeData = await strapi.getTypeSpec(componentType, cache, useDefaultCache);
+  } else if (!typeData) {
+    typeData = await strapi.getTypeSpec("_missing_type", cache, useDefaultCache);
+    if (typeData) {
+      typeData.mappings = [
+        `@${figmaTypeToWidget(node)}`,
+        {
+          type: `!${type}`
+        }
+      ];
+      await strapi.resolveSpecMappings(typeData, cache, useDefaultCache);
+    }
   }
   if (typeData && (node.type === "COMPONENT" || node.type === "INSTANCE" || node.type === "COMPONENT_SET")) {
     const properties = node.type === "COMPONENT" || node.type === "COMPONENT_SET" ? node.componentPropertyDefinitions : node.componentProperties;
@@ -2689,6 +2702,54 @@ async function exportNode(cache, strapi, node, overrideType) {
 async function exportToFlutter(strapi, node) {
   const cache = /* @__PURE__ */ new Map();
   return await exportNode(cache, strapi, node);
+}
+function _exportValue(value, cache) {
+  if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => _exportValue(v, cache));
+  }
+  if (typeof value === "object") {
+    const result = {};
+    if ("type" in value && typeof value.type === "string") {
+      if (cache.has(value)) {
+        return value.id;
+      }
+      cache.add(value);
+      for (const key in value) {
+        if (key === "parent" || key === "mainComponent" || key === "masterComponent") {
+          result[key] = value[key].id;
+        } else if (key === "defaultVariant") {
+          result[key] = {
+            id: value[key].id,
+            name: value[key].name
+          };
+        } else {
+          try {
+            result[key] = _exportValue(value[key], cache);
+          } catch (_) {
+            result[key] = null;
+          }
+        }
+      }
+    } else {
+      for (const key of Object.keys(value)) {
+        result[key] = _exportValue(value[key], cache);
+      }
+    }
+    return result;
+  }
+  return null;
+}
+function exportRawJson(node) {
+  try {
+    const cache = /* @__PURE__ */ new Set();
+    return _exportValue(node, cache);
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 }
 
 // src/plugin/Strapi.ts
@@ -2778,22 +2839,7 @@ var Strapi = class {
       throw new DataError(`Ambiguous results for type [${type}], expected 1, got ${data.length}`);
     } else if (data.length === 1) {
       const spec = data[0].attributes;
-      if (Array.isArray(spec.mappings)) {
-        spec.mappings = spec.mappings.map((t) => {
-          if (typeof t === "string") {
-            const operator = t.substring(0, 1);
-            const path = t.substring(1);
-            if (operator === "@" /* inherit */) {
-              return this.getTypeSpec(path, cache, useDefaultCache).then((s) => s == null ? void 0 : s.mappings);
-            } else {
-              throw new DataError(`Unknown operator [${operator}] in mapping [${t}]`);
-            }
-          }
-          return Promise.resolve(t);
-        });
-        spec.mappings = await Promise.all(spec.mappings);
-        spec.mappings = Object.assign({}, ...spec.mappings);
-      }
+      await this.resolveSpecMappings(spec, cache, useDefaultCache);
       if (cache) {
         cache.set(type, spec);
       }
@@ -2801,6 +2847,24 @@ var Strapi = class {
       return Object.assign({}, spec);
     }
     return null;
+  }
+  async resolveSpecMappings(spec, cache, useDefaultCache = false) {
+    if (Array.isArray(spec.mappings)) {
+      spec.mappings = spec.mappings.map((t) => {
+        if (typeof t === "string") {
+          const operator = t.substring(0, 1);
+          const path = t.substring(1);
+          if (operator === "@" /* inherit */) {
+            return this.getTypeSpec(path, cache, useDefaultCache).then((s) => s == null ? void 0 : s.mappings);
+          } else {
+            throw new DataError(`Unknown operator [${operator}] in mapping [${t}]`);
+          }
+        }
+        return Promise.resolve(t);
+      });
+      spec.mappings = await Promise.all(spec.mappings);
+      spec.mappings = Object.assign({}, ...spec.mappings);
+    }
   }
   async getTypeList(search, limit) {
     if (!search) {
@@ -3020,6 +3084,7 @@ var PhenoUI = class {
   }
   getMetadata(data) {
     const node = data.id === null ? this.api.root : findNode(this.api, data.id);
+    this.api.currentPage;
     if (node) {
       return getMetadata(node, data.key);
     } else {
@@ -3086,6 +3151,16 @@ var PhenoUI = class {
       throw new Error(`Could not find node with ID [${data.id}] for export.`);
     }
     return exportToFlutter(this.strapi, node);
+  }
+  async exportRawJson(data) {
+    if (!this.isLoggedIn()) {
+      return null;
+    }
+    const node = findNode(this.api, data.id);
+    if (!node) {
+      throw new Error(`Could not find node with ID [${data.id}] for export.`);
+    }
+    return exportRawJson(node);
   }
   async uploadToStrapi(data) {
     await this.strapi.uploadData(data.collection, data.payload);
