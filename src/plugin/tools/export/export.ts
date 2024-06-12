@@ -260,6 +260,17 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
         }
 
         typeData = await strapi.getTypeSpec(componentType, cache, useDefaultCache);
+    } else if (!typeData) {
+        typeData = await strapi.getTypeSpec('_missing_type', cache, useDefaultCache);
+        if (typeData) {
+            typeData.mappings = [
+                `@${figmaTypeToWidget(node)}`,
+                {
+                    type: `!${type}`
+                }
+            ];
+            await strapi.resolveSpecMappings(typeData, cache, useDefaultCache);
+        }
     }
 
     if (typeData && (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET')) {
