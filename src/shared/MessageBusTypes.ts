@@ -104,6 +104,7 @@ export type FunctionParams = {
     updateComponentProperty: UpdateMetadataData,
     performStrapiLogin: PerformStrapiLoginData,
     exportToFlutter: ExportData,
+    exportRawJson: ExportData,
     getTypeList: TypeListData,
     updateLayerView: undefined,
     uploadToStrapi: UploadData,

@@ -12,7 +12,8 @@ import {
     findNode,
     figmaTypeToWidget,
     getTypeSpec,
-    findComponentOrInstance
+    findComponentOrInstance,
+    exportRawJson
 } from "./tools/export/export";
 import {ForbiddenError, PropertyBinding, Strapi, StrapiEndpoints, UserDataValue} from "./Strapi";
 import {getLocalData, getMetadata, setLocalData, updateMetadata} from "./metadata";
@@ -155,6 +156,7 @@ export class PhenoUI {
 
     getMetadata(data: GetMetadataData): UserDataValue | null {
         const node = data.id === null ? this.api.root : findNode(this.api, data.id);
+        this.api.currentPage;
         if (node) {
             return getMetadata(node, data.key);
         } else {
@@ -232,6 +234,19 @@ export class PhenoUI {
         }
 
         return exportToFlutter(this.strapi, node);
+    }
+
+    async exportRawJson(data: ExportData): Promise<any> {
+        if (!this.isLoggedIn()) {
+            return null;
+        }
+
+        const node = findNode(this.api, data.id);
+        if (!node) {
+            throw new Error(`Could not find node with ID [${data.id}] for export.`);
+        }
+
+        return exportRawJson(node);
     }
 
     async uploadToStrapi(data: UploadData) {

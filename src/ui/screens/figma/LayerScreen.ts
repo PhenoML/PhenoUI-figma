@@ -57,6 +57,13 @@ export class LayerScreen extends Screen {
                             onClick: async (id: string) => await exportLayer(this._manager, bus, id, data.layer.name, ExportLayerMode.json, this),
                         })}
                     </div>
+                    <div class="container">
+                        ${button({
+                            id: data.layer.id,
+                            label: 'Export to raw JSON',
+                            onClick: async (id: string) => await exportLayer(this._manager, bus, id, data.layer.name, ExportLayerMode.rawJson, this),
+                        })}
+                    </div>
                 </div>
             </section>
         `;

@@ -22,11 +22,13 @@ export type MappingEntry = MappingSpecObj[keyof MappingSpecObj];
 type MappingSpecArr = MappingEntry[];
 export type MappingSpec = MappingSpecObj | MappingSpecArr;
 
-export type UINode = DocumentNode | SceneNode;
+export type UINode = DocumentNode | SceneNode | PageNode;
 
 export function findNode(api: PluginAPI, id: string): UINode | null {
     if (id === api.root.id) {
         return api.root;
+    } else if (id === api.currentPage.id || id === LayerMetadata.currentPage) {
+        return api.currentPage;
     }
     return api.getNodeById(id) as (UINode | null);
 }
@@ -311,5 +313,63 @@ export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: 
 export async function exportToFlutter(strapi: Strapi, node: UINode): Promise<any> {
     const cache = new Map<string, any>();
     return await exportNode(cache, strapi, node);
+}
+
+function _exportValue(value: any, cache: Set<BaseNode>): any {
+    // if it's a null, string, number, or boolean, just return it
+    if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        return value;
+    }
+
+    // if it's an array, export each value
+    if (Array.isArray(value)) {
+        return value.map(v => _exportValue(v, cache));
+    }
+
+
+
+    // if it's an object, export each value
+    if (typeof value === 'object') {
+        const result: any = {};
+        if ('type' in value && typeof value.type === 'string') {
+            if (cache.has(value)) {
+                return value.id;
+            }
+            cache.add(value);
+            for (const key in value) {
+                if (key === 'parent' || key === 'mainComponent' || key === 'masterComponent') {
+                    result[key] = value[key].id;
+                } else if (key === 'defaultVariant') {
+                    result[key] = {
+                        id: value[key].id,
+                        name: value[key].name,
+                    };
+                } else {
+                    try {
+                        result[key] = _exportValue(value[key], cache);
+                    } catch (_) {
+                        result[key] = null;
+                    }
+                }
+            }
+        } else {
+            for (const key of Object.keys(value)) {
+                result[key] = _exportValue(value[key], cache);
+            }
+        }
+        return result;
+    }
+
+    return null;
+}
+
+export function exportRawJson(node: UINode): any {
+    try {
+        const cache: Set<BaseNode> = new Set();
+        return _exportValue(node, cache);
+    } catch (e) {
+        console.log(e);
+        return null;
+    }
 }
 

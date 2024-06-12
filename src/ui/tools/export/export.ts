@@ -9,6 +9,7 @@ import {commitToGithub} from "./github";
 
 export enum ExportLayerMode {
     json,
+    rawJson,
     strapiUpload,
     githubCommit,
 }
@@ -65,10 +66,13 @@ export async function exportLayer(manager: UIManager, bus: MessageBus, id: strin
 
         manager.renderScreen(loading, manager.root);
         _exporting = true;
-        const payload = await bus.execute('exportToFlutter', { id });
+        const payload = mode == ExportLayerMode.rawJson ?
+            await bus.execute('exportRawJson', { id })
+            : await bus.execute('exportToFlutter', { id });
         if (payload) {
             switch (mode) {
                 case ExportLayerMode.json:
+                case ExportLayerMode.rawJson:
                     await _downloadExport(name, payload);
                     break;
 
