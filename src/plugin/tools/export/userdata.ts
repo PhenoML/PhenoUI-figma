@@ -1,6 +1,6 @@
 import {PropertyBinding, UserDataSpec} from "../../Strapi";
 import {getMetadata} from "../../metadata";
-import {UINode} from "./export";
+import {findNode, UINode} from "./export";
 
 export function getComponentProperty(node: UINode, key: string) {
     if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
@@ -76,9 +76,12 @@ export function getUserData(node: UINode, type: string, userData: UserDataSpec, 
                 break;
 
             case 'componentProperty':
-                Object.assign(data, getComponentProperty(node, data.key));
-                if (data.valueType === 'VARIANT') {
-                    data.options = _getVariantOptions(node, data.key);
+                const propNode = findNode(figma, data.nodeId);
+                if (propNode) {
+                    Object.assign(data, getComponentProperty(propNode, data.key));
+                    if (data.valueType === 'VARIANT') {
+                        data.options = _getVariantOptions(propNode, data.key);
+                    }
                 }
                 break;
 

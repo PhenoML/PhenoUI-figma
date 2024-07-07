@@ -56,6 +56,14 @@ const builtInMethods: { [key: string]: Function } = {
             }
         }
         return null;
+    },
+    firstVisibleEntry: (context: ExecutionContext, entries: any[]) => {
+        for (const entry of entries) {
+            if (entry.visible) {
+                return entry;
+            }
+        }
+        return null;
     }
 }
 

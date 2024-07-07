@@ -274,8 +274,32 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
     }
 
     if (typeData && (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET')) {
+        const componentProps: UserDataSpec = _findComponentPropertiesRecursive(node);
+
+        // if the node has a component parent, add a boolean property to allow the user to override the component's
+        // properties via the parent
+        const baseComponent = findComponentOrInstance(node);
+        if (baseComponent && baseComponent.parent) {
+            const parentComponent = findComponentOrInstance(baseComponent.parent as UINode);
+            if (parentComponent && parentComponent.id !== baseComponent.id) {
+                componentProps['overrideComponentProperties'] = {
+                    type: 'boolean',
+                    default: true,
+                    description: 'Use ancestors properties',
+                };
+            }
+        }
+
+        typeData.userData = Object.assign({}, typeData.userData, componentProps);
+    }
+    return typeData;
+}
+
+function _findComponentPropertiesRecursive(node: UINode): UserDataSpec {
+    const componentProps: UserDataSpec = {};
+
+    if (node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET') {
         const properties = node.type === 'COMPONENT' || node.type === 'COMPONENT_SET' ? node.componentPropertyDefinitions : node.componentProperties;
-        const componentProps: UserDataSpec = {};
         for (let key in properties) {
             key = properties[key].type === 'VARIANT' ? `${key}#variant` : key;
             const [description, propertyId] = key.split(/#(?!.*#)/);
@@ -283,13 +307,25 @@ export async function getTypeSpec(type: string, node: UINode, strapi: Strapi, ca
                 description,
                 type: 'componentProperty',
                 key,
+                nodeId: node.id,
                 propertyId,
             }
         }
-        typeData.userData = Object.assign({}, typeData.userData, componentProps);
-        console.log('Component properties', componentProps);
     }
-    return typeData;
+    if (node.type !== 'COMPONENT_SET' && 'children' in node) {
+        for (const child of node.children) {
+            const childProps = _findComponentPropertiesRecursive(child as UINode);
+            if (Object.keys(childProps).length) {
+                // only assign the child properties if they are not already defined
+                for (const key of Object.keys(childProps)) {
+                    if (!(key in componentProps)) {
+                        componentProps[key] = childProps[key];
+                    }
+                }
+            }
+        }
+    }
+    return componentProps;
 }
 
 export async function exportNode(cache: Map<string, any>, strapi: Strapi, node: UINode, overrideType?: string) {

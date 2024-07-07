@@ -64,6 +64,7 @@ export type UserType = {
     default?: never,
     value?: string | number | boolean,
     key: string,
+    nodeId: string,
     propertyId: string,
     options?: Array<{
         value: string,

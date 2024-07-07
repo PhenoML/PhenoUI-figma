@@ -167,7 +167,7 @@ export class LayerScreen extends Screen {
 
         const onUpdateComponentProperty = async (_id: string, value: Exclude<UserDataValue, PropertyBinding>) => {
             await bus.execute('updateComponentProperty', {
-                id: layerID,
+                id: (data as any).nodeId,
                 key: (data as any).key,
                 value
             });
@@ -254,9 +254,10 @@ export class LayerScreen extends Screen {
                 });
 
             case 'componentProperty':
+                const nodeId = anyData.nodeId;
                 if (anyData.valueType === 'TEXT') {
                     return textInput({
-                        id: key,
+                        id: nodeId,
                         label: data.description,
                         icon: name.charAt(0).toUpperCase(),
                         placeholder: data.description,
@@ -265,7 +266,7 @@ export class LayerScreen extends Screen {
                     });
                 } else if (anyData.valueType === 'BOOLEAN') {
                     return booleanInput({
-                        id: key,
+                        id: nodeId,
                         label: data.description,
                         icon: name.charAt(0).toUpperCase(),
                         placeholder: data.description,
@@ -274,7 +275,7 @@ export class LayerScreen extends Screen {
                     });
                 } else if (anyData.valueType === 'VARIANT') {
                     return selectInput({
-                        id: key,
+                        id: nodeId,
                         label: data.description,
                         icon: name.charAt(0).toUpperCase(),
                         value: data.value || anyData.default || undefined,
