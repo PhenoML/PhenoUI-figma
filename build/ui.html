@@ -26308,7 +26308,7 @@ var LayerScreen = class extends Screen {
     };
     const onUpdateComponentProperty = async (_id, value2) => {
       await bus.execute("updateComponentProperty", {
-        id: layerID,
+        id: data2.nodeId,
         key: data2.key,
         value: value2
       });
@@ -26387,9 +26387,10 @@ var LayerScreen = class extends Screen {
           onUpdatePropertyBinding
         });
       case "componentProperty":
+        const nodeId = anyData.nodeId;
         if (anyData.valueType === "TEXT") {
           return textInput({
-            id: key2,
+            id: nodeId,
             label: data2.description,
             icon: name2.charAt(0).toUpperCase(),
             placeholder: data2.description,
@@ -26398,7 +26399,7 @@ var LayerScreen = class extends Screen {
           });
         } else if (anyData.valueType === "BOOLEAN") {
           return booleanInput({
-            id: key2,
+            id: nodeId,
             label: data2.description,
             icon: name2.charAt(0).toUpperCase(),
             placeholder: data2.description,
@@ -26407,7 +26408,7 @@ var LayerScreen = class extends Screen {
           });
         } else if (anyData.valueType === "VARIANT") {
           return selectInput({
-            id: key2,
+            id: nodeId,
             label: data2.description,
             icon: name2.charAt(0).toUpperCase(),
             value: data2.value || anyData.default || void 0,

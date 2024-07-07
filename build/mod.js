@@ -2294,6 +2294,14 @@ var builtInMethods = {
       }
     }
     return null;
+  },
+  firstVisibleEntry: (context, entries) => {
+    for (const entry of entries) {
+      if (entry.visible) {
+        return entry;
+      }
+    }
+    return null;
   }
 };
 async function execute(cache, strapi, node, instruction) {
@@ -2415,9 +2423,12 @@ function getUserData(node, type, userData, parentType) {
         }
         break;
       case "componentProperty":
-        Object.assign(data, getComponentProperty(node, data.key));
-        if (data.valueType === "VARIANT") {
-          data.options = _getVariantOptions(node, data.key);
+        const propNode = findNode(figma, data.nodeId);
+        if (propNode) {
+          Object.assign(data, getComponentProperty(propNode, data.key));
+          if (data.valueType === "VARIANT") {
+            data.options = _getVariantOptions(propNode, data.key);
+          }
         }
         break;
       case "union":
@@ -2659,8 +2670,26 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
     }
   }
   if (typeData && (node.type === "COMPONENT" || node.type === "INSTANCE" || node.type === "COMPONENT_SET")) {
+    const componentProps = _findComponentPropertiesRecursive(node);
+    const baseComponent = findComponentOrInstance(node);
+    if (baseComponent && baseComponent.parent) {
+      const parentComponent = findComponentOrInstance(baseComponent.parent);
+      if (parentComponent && parentComponent.id !== baseComponent.id) {
+        componentProps["overrideComponentProperties"] = {
+          type: "boolean",
+          default: true,
+          description: "Use ancestors properties"
+        };
+      }
+    }
+    typeData.userData = Object.assign({}, typeData.userData, componentProps);
+  }
+  return typeData;
+}
+function _findComponentPropertiesRecursive(node) {
+  const componentProps = {};
+  if (node.type === "COMPONENT" || node.type === "INSTANCE" || node.type === "COMPONENT_SET") {
     const properties = node.type === "COMPONENT" || node.type === "COMPONENT_SET" ? node.componentPropertyDefinitions : node.componentProperties;
-    const componentProps = {};
     for (let key in properties) {
       key = properties[key].type === "VARIANT" ? `${key}#variant` : key;
       const [description, propertyId] = key.split(/#(?!.*#)/);
@@ -2668,13 +2697,24 @@ async function getTypeSpec(type, node, strapi, cache, useDefaultCache = false) {
         description,
         type: "componentProperty",
         key,
+        nodeId: node.id,
         propertyId
       };
     }
-    typeData.userData = Object.assign({}, typeData.userData, componentProps);
-    console.log("Component properties", componentProps);
   }
-  return typeData;
+  if (node.type !== "COMPONENT_SET" && "children" in node) {
+    for (const child of node.children) {
+      const childProps = _findComponentPropertiesRecursive(child);
+      if (Object.keys(childProps).length) {
+        for (const key of Object.keys(childProps)) {
+          if (!(key in componentProps)) {
+            componentProps[key] = childProps[key];
+          }
+        }
+      }
+    }
+  }
+  return componentProps;
 }
 async function exportNode(cache, strapi, node, overrideType) {
   try {
