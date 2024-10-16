@@ -5,6 +5,21 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+function LoggerPlugin(name) {
+    let i = 0;
+    return {
+        name: name,
+        setup(build) {
+            build.onStart(() => {
+                console.log(`(${String(++i).padStart(5, '0')}) [${name}] Building...`);
+            });
+            build.onEnd(result => {
+                console.log(`(${String(i).padStart(5, '0')}) [${name}] Build ended with ${result.errors.length} errors`);
+            });
+        },
+    }
+}
+
 function getBuild(production) {
     const baseConfig = {
         bundle: true,
@@ -26,6 +41,9 @@ function getBuild(production) {
         entryPoints: [
             { in: 'src/plugin/mod.ts', out: '' },
         ],
+        plugins: [
+            LoggerPlugin('PLUGIN'),
+        ]
     }
 
     const ui = {
@@ -42,7 +60,10 @@ function getBuild(production) {
         },
         footer: {
             js: '</script>'
-        }
+        },
+        plugins: [
+            LoggerPlugin('UI'),
+        ]
     }
 
     return [
