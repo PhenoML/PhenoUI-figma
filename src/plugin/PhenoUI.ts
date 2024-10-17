@@ -250,7 +250,7 @@ export class PhenoUI {
     }
 
     async uploadToStrapi(data: UploadData) {
-        await this.strapi.uploadData(data.collection, data.payload);
+        await this.strapi.uploadData(data.collection, data.payload, data.tag);
     }
 
     getStrapiJwt() {
