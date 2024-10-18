@@ -8,7 +8,7 @@ import qs from 'qs';
 
 async function _strapiAssetExists(bus: MessageBus, name: string, tag: string, jwt: string): Promise<{ id: string, url: string } | null> {
     const path = `${tag}/${name}`;
-    const url = await bus.execute('getStrapiUrlForEndpoint', { collection: StrapiEndpoints.media + '/tag', options: { id: path } });
+    const url = await bus.execute('getStrapiUrlForEndpoint', { collection: StrapiEndpoints.media + '/path', options: { id: path } });
     const response = await fetch(url, {
         headers: {
             Authorization: `Bearer ${jwt}`,
@@ -52,7 +52,7 @@ async function _uploadAssetsToStrapi(bus: MessageBus, assets: any[], tag: string
             callbacks.setAssetData(asset, existing.id);
             continue;
         }
-        const endpoint = existing ? `/id/${existing.id}` : `/tag/${tag}/${filename}`;
+        const endpoint = existing ? `/id/${existing.id}` : `/path/${tag}/${filename}`;
 
         const form = new FormData();
         const blob = callbacks.getAssetBlob(asset);
