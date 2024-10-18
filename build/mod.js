@@ -879,9 +879,9 @@ var Strapi = class {
     }
     return [];
   }
-  async uploadData(collection, payload, tag) {
-    const path = `${tag}/${payload.name}`;
-    const existingURL = this._urlForEndpoint(this.server, `${collection}/tag`, { id: path });
+  async uploadData(collection, payload, tagPath) {
+    const path = `${tagPath}/${payload.name}`;
+    const existingURL = this._urlForEndpoint(this.server, `${collection}/path`, { id: path });
     const existing = await this._fetchGET(existingURL);
     let url;
     let method;
@@ -889,7 +889,7 @@ var Strapi = class {
       url = this._urlForEndpoint(this.server, `${collection}/id`, { id: existing.id });
       method = "PATCH";
     } else {
-      url = this._urlForEndpoint(this.server, `${collection}/tag`, { id: path });
+      url = this._urlForEndpoint(this.server, `${collection}/path`, { id: path });
       method = "POST";
     }
     const result = await this._fetchUpload(url, method, payload);

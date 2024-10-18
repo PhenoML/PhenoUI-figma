@@ -23599,7 +23599,7 @@ var ForbiddenError = class extends Error {
 // src/ui/tools/export/strapi.ts
 async function _strapiAssetExists(bus, name2, tag, jwt) {
   const path = `${tag}/${name2}`;
-  const url = await bus.execute("getStrapiUrlForEndpoint", { collection: "/phui/media" /* media */ + "/tag", options: { id: path } });
+  const url = await bus.execute("getStrapiUrlForEndpoint", { collection: "/phui/media" /* media */ + "/path", options: { id: path } });
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${jwt}`
@@ -23629,7 +23629,7 @@ async function _uploadAssetsToStrapi(bus, assets, tag, callbacks) {
       callbacks.setAssetData(asset, existing.id);
       continue;
     }
-    const endpoint2 = existing ? `/id/${existing.id}` : `/tag/${tag}/${filename}`;
+    const endpoint2 = existing ? `/id/${existing.id}` : `/path/${tag}/${filename}`;
     const form = new FormData();
     const blob = callbacks.getAssetBlob(asset);
     form.append("name", filename);
