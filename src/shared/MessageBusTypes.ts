@@ -49,6 +49,7 @@ export type TypeListData = {
 export type UploadData = {
     collection: StrapiEndpoints,
     payload: any,
+    tag: string,
 }
 
 /** Strapi Request Builder Data **/
@@ -59,7 +60,7 @@ export type StrapiRequestBuilderData = {
 
 /** Strapi endpoint url data **/
 export type StrapiEndpointUrlData = {
-    collection: StrapiEndpoints,
+    collection: StrapiEndpoints | string,
     options?: any,
 }
 

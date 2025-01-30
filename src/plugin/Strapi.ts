@@ -8,14 +8,15 @@ import {MappingAction} from './tools/export/export';
 
 
 export enum StrapiEndpoints {
-    login = '/api/auth/local',
-    widgets = '/api/figma-widgets',
-    widgetSpecs = '/api/figma-widget-specs',
+    login = '/api/admins/auth-with-password',
+    widgets = '/phui/widget',
+    widgetSpecs = '/phui/widget/spec',
+    tags = '/phui/tag',
     widgetCategories = '/api/figma-widget-categories',
     screenCategories = '/api/screen-categories',
-    screens = '/api/screens',
-    upload = '/api/upload',
-    files = '/api/upload/files',
+    layouts = '/phui/layout',
+    media = '/phui/media',
+    files = '/phui/media/file',
 }
 
 type UserDataObject = {
@@ -141,12 +142,12 @@ export class Strapi {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({identifier: user, password}),
+                    body: JSON.stringify({identity: user, password}),
                 });
 
                 const result = await response.json();
-                if (result.jwt) {
-                    this.jwt = result.jwt;
+                if (result.token) {
+                    this.jwt = result.token;
                     this.server = server.trim();
                     await setLocalData(LayerMetadata.strapiUser, user);
                     await setLocalData(LayerMetadata.strapiJWT, this.jwt);
@@ -179,28 +180,18 @@ export class Strapi {
             // return null;
         }
 
-        const query = qs.stringify({
-            filters: {
-                type: {
-                    $eq: type,
-                }
-            }
-        });
-        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpecs, {query});
+        const endpoint = StrapiEndpoints.widgetSpecs + '/type';
+        const url = this._urlForEndpoint(this.server, endpoint, {id: type});
         const data = await this._fetchGET(url);
 
-        if (data.length > 1) {
-            throw new DataError(`Ambiguous results for type [${type}], expected 1, got ${data.length}`);
-        } else if (data.length === 1) {
-            const spec = data[0].attributes;
-
-            await this.resolveSpecMappings(spec, cache, useDefaultCache);
+        if (data) {
+            await this.resolveSpecMappings(data, cache, useDefaultCache);
 
             if (cache) {
-                cache.set(type, spec);
+                cache.set(type, data);
             }
-            this.defaultCache.set(type, spec);
-            return Object.assign({}, spec);
+            this.defaultCache.set(type, data);
+            return Object.assign({}, data);
         }
 
         return null;
@@ -230,49 +221,28 @@ export class Strapi {
             return [];
         }
 
-        const query = qs.stringify({
-            filters: {
-                type: {
-                    $startsWithi: search,
-                }
-            },
-            fields: ['type'],
-            pagination: {
-                limit,
-            }
-        });
-        const url = this._urlForEndpoint(this.server, StrapiEndpoints.widgetSpecs, {query});
+        const endpoint = StrapiEndpoints.widgetSpecs + '/search';
+        const url = this._urlForEndpoint(this.server, endpoint, {id: search});
         const data = await this._fetchGET(url);
-        if (data) {
-            return data.map((d: any) => d.attributes.type);
+        if (data && data.items && data.items.length) {
+            return data.items.map((d: any) => d.type);
         }
 
         return [];
     }
 
-    async uploadData(collection: StrapiEndpoints, payload: any) {
-        const query = qs.stringify({
-            filters: {
-                name: {
-                    $eq: payload.name,
-                },
-                category: {
-                    id: {
-                        $eq: payload.category,
-                    }
-                }
-            }
-        });
-        const existingURL = this._urlForEndpoint(this.server, collection, {query});
+    async uploadData(collection: StrapiEndpoints, payload: any, tagPath: string) {
+        const path = `${tagPath}/${payload.name}`;
+        const existingURL = this._urlForEndpoint(this.server, `${collection}/path`, {id: path});
         const existing = await this._fetchGET(existingURL);
 
         let url;
         let method;
-        if (existing.length) {
-            url = this._urlForEndpoint(this.server, collection, { id: existing[0].id });
-            method = 'PUT';
+        if (existing) {
+            url = this._urlForEndpoint(this.server, `${collection}/id`, { id: existing.id });
+            method = 'PATCH';
         } else {
-            url = this._urlForEndpoint(this.server, collection);
+            url = this._urlForEndpoint(this.server, `${collection}/path`, { id: path });
             method = 'POST';
         }
 
@@ -281,21 +251,8 @@ export class Strapi {
     }
 
     async getCategory(collection: StrapiEndpoints, uid: string) {
-        const query = qs.stringify({
-            filters: {
-                uid: {
-                    $eq: uid,
-                }
-            }
-        });
-
-        const existingURL = this._urlForEndpoint(this.server, collection, {query});
-        const existing = await this._fetchGET(existingURL);
-
-        if (existing.length) {
-            return existing[0];
-        }
-        return null;
+        const existingURL = this._urlForEndpoint(this.server, collection + '/path', {id: uid});
+        return await this._fetchGET(existingURL);
     }
 
     async createCategory(collection: StrapiEndpoints, uid: string) {
@@ -304,15 +261,11 @@ export class Strapi {
             return existing.id;
         }
 
-        const url = this._urlForEndpoint(this.server, collection);
-        const data = {
-            uid,
-        }
-
-        return await this._fetchUpload(url, 'POST', data);
+        const url = this._urlForEndpoint(this.server, collection + '/path', {id: uid});
+        return await this._fetchUpload(url, 'POST', null);
     }
 
-    _urlForEndpoint(server: string, endpoint: StrapiEndpoints, options: { query?: string, id?: number } = {}): string {
+    _urlForEndpoint(server: string, endpoint: StrapiEndpoints | string, options: { query?: string, id?: string } = {}): string {
         server = server.endsWith('/') ? server.substring(0, server.length - 1) : server;
         return `${server}${endpoint}${options.id ? `/${options.id}` : ''}${options.query ? `?${options.query}` : ''}`;
     }
@@ -336,14 +289,18 @@ export class Strapi {
             body,
         });
 
-        if (!response.ok && response.status === 401) {
-            throw new ForbiddenError('Unauthorized, please login again');
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new ForbiddenError('Unauthorized, please login again');
+            } else if (response.status === 404) {
+                return null;
+            }
         }
 
         const result = await response.json();
         await this._checkFetchResult(result);
 
-        return result.data;
+        return result;
     }
 
     async _fetchGET(url: string) {
@@ -357,7 +314,7 @@ export class Strapi {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             "Authorization": `Bearer ${this.jwt}`,
-        }, JSON.stringify({ data }));
+        }, JSON.stringify(data));
     }
 
     async _fetchPOST(url: string, data: any) {
